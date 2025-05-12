@@ -1,0 +1,10 @@
+plugins {
+    id 'java-conventions'
+    id 'service-conventions'
+}
+
+dependencies {
+    implementation project(':service:user')
+    implementation project(':service:room')
+    implementation project(':service:reservation')
+}

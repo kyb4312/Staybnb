@@ -2,7 +2,6 @@ rootProject.name = 'staybnb'
 
 include 'api'
 include 'common'
-include 'service'
 include 'service:user'
 include 'service:room'
 include 'service:reservation'

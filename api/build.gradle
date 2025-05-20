@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':common')
     implementation project(':service:user')
     implementation project(':service:room')
     implementation project(':service:reservation')

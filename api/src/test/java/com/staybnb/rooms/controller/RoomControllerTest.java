@@ -1,6 +1,6 @@
 package com.staybnb.rooms.controller;
 
-import com.staybnb.rooms.dto.Address;
+import com.staybnb.domain.Address;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;

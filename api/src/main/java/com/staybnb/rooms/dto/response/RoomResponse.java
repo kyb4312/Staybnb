@@ -1,6 +1,6 @@
 package com.staybnb.rooms.dto.response;
 
-import com.staybnb.rooms.dto.Address;
+import com.staybnb.domain.Address;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;

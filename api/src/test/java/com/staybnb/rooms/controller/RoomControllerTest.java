@@ -25,6 +25,8 @@ public class RoomControllerTest {
 
     @Test
     public void testGetRoom() {
+        testCreateRoom();
+
         long roomId = 1L;
         RoomResponse roomResponse =
                 given().log().all()
@@ -39,9 +41,11 @@ public class RoomControllerTest {
 
     @Test
     public void testGetRooms() {
+        testCreateRoom();
+
         given().log().all()
                 .port(port)
-                .when().get("/rooms")
+                .when().get("/rooms?startDate=2025-05-25&endDate=2025-05-26&currency=KRW") // TODO: null 예외 처리 필요..
                 .then().log().all()
                 .statusCode(HttpStatus.SC_OK)
                 .contentType(ContentType.JSON);
@@ -68,7 +72,19 @@ public class RoomControllerTest {
 
     @Test
     public void testUpdateRoom() {
-        long roomId = 1L;
+        CreateRoomRequest createRoomRequest = getDummyCreateRoomRequest();
+
+        long roomId =
+                given().log().all()
+                        .port(port)
+                        .contentType(ContentType.JSON)
+                        .body(createRoomRequest)
+                        .when().post("/rooms")
+                        .then()
+                        .statusCode(HttpStatus.SC_CREATED)
+                        .extract().as(RoomResponse.class)
+                        .getId();
+
         UpdateRoomRequest updateRoomRequest = getDummyUpdateRoomRequest();
 
         RoomResponse response =
@@ -88,7 +104,19 @@ public class RoomControllerTest {
 
     @Test
     public void testDeleteRoom() {
-        long roomId = 1L;
+        CreateRoomRequest createRoomRequest = getDummyCreateRoomRequest();
+
+        long roomId =
+                given().log().all()
+                        .port(port)
+                        .contentType(ContentType.JSON)
+                        .body(createRoomRequest)
+                        .when().post("/rooms")
+                        .then()
+                        .statusCode(HttpStatus.SC_CREATED)
+                        .extract().as(RoomResponse.class)
+                        .getId();
+
         given().log().all()
                 .port(port)
                 .when().delete("/rooms/{roomId}", roomId)
@@ -106,15 +134,15 @@ public class RoomControllerTest {
                 .build();
 
         List<String> amenities = new ArrayList<>();
-        amenities.add("wifi");
-        amenities.add("air_conditioner");
-        amenities.add("tv");
-        amenities.add("kitchen");
+        amenities.add("WIFI");
+        amenities.add("KITCHEN");
+        amenities.add("AIR_CONDITIONER");
+        amenities.add("TV");
 
         return CreateRoomRequest.builder()
                 .hostId(1L)
-                .placeType("building")
-                .roomType("entirePlace")
+                .placeType("HOUSE")
+                .roomType("ENTIRE_PLACE")
                 .address(address)
                 .maxNumberOfGuests(2)
                 .bedrooms(1)

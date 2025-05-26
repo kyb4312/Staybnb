@@ -11,17 +11,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Repository
 public class MemoryRoomRepository implements RoomRepository {
 
     private static final Map<Long, Room> storage = new ConcurrentHashMap<>();
-    private static long sequence = 0L;
+    private static final AtomicLong sequence = new AtomicLong(1);
 
     @Override
     public Room save(Room room) {
-        room.setId(++sequence);
+        room.setId(sequence.getAndIncrement());
         storage.put(room.getId(), room);
         return room;
     }

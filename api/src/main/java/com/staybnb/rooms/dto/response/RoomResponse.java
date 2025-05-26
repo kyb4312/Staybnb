@@ -31,14 +31,14 @@ public class RoomResponse {
     public static RoomResponse fromDomain(Room room) {
         List<String> amenityList = new ArrayList<>();
         for(Amenity amenity : room.getAmenities()) {
-            amenityList.add(amenity.getName());
+            amenityList.add(amenity.toString());
         }
 
         return RoomResponse.builder()
                 .id(room.getId())
                 .hostId(room.getHostId())
-                .placeType(room.getPlaceType().getName())
-                .roomType(room.getRoomType().getName())
+                .placeType(room.getPlaceType().toString())
+                .roomType(room.getRoomType().toString())
                 .maxNumberOfGuests(room.getMaxNumberOfGuests())
                 .bedrooms(room.getBedrooms())
                 .beds(room.getBeds())
@@ -46,7 +46,7 @@ public class RoomResponse {
                 .title(room.getTitle())
                 .description(room.getDescription())
                 .pricePerNight(room.getPricePerNight())
-                .currency(room.getCurrency().name())
+                .currency(room.getCurrency().toString())
                 .build();
     }
 }

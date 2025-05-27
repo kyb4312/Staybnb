@@ -31,28 +31,28 @@ public class MemoryRoomRepository implements RoomRepository {
     public Room update(long id, RoomUpdateInfo roomUpdateInfo) {
         Room room = findById(id).orElseThrow();
         if(roomUpdateInfo.getMaxNumberOfGuests() != null) {
-            room.updateMaxNumberOfGuests(roomUpdateInfo.getMaxNumberOfGuests());
+            room.setMaxNumberOfGuests(roomUpdateInfo.getMaxNumberOfGuests());
         }
         if(roomUpdateInfo.getBedrooms() != null) {
-            room.updateBedrooms(roomUpdateInfo.getBedrooms());
+            room.setBedrooms(roomUpdateInfo.getBedrooms());
         }
         if(roomUpdateInfo.getBeds() != null) {
-            room.updateBeds(roomUpdateInfo.getBeds());
+            room.setBeds(roomUpdateInfo.getBeds());
         }
         if(roomUpdateInfo.getAmenities() != null) {
-            room.updateAmenities(roomUpdateInfo.getAmenities());
+            room.setAmenities(roomUpdateInfo.getAmenities());
         }
         if(roomUpdateInfo.getTitle() != null) {
-            room.updateTitle(roomUpdateInfo.getTitle());
+            room.setTitle(roomUpdateInfo.getTitle());
         }
         if(roomUpdateInfo.getDescription() != null) {
-            room.updateDescription(roomUpdateInfo.getDescription());
+            room.setDescription(roomUpdateInfo.getDescription());
         }
         if(roomUpdateInfo.getPricePerNight() != null) {
-            room.updatePrice(roomUpdateInfo.getPricePerNight());
+            room.setPricePerNight(roomUpdateInfo.getPricePerNight());
         }
         if(roomUpdateInfo.getCurrency() != null) {
-            room.updateCurrency(roomUpdateInfo.getCurrency());
+            room.setCurrency(roomUpdateInfo.getCurrency());
         }
 
         return room;

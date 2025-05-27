@@ -237,7 +237,7 @@ class RoomServiceTest {
                 .build();
 
         when(roomRepository.update(room.getId(), updateInfo)).thenAnswer(invocation -> {
-            room.updatePrice(updateInfo.getPricePerNight());
+            room.setPricePerNight(updateInfo.getPricePerNight());
             return room;
         });
 

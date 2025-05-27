@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
+@Setter
 @Builder
 @ToString
 public class Room {
@@ -31,38 +32,6 @@ public class Room {
 
     private boolean isDeleted;
     private LocalDateTime deletedAt;
-
-    public void updateMaxNumberOfGuests(Integer maxNumberOfGuests) {
-        this.maxNumberOfGuests = maxNumberOfGuests;
-    }
-
-    public void updateBedrooms(Integer bedrooms) {
-        this.bedrooms = bedrooms;
-    }
-
-    public void updateBeds(Integer beds) {
-        this.beds = beds;
-    }
-
-    public void updateAmenities(List<Amenity> amenities) {
-        this.amenities = amenities;
-    }
-
-    public void updateTitle(String title) {
-        this.title = title;
-    }
-
-    public void updateDescription(String description) {
-        this.description = description;
-    }
-
-    public void updatePrice(Integer pricePerNight) {
-        this.pricePerNight = pricePerNight;
-    }
-
-    public void updateCurrency(Currency currency) {
-        this.currency = currency;
-    }
 
     public void delete(LocalDateTime deletedAt) {
         this.isDeleted = true;

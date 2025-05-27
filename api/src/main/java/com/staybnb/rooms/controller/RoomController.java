@@ -7,6 +7,7 @@ import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
 import com.staybnb.service.RoomService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -23,13 +24,13 @@ public class RoomController {
     private final RoomService roomService;
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<RoomResponse> getRoom(@PathVariable long roomId) {
+    public RoomResponse getRoom(@PathVariable long roomId) {
         Room room = roomService.findById(roomId);
-        return ResponseEntity.ok(RoomResponse.fromDomain(room));
+        return RoomResponse.fromDomain(room);
     }
 
     @GetMapping
-    public ResponseEntity<List<RoomResponse>> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
+    public List<RoomResponse> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
         List<Room> rooms = roomService.findAll(searchRoomRequest.toDomain());
         List<RoomResponse> roomResponses = new ArrayList<>();
 
@@ -37,7 +38,7 @@ public class RoomController {
             roomResponses.add(RoomResponse.fromDomain(room));
         }
 
-        return ResponseEntity.ok(roomResponses);
+        return roomResponses;
     }
 
     @PostMapping
@@ -52,14 +53,14 @@ public class RoomController {
     }
 
     @PatchMapping("/{roomId}")
-    public ResponseEntity<RoomResponse> updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
+    public RoomResponse updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
         Room room = roomService.update(roomId, updateRoomRequest.toDomain());
-        return ResponseEntity.ok(RoomResponse.fromDomain(room));
+        return RoomResponse.fromDomain(room);
     }
 
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<Void> deleteRoom(@PathVariable long roomId) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRoom(@PathVariable long roomId) {
         roomService.delete(roomId);
-        return ResponseEntity.noContent().build();
     }
 }

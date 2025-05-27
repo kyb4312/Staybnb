@@ -1,8 +1,8 @@
-package com.staybnb.repository;
+package com.staybnb.rooms.repository;
 
-import com.staybnb.domain.Room;
-import com.staybnb.domain.RoomSearchCondition;
-import com.staybnb.domain.RoomUpdateInfo;
+import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.dto.RoomSearchCondition;
+import com.staybnb.rooms.dto.RoomUpdateInfo;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,7 +1,10 @@
-package com.staybnb.service;
+package com.staybnb.rooms.service;
 
-import com.staybnb.domain.*;
-import com.staybnb.repository.RoomRepository;
+import com.staybnb.rooms.domain.vo.*;
+import com.staybnb.rooms.repository.RoomRepository;
+import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.dto.RoomSearchCondition;
+import com.staybnb.rooms.dto.RoomUpdateInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

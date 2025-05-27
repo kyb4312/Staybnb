@@ -1,5 +1,6 @@
-package com.staybnb.domain;
+package com.staybnb.rooms.domain;
 
+import com.staybnb.rooms.domain.vo.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

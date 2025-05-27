@@ -1,6 +1,9 @@
-package com.staybnb.repository;
+package com.staybnb.rooms.repository;
 
-import com.staybnb.domain.*;
+import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.domain.vo.*;
+import com.staybnb.rooms.dto.RoomSearchCondition;
+import com.staybnb.rooms.dto.RoomUpdateInfo;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

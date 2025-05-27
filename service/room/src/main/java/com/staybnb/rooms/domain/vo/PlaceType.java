@@ -1,4 +1,4 @@
-package com.staybnb.domain;
+package com.staybnb.rooms.domain.vo;
 
 public enum PlaceType {
     HOUSE,

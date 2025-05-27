@@ -1,6 +1,7 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.domain.*;
+import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.domain.vo.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;

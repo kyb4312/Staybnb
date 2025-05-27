@@ -1,11 +1,11 @@
 package com.staybnb.rooms.controller;
 
-import com.staybnb.domain.Room;
+import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
 import com.staybnb.rooms.dto.request.SearchRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
-import com.staybnb.service.RoomService;
+import com.staybnb.rooms.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

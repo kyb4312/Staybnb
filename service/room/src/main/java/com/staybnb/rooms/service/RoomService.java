@@ -1,9 +1,9 @@
-package com.staybnb.service;
+package com.staybnb.rooms.service;
 
-import com.staybnb.domain.Room;
-import com.staybnb.domain.RoomSearchCondition;
-import com.staybnb.domain.RoomUpdateInfo;
-import com.staybnb.repository.RoomRepository;
+import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.dto.RoomSearchCondition;
+import com.staybnb.rooms.dto.RoomUpdateInfo;
+import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

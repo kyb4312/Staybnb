@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/rooms")
@@ -31,14 +31,10 @@ public class RoomController {
 
     @GetMapping
     public List<RoomResponse> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
-        List<Room> rooms = roomService.findAll(searchRoomRequest.toDomain());
-        List<RoomResponse> roomResponses = new ArrayList<>();
-
-        for (Room room : rooms) {
-            roomResponses.add(RoomResponse.fromDomain(room));
-        }
-
-        return roomResponses;
+        return roomService.findAll(searchRoomRequest.toDomain())
+                .stream()
+                .map(RoomResponse::fromDomain)
+                .collect(Collectors.toList());
     }
 
     @PostMapping

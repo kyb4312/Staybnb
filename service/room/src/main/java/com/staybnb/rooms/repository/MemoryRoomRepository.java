@@ -75,42 +75,13 @@ public class MemoryRoomRepository implements RoomRepository {
 
         return storage.values().stream()
                 .filter(room -> !room.isDeleted())
-                .filter(room -> {
-                    if(ObjectUtils.isEmpty(guests)) {
-                        return true;
-                    }
-                    return room.getMaxNumberOfGuests() <= guests;
-                }).filter(room -> {
-                    if(ObjectUtils.isEmpty(startDate)) {
-                        return true;
-                    }
-                    return true; // TODO: reservation 기능 구현 후 예약 가능 일자 필터링 예정
-                }).filter(room -> {
-                    if(ObjectUtils.isEmpty(endDate)) {
-                        return true;
-                    }
-                    return true; // TODO: reservation 기능 구현 후 예약 가능 일자 필터링 예정
-                }).filter(room -> {
-                    if(ObjectUtils.isEmpty(location)) {
-                        return true;
-                    }
-                    return room.getAddress().contains(location);
-                }).filter(room -> {
-                    if(ObjectUtils.isEmpty(currency)) {
-                         return true;
-                    }
-                    return true; // TODO: currency 전환 방법 고민 필요
-                }).filter(room -> {
-                    if(ObjectUtils.isEmpty(priceFrom)) {
-                        return true;
-                    }
-                    return room.getPricePerNight() >= priceFrom;
-                }).filter(room -> {
-                    if(ObjectUtils.isEmpty(priceTo)) {
-                        return true;
-                    }
-                    return room.getPricePerNight() <= priceTo;
-                })
+                .filter(room -> ObjectUtils.isEmpty(guests) || room.getMaxNumberOfGuests() <= guests)
+                .filter(room -> ObjectUtils.isEmpty(startDate) || true) // TODO: reservation 기능 구현 후 예약 가능 일자 필터링 예정
+                .filter(room -> ObjectUtils.isEmpty(endDate) || true) // TODO: reservation 기능 구현 후 예약 가능 일자 필터링 예정
+                .filter(room -> ObjectUtils.isEmpty(location) || room.getAddress().contains(location))
+                .filter(room -> ObjectUtils.isEmpty(currency) || true) // TODO: currency 전환 방법 고민 필요
+                .filter(room -> ObjectUtils.isEmpty(priceFrom) || room.getPricePerNight() >= priceFrom)
+                .filter(room -> ObjectUtils.isEmpty(priceTo) || room.getPricePerNight() <= priceTo)
                 .collect(Collectors.toList());
     }
 

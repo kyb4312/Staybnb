@@ -1,7 +1,5 @@
 package com.staybnb.rooms.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.staybnb.rooms.domain.vo.*;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.RoomSearchCondition;
@@ -34,8 +32,6 @@ class RoomServiceTest {
 
     @Captor
     ArgumentCaptor<Room> roomCaptor;
-
-    ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     @DisplayName("save(): 숙소 등록 시 id가 포함된 객체 반환")
@@ -179,7 +175,7 @@ class RoomServiceTest {
 
     @Test
     @DisplayName("update(): 기본 숙박 가격 정보 수정")
-    void update() throws JsonProcessingException {
+    void update() {
         // given
         Address address = Address.builder()
                 .country("United States")
@@ -216,11 +212,21 @@ class RoomServiceTest {
                 .pricePerNight(800_000)
                 .build();
 
-        Room expected = objectMapper.readValue(
-                objectMapper.writeValueAsString(room),
-                Room.class
-        );
-        expected.update(updateInfo);
+        Room expected = Room.builder()
+                .id(roomId)
+                .hostId(1L)
+                .placeType(PlaceType.HOUSE)
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(updateInfo.getPricePerNight()) // updated
+                .currency(Currency.KRW)
+                .build();
 
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 

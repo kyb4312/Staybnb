@@ -28,7 +28,10 @@ public class RoomService {
     }
 
     public Room update(long id, RoomUpdateInfo roomUpdateInfo) {
-        return roomRepository.update(id, roomUpdateInfo);
+        Room room = roomRepository.findById(id).orElseThrow();
+        room.update(roomUpdateInfo);
+
+        return roomRepository.update(id, room);
     }
 
     public void delete(long id) {

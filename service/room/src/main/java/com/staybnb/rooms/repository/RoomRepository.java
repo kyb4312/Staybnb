@@ -26,33 +26,8 @@ public class RoomRepository{
         return room;
     }
 
-    public Room update(long id, RoomUpdateInfo roomUpdateInfo) {
-        Room room = findById(id).orElseThrow();
-        if(roomUpdateInfo.getMaxNumberOfGuests() != null) {
-            room.setMaxNumberOfGuests(roomUpdateInfo.getMaxNumberOfGuests());
-        }
-        if(roomUpdateInfo.getBedrooms() != null) {
-            room.setBedrooms(roomUpdateInfo.getBedrooms());
-        }
-        if(roomUpdateInfo.getBeds() != null) {
-            room.setBeds(roomUpdateInfo.getBeds());
-        }
-        if(roomUpdateInfo.getAmenities() != null) {
-            room.setAmenities(roomUpdateInfo.getAmenities());
-        }
-        if(roomUpdateInfo.getTitle() != null) {
-            room.setTitle(roomUpdateInfo.getTitle());
-        }
-        if(roomUpdateInfo.getDescription() != null) {
-            room.setDescription(roomUpdateInfo.getDescription());
-        }
-        if(roomUpdateInfo.getPricePerNight() != null) {
-            room.setPricePerNight(roomUpdateInfo.getPricePerNight());
-        }
-        if(roomUpdateInfo.getCurrency() != null) {
-            room.setCurrency(roomUpdateInfo.getCurrency());
-        }
-
+    public Room update(long id, Room room) {
+        storage.put(id, room);
         return room;
     }
 

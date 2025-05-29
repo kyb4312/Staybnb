@@ -1,8 +1,8 @@
 package com.staybnb.rooms.dto.response;
 
-import com.staybnb.domain.Address;
-import com.staybnb.domain.Amenity;
-import com.staybnb.domain.Room;
+import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.vo.Amenity;
+import com.staybnb.rooms.domain.Room;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -39,6 +39,7 @@ public class RoomResponse {
                 .hostId(room.getHostId())
                 .placeType(room.getPlaceType().toString())
                 .roomType(room.getRoomType().toString())
+                .address(room.getAddress())
                 .maxNumberOfGuests(room.getMaxNumberOfGuests())
                 .bedrooms(room.getBedrooms())
                 .beds(room.getBeds())

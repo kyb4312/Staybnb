@@ -1,8 +1,8 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.domain.Amenity;
-import com.staybnb.domain.Currency;
-import com.staybnb.domain.RoomUpdateInfo;
+import com.staybnb.rooms.domain.vo.Amenity;
+import com.staybnb.rooms.domain.vo.Currency;
+import com.staybnb.rooms.dto.RoomUpdateInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;

@@ -1,14 +1,17 @@
-package com.staybnb.service;
+package com.staybnb.rooms.service;
 
-import com.staybnb.domain.Room;
-import com.staybnb.domain.RoomSearchCondition;
-import com.staybnb.domain.RoomUpdateInfo;
-import com.staybnb.repository.RoomRepository;
+import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.dto.RoomSearchCondition;
+import com.staybnb.rooms.dto.RoomUpdateInfo;
+import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomService {
@@ -28,10 +31,16 @@ public class RoomService {
     }
 
     public Room update(long id, RoomUpdateInfo roomUpdateInfo) {
-        return roomRepository.update(id, roomUpdateInfo);
+        Room room = roomRepository.findById(id).orElseThrow();
+        room.update(roomUpdateInfo);
+
+        return roomRepository.update(id, room);
     }
 
     public void delete(long id) {
-        roomRepository.delete(id);
+        Room room = roomRepository.findById(id).orElseThrow();
+        room.delete(LocalDateTime.now());
+
+        roomRepository.delete(room);
     }
 }

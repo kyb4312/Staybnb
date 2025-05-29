@@ -1,5 +1,6 @@
-package com.staybnb.domain;
+package com.staybnb.rooms.dto;
 
+import com.staybnb.rooms.domain.vo.Currency;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;

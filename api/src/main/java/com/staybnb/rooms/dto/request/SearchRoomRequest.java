@@ -1,7 +1,7 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.domain.Currency;
-import com.staybnb.domain.RoomSearchCondition;
+import com.staybnb.rooms.domain.vo.Currency;
+import com.staybnb.rooms.dto.RoomSearchCondition;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;

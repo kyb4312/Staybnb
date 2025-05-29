@@ -43,7 +43,7 @@ public class Room {
         if(updateInfo.getBeds() != null) {
             this.beds = updateInfo.getBeds();
         }
-        if (updateInfo.getAmenities() != null) {
+        if (updateInfo.getAmenities() != null && !updateInfo.getAmenities().isEmpty()) {
             this.amenities = updateInfo.getAmenities();
         }
         if (updateInfo.getTitle() != null) {

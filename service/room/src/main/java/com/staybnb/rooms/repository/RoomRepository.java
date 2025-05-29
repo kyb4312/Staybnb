@@ -15,19 +15,17 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Repository
-public class MemoryRoomRepository implements RoomRepository {
+public class RoomRepository{
 
     private static final Map<Long, Room> storage = new ConcurrentHashMap<>();
     private static final AtomicLong sequence = new AtomicLong(1);
 
-    @Override
     public Room save(Room room) {
         room.setId(sequence.getAndIncrement());
         storage.put(room.getId(), room);
         return room;
     }
 
-    @Override
     public Room update(long id, RoomUpdateInfo roomUpdateInfo) {
         Room room = findById(id).orElseThrow();
         if(roomUpdateInfo.getMaxNumberOfGuests() != null) {
@@ -58,12 +56,10 @@ public class MemoryRoomRepository implements RoomRepository {
         return room;
     }
 
-    @Override
     public Optional<Room> findById(long id) {
         return Optional.ofNullable(storage.get(id));
     }
 
-    @Override
     public List<Room> findAll(RoomSearchCondition roomSearchCondition) {
         Integer guests = roomSearchCondition.getNumberOfGuests();
         LocalDate startDate = roomSearchCondition.getStartDate();
@@ -85,7 +81,6 @@ public class MemoryRoomRepository implements RoomRepository {
                 .collect(Collectors.toList());
     }
 
-    @Override
     public void delete(long id) {
         Room room = findById(id).orElseThrow();
         room.delete(LocalDateTime.now());

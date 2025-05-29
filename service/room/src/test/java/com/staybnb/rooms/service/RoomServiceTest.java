@@ -5,6 +5,7 @@ import com.staybnb.rooms.repository.RoomRepository;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.RoomSearchCondition;
 import com.staybnb.rooms.dto.RoomUpdateInfo;
+import com.staybnb.rooms.repository.RoomRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

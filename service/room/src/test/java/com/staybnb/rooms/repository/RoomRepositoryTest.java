@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class RoomRepositoryTest {
 
-    private final RoomRepository roomRepository = new MemoryRoomRepository();
+    private final RoomRepository roomRepository = new RoomRepository();
 
     @Test
     void crudTest() {

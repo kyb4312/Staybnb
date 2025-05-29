@@ -39,6 +39,7 @@ public class RoomResponse {
                 .hostId(room.getHostId())
                 .placeType(room.getPlaceType().toString())
                 .roomType(room.getRoomType().toString())
+                .address(room.getAddress())
                 .maxNumberOfGuests(room.getMaxNumberOfGuests())
                 .bedrooms(room.getBedrooms())
                 .beds(room.getBeds())

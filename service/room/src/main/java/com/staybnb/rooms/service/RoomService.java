@@ -7,6 +7,7 @@ import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,6 +36,9 @@ public class RoomService {
     }
 
     public void delete(long id) {
-        roomRepository.delete(id);
+        Room room = roomRepository.findById(id).orElseThrow();
+        room.delete(LocalDateTime.now());
+
+        roomRepository.delete(room);
     }
 }

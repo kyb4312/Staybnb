@@ -3,12 +3,10 @@ package com.staybnb.rooms.repository;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.RoomSearchCondition;
-import com.staybnb.rooms.dto.RoomUpdateInfo;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -56,8 +54,7 @@ public class RoomRepository{
                 .collect(Collectors.toList());
     }
 
-    public void delete(long id) {
-        Room room = findById(id).orElseThrow();
-        room.delete(LocalDateTime.now());
+    public void delete(Room room) {
+        storage.put(room.getId(), room);
     }
 }

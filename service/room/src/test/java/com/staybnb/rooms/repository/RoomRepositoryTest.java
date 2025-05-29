@@ -6,6 +6,7 @@ import com.staybnb.rooms.dto.RoomSearchCondition;
 import com.staybnb.rooms.dto.RoomUpdateInfo;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +79,8 @@ class RoomRepositoryTest {
                 .pricePerNight(800_000)
                 .build();
 
-        Room roomUpdated = roomRepository.update(roomId, updateInfo);
+        room.update(updateInfo);
+        Room roomUpdated = roomRepository.update(roomId, room);
 
         assertThat(roomUpdated.getId()).isEqualTo(roomId);
         assertThat(roomUpdated.getMaxNumberOfGuests()).isEqualTo(updateInfo.getMaxNumberOfGuests());
@@ -91,7 +93,9 @@ class RoomRepositoryTest {
         assertThat(roomDeleted).isNotNull();
         assertThat(roomDeleted.isDeleted()).isFalse();
 
-        roomRepository.delete(roomId);
+        roomDeleted.delete(LocalDateTime.now());
+
+        roomRepository.delete(roomDeleted);
 
         roomDeleted = roomRepository.findById(roomId).orElse(null);
         assertThat(roomDeleted).isNotNull();

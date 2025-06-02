@@ -69,35 +69,4 @@ public class Room {
 
     private LocalDateTime deletedAt;
 
-    public void update(RoomUpdateInfo updateInfo) {
-        if(updateInfo.getMaxNumberOfGuests() != null) {
-            this.maxNumberOfGuests = updateInfo.getMaxNumberOfGuests();
-        }
-        if(updateInfo.getBedrooms() != null) {
-            this.bedrooms = updateInfo.getBedrooms();
-        }
-        if(updateInfo.getBeds() != null) {
-            this.beds = updateInfo.getBeds();
-        }
-        if (updateInfo.getAmenities() != null && !updateInfo.getAmenities().isEmpty()) {
-            this.amenities = updateInfo.getAmenities();
-        }
-        if (updateInfo.getTitle() != null) {
-            this.title = updateInfo.getTitle();
-        }
-        if (updateInfo.getDescription() != null) {
-            this.description = updateInfo.getDescription();
-        }
-        if (updateInfo.getPricePerNight() != null) {
-            this.pricePerNight = updateInfo.getPricePerNight();
-        }
-        if (updateInfo.getCurrency() != null) {
-            this.currency = updateInfo.getCurrency();
-        }
-    }
-
-    public void delete(LocalDateTime deletedAt) {
-        this.isDeleted = true;
-        this.deletedAt = deletedAt;
-    }
 }

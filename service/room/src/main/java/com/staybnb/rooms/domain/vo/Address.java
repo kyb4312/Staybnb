@@ -15,11 +15,4 @@ public class Address {
     String city;
     String street;
     String flat;
-
-    public boolean contains(String str) {
-        return country.contains(str)
-                || province.contains(str)
-                || city.contains(str)
-                || street.contains(str);
-    }
 }

@@ -6,8 +6,6 @@ rootProject.name = 'staybnb'
 
 include 'api'
 include 'common'
-include 'service:user'
-include 'service:room'
-include 'service:reservation'
+include 'core'
 
 includeBuild 'build-logic'

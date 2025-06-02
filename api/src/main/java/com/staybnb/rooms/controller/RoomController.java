@@ -47,8 +47,8 @@ public class RoomController {
                 .buildAndExpand(room.getId())
                 .toUri();
 
-        log.info("Room created: {}", room);
-        log.info("fromDomain: {}", RoomResponse.fromDomain(room));
+        log.debug("Room created: {}", room);
+        log.debug("fromDomain: {}", RoomResponse.fromDomain(room));
 
         return ResponseEntity.created(location).body(RoomResponse.fromDomain(room));
     }
@@ -57,8 +57,8 @@ public class RoomController {
     public RoomResponse updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
         Room room = roomService.update(roomId, updateRoomRequest.toCommand());
 
-        log.info("Room updated: {}", room);
-        log.info("fromDomain: {}", RoomResponse.fromDomain(room));
+        log.debug("Room updated: {}", room);
+        log.debug("fromDomain: {}", RoomResponse.fromDomain(room));
 
         return RoomResponse.fromDomain(room);
     }

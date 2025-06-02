@@ -1,12 +1,13 @@
 package com.staybnb.rooms.domain;
 
 import com.staybnb.rooms.domain.vo.*;
-import com.staybnb.rooms.dto.RoomUpdateInfo;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
+@Entity
 @Getter
 @Setter
 @Builder
@@ -14,23 +15,58 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Room {
+
     @Setter
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long hostId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "host_id", nullable = false)
+    private User host;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "place_type_id", nullable = false)
     private PlaceType placeType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private RoomType roomType;
+
+    @Embedded
     private Address address;
+
+    @Column(nullable = false)
     private Integer maxNumberOfGuests;
+
+    @Column(nullable = false)
     private Integer bedrooms;
+
+    @Column(nullable = false)
     private Integer beds;
-    private List<Amenity> amenities;
+
+    @ManyToMany
+    @JoinTable(
+            name = "room_amenity",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "amenity_id")
+    )
+    private Set<Amenity> amenities;
+
+    @Column(length = 100, nullable = false)
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(nullable = false)
     private Integer pricePerNight;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "currency_code", nullable = false)
     private Currency currency;
 
     private boolean isDeleted;
+
     private LocalDateTime deletedAt;
 
     public void update(RoomUpdateInfo updateInfo) {

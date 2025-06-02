@@ -1,6 +1,5 @@
 package com.staybnb.rooms.dto;
 
-import com.staybnb.rooms.domain.vo.Currency;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -10,12 +9,12 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @ToString
-public class RoomSearchCondition {
+public class SearchRoomCommand {
     Integer numberOfGuests;
     LocalDate startDate;
     LocalDate endDate;
     String location;
-    Currency currency;
+    String currency;
     Integer priceFrom;
     Integer priceTo;
 }

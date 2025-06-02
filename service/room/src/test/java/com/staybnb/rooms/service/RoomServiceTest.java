@@ -1,9 +1,15 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.rooms.domain.vo.*;
+import com.staybnb.rooms.domain.Amenity;
+import com.staybnb.rooms.domain.Currency;
+import com.staybnb.rooms.domain.PlaceType;
+import com.staybnb.rooms.domain.User;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.dto.RoomSearchCondition;
-import com.staybnb.rooms.dto.RoomUpdateInfo;
+import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.vo.RoomType;
+import com.staybnb.rooms.dto.CreateRoomCommand;
+import com.staybnb.rooms.dto.SearchRoomCommand;
+import com.staybnb.rooms.dto.UpdateRoomCommand;
 import com.staybnb.rooms.repository.RoomRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,9 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -30,6 +34,18 @@ class RoomServiceTest {
     @InjectMocks
     RoomService roomService;
 
+    @Mock
+    UserService userService;
+
+    @Mock
+    PlaceTypeService placeTypeService;
+
+    @Mock
+    AmenityService amenityService;
+
+    @Mock
+    CurrencyService currencyService;
+
     @Captor
     ArgumentCaptor<Room> roomCaptor;
 
@@ -37,6 +53,11 @@ class RoomServiceTest {
     @DisplayName("save(): 숙소 등록 시 id가 포함된 객체 반환")
     void save() {
         // given
+        Long hostId = 1L;
+        String placeType = "house";
+        String currency = "KRW";
+        Set<String> amenities = Set.of("wifi", "tv");
+
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -44,16 +65,10 @@ class RoomServiceTest {
                 .street("610 W Magnolia Ave")
                 .build();
 
-        List<Amenity> amenities = new ArrayList<>();
-        amenities.add(Amenity.WIFI);
-        amenities.add(Amenity.KITCHEN);
-        amenities.add(Amenity.AIR_CONDITIONER);
-        amenities.add(Amenity.TV);
-
-        Room room = Room.builder()
-                .hostId(1L)
-                .placeType(PlaceType.HOUSE)
-                .roomType(RoomType.ENTIRE_PLACE)
+        CreateRoomCommand room = CreateRoomCommand.builder()
+                .hostId(hostId)
+                .placeType(placeType)
+                .roomType("ENTIRE_PLACE")
                 .address(address)
                 .maxNumberOfGuests(2)
                 .bedrooms(1)
@@ -62,21 +77,37 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .pricePerNight(700_000)
-                .currency(Currency.KRW)
+                .currency(currency)
                 .build();
 
         // when
         roomService.save(room);
 
         // then
-        verify(roomRepository, times(1)).save(room);
+        verify(userService, times(1)).getById(hostId);
+        verify(placeTypeService, times(1)).getByName(placeType);
+        verify(amenityService, times(2)).getByName(anyString());
+        verify(currencyService, times(1)).getByCode(currency);
+        verify(roomRepository, times(1)).save(any(Room.class));
 
         verify(roomRepository).save(roomCaptor.capture());
         Room savedRoom = roomCaptor.getValue();
 
+        Room expected = Room.builder()
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .build();
+
         assertThat(savedRoom)
                 .usingRecursiveComparison()
-                .isEqualTo(room);
+                .ignoringFields("id", "host", "placeType", "amenities", "currency")
+                .isEqualTo(expected);
     }
 
     @Test
@@ -85,6 +116,12 @@ class RoomServiceTest {
         // given
         long roomId = 1L;
 
+        User user = new User();
+        user.setId(1L);
+
+        PlaceType placeType = new PlaceType();
+        placeType.setId(1);
+
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -92,16 +129,19 @@ class RoomServiceTest {
                 .street("610 W Magnolia Ave")
                 .build();
 
-        List<Amenity> amenities = new ArrayList<>();
-        amenities.add(Amenity.WIFI);
-        amenities.add(Amenity.KITCHEN);
-        amenities.add(Amenity.AIR_CONDITIONER);
-        amenities.add(Amenity.TV);
+        Amenity amenity = new Amenity();
+        amenity.setId(1);
+        Amenity amenity2 = new Amenity();
+        amenity.setId(2);
+        Set<Amenity> amenities = Set.of(amenity, amenity2);
+
+        Currency currency = new Currency();
+        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
-                .hostId(1L)
-                .placeType(PlaceType.HOUSE)
+                .host(user)
+                .placeType(placeType)
                 .roomType(RoomType.ENTIRE_PLACE)
                 .address(address)
                 .maxNumberOfGuests(2)
@@ -111,7 +151,7 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .pricePerNight(700_000)
-                .currency(Currency.KRW)
+                .currency(currency)
                 .build();
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
@@ -131,6 +171,14 @@ class RoomServiceTest {
     @DisplayName("finaAll(): 최대 숙박 인원으로 숙소 검색")
     void findAll() {
         // given
+        long roomId = 1L;
+
+        User user = new User();
+        user.setId(1L);
+
+        PlaceType placeType = new PlaceType();
+        placeType.setId(1);
+
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -138,16 +186,19 @@ class RoomServiceTest {
                 .street("610 W Magnolia Ave")
                 .build();
 
-        List<Amenity> amenities = new ArrayList<>();
-        amenities.add(Amenity.WIFI);
-        amenities.add(Amenity.KITCHEN);
-        amenities.add(Amenity.AIR_CONDITIONER);
-        amenities.add(Amenity.TV);
+        Amenity amenity = new Amenity();
+        amenity.setId(1);
+        Amenity amenity2 = new Amenity();
+        amenity.setId(2);
+        Set<Amenity> amenities = Set.of(amenity, amenity2);
+
+        Currency currency = new Currency();
+        currency.setCode("KRW");
 
         Room room = Room.builder()
-                .id(1L)
-                .hostId(1L)
-                .placeType(PlaceType.HOUSE)
+                .id(roomId)
+                .host(user)
+                .placeType(placeType)
                 .roomType(RoomType.ENTIRE_PLACE)
                 .address(address)
                 .maxNumberOfGuests(2)
@@ -157,11 +208,10 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .pricePerNight(700_000)
-                .currency(Currency.KRW)
+                .currency(currency)
                 .build();
 
-        // 최대 숙박 인원에 따른 검색
-        RoomSearchCondition searchCondition = RoomSearchCondition.builder().numberOfGuests(2).build();
+        SearchRoomCommand searchCondition = SearchRoomCommand.builder().numberOfGuests(2).build();
 
         when(roomRepository.findAll(searchCondition)).thenReturn(List.of(room));
 
@@ -169,7 +219,7 @@ class RoomServiceTest {
         List<Room> rooms = roomService.findAll(searchCondition);
 
         // then
-        verify(roomRepository, times(1)).findAll(any(RoomSearchCondition.class));
+        verify(roomRepository, times(1)).findAll(any(SearchRoomCommand.class));
         assertThat(rooms.size()).isEqualTo(1);
     }
 
@@ -177,6 +227,14 @@ class RoomServiceTest {
     @DisplayName("update(): 기본 숙박 가격 정보 수정")
     void update() {
         // given
+        long roomId = 1L;
+
+        User user = new User();
+        user.setId(1L);
+
+        PlaceType placeType = new PlaceType();
+        placeType.setId(1);
+
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -184,18 +242,19 @@ class RoomServiceTest {
                 .street("610 W Magnolia Ave")
                 .build();
 
-        List<Amenity> amenities = new ArrayList<>();
-        amenities.add(Amenity.WIFI);
-        amenities.add(Amenity.KITCHEN);
-        amenities.add(Amenity.AIR_CONDITIONER);
-        amenities.add(Amenity.TV);
+        Amenity amenity = new Amenity();
+        amenity.setId(1);
+        Amenity amenity2 = new Amenity();
+        amenity.setId(2);
+        Set<Amenity> amenities = Set.of(amenity, amenity2);
 
-        long roomId = 1L;
+        Currency currency = new Currency();
+        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
-                .hostId(1L)
-                .placeType(PlaceType.HOUSE)
+                .host(user)
+                .placeType(placeType)
                 .roomType(RoomType.ENTIRE_PLACE)
                 .address(address)
                 .maxNumberOfGuests(2)
@@ -205,17 +264,17 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .pricePerNight(700_000)
-                .currency(Currency.KRW)
+                .currency(currency)
                 .build();
 
-        RoomUpdateInfo updateInfo = RoomUpdateInfo.builder()
+        UpdateRoomCommand updateInfo = UpdateRoomCommand.builder()
                 .pricePerNight(800_000)
                 .build();
 
         Room expected = Room.builder()
                 .id(roomId)
-                .hostId(1L)
-                .placeType(PlaceType.HOUSE)
+                .host(user)
+                .placeType(placeType)
                 .roomType(RoomType.ENTIRE_PLACE)
                 .address(address)
                 .maxNumberOfGuests(2)
@@ -225,19 +284,16 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .pricePerNight(updateInfo.getPricePerNight()) // updated
-                .currency(Currency.KRW)
+                .currency(currency)
                 .build();
 
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 
         // when
-        roomService.update(room.getId(), updateInfo);
+        Room updatedRoom = roomService.update(room.getId(), updateInfo);
 
         // then
-        verify(roomRepository, times(1)).update(room.getId(), room);
-
-        verify(roomRepository).update(eq(room.getId()), roomCaptor.capture());
-        Room updatedRoom = roomCaptor.getValue();
+        verify(roomRepository, times(1)).findById(room.getId());
 
         assertThat(updatedRoom)
                 .usingRecursiveComparison()
@@ -248,6 +304,14 @@ class RoomServiceTest {
     @DisplayName("delete(): 숙소 삭제")
     void delete() {
         // given
+        long roomId = 1L;
+
+        User user = new User();
+        user.setId(1L);
+
+        PlaceType placeType = new PlaceType();
+        placeType.setId(1);
+
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -255,18 +319,19 @@ class RoomServiceTest {
                 .street("610 W Magnolia Ave")
                 .build();
 
-        List<Amenity> amenities = new ArrayList<>();
-        amenities.add(Amenity.WIFI);
-        amenities.add(Amenity.KITCHEN);
-        amenities.add(Amenity.AIR_CONDITIONER);
-        amenities.add(Amenity.TV);
+        Amenity amenity = new Amenity();
+        amenity.setId(1);
+        Amenity amenity2 = new Amenity();
+        amenity.setId(2);
+        Set<Amenity> amenities = Set.of(amenity, amenity2);
 
-        long roomId = 1L;
+        Currency currency = new Currency();
+        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
-                .hostId(1L)
-                .placeType(PlaceType.HOUSE)
+                .host(user)
+                .placeType(placeType)
                 .roomType(RoomType.ENTIRE_PLACE)
                 .address(address)
                 .maxNumberOfGuests(2)
@@ -276,7 +341,7 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .pricePerNight(700_000)
-                .currency(Currency.KRW)
+                .currency(currency)
                 .build();
 
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
@@ -285,7 +350,7 @@ class RoomServiceTest {
         roomService.delete(roomId);
 
         // then
-        verify(roomRepository, times(1)).delete(room);
+        verify(roomRepository, times(1)).findById(room.getId());
         assertThat(room.isDeleted()).isTrue();
         assertThat(room.getDeletedAt()).isNotNull();
     }

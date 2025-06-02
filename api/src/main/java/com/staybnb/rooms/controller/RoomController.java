@@ -1,20 +1,23 @@
 package com.staybnb.rooms.controller;
 
-import com.staybnb.domain.Room;
+import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
 import com.staybnb.rooms.dto.request.SearchRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
-import com.staybnb.service.RoomService;
+import com.staybnb.rooms.service.RoomService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/rooms")
 @RequiredArgsConstructor
@@ -23,21 +26,17 @@ public class RoomController {
     private final RoomService roomService;
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<RoomResponse> getRoom(@PathVariable long roomId) {
+    public RoomResponse getRoom(@PathVariable long roomId) {
         Room room = roomService.findById(roomId);
-        return ResponseEntity.ok(RoomResponse.fromDomain(room));
+        return RoomResponse.fromDomain(room);
     }
 
     @GetMapping
-    public ResponseEntity<List<RoomResponse>> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
-        List<Room> rooms = roomService.findAll(searchRoomRequest.toDomain());
-        List<RoomResponse> roomResponses = new ArrayList<>();
-
-        for (Room room : rooms) {
-            roomResponses.add(RoomResponse.fromDomain(room));
-        }
-
-        return ResponseEntity.ok(roomResponses);
+    public List<RoomResponse> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
+        return roomService.findAll(searchRoomRequest.toDomain())
+                .stream()
+                .map(RoomResponse::fromDomain)
+                .collect(Collectors.toList());
     }
 
     @PostMapping
@@ -48,18 +47,25 @@ public class RoomController {
                 .buildAndExpand(room.getId())
                 .toUri();
 
+        log.info("Room created: {}", room);
+        log.info("fromDomain: {}", RoomResponse.fromDomain(room));
+
         return ResponseEntity.created(location).body(RoomResponse.fromDomain(room));
     }
 
     @PatchMapping("/{roomId}")
-    public ResponseEntity<RoomResponse> updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
+    public RoomResponse updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
         Room room = roomService.update(roomId, updateRoomRequest.toDomain());
-        return ResponseEntity.ok(RoomResponse.fromDomain(room));
+
+        log.info("Room updated: {}", room);
+        log.info("fromDomain: {}", RoomResponse.fromDomain(room));
+
+        return RoomResponse.fromDomain(room);
     }
 
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<Void> deleteRoom(@PathVariable long roomId) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRoom(@PathVariable long roomId) {
         roomService.delete(roomId);
-        return ResponseEntity.noContent().build();
     }
 }

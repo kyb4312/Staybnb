@@ -1,15 +1,19 @@
-package com.staybnb.service;
+package com.staybnb.rooms.service;
 
-import com.staybnb.domain.*;
-import com.staybnb.repository.RoomRepository;
+import com.staybnb.rooms.domain.vo.*;
+import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.dto.RoomSearchCondition;
+import com.staybnb.rooms.dto.RoomUpdateInfo;
+import com.staybnb.rooms.repository.RoomRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +29,9 @@ class RoomServiceTest {
 
     @InjectMocks
     RoomService roomService;
+
+    @Captor
+    ArgumentCaptor<Room> roomCaptor;
 
     @Test
     @DisplayName("save(): 숙소 등록 시 id가 포함된 객체 반환")
@@ -58,26 +65,26 @@ class RoomServiceTest {
                 .currency(Currency.KRW)
                 .build();
 
-        when(roomRepository.save(room)).thenAnswer(invocation -> {
-            Room requestedRoom = invocation.getArgument(0);
-            requestedRoom.setId(1L);
-            return requestedRoom;
-        });
-
         // when
-        Room savedRoom = roomService.save(room);
+        roomService.save(room);
 
         // then
         verify(roomRepository, times(1)).save(room);
-        assertThat(savedRoom.getId()).isNotNull();
-        assertThat(savedRoom.getTitle()).isEqualTo(room.getTitle());
-        assertThat(savedRoom.getPricePerNight()).isEqualTo(room.getPricePerNight());
+
+        verify(roomRepository).save(roomCaptor.capture());
+        Room savedRoom = roomCaptor.getValue();
+
+        assertThat(savedRoom)
+                .usingRecursiveComparison()
+                .isEqualTo(room);
     }
 
     @Test
     @DisplayName("findById(): 숙소 등록 후, id로 해당 숙소 찾기")
     void findById() {
         // given
+        long roomId = 1L;
+
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -92,6 +99,7 @@ class RoomServiceTest {
         amenities.add(Amenity.TV);
 
         Room room = Room.builder()
+                .id(roomId)
                 .hostId(1L)
                 .placeType(PlaceType.HOUSE)
                 .roomType(RoomType.ENTIRE_PLACE)
@@ -106,24 +114,17 @@ class RoomServiceTest {
                 .currency(Currency.KRW)
                 .build();
 
-        when(roomRepository.save(room)).thenAnswer(invocation -> {
-            Room requestedRoom = invocation.getArgument(0);
-            requestedRoom.setId(1L);
-            return requestedRoom;
-        });
-
-        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
 
         // when
-        Room savedRoom = roomService.save(room);
-        Room foundRoom = roomService.findById(savedRoom.getId());
+        Room foundRoom = roomService.findById(roomId);
 
         // then
-        verify(roomRepository, times(1)).save(room);
-        verify(roomRepository, times(1)).findById(savedRoom.getId());
-        assertThat(foundRoom.getId()).isEqualTo(savedRoom.getId());
-        assertThat(foundRoom.getTitle()).isEqualTo(savedRoom.getTitle());
-        assertThat(foundRoom.getPricePerNight()).isEqualTo(savedRoom.getPricePerNight());
+        verify(roomRepository, times(1)).findById(roomId);
+
+        assertThat(foundRoom)
+                .usingRecursiveComparison()
+                .isEqualTo(room);
     }
 
     @Test
@@ -143,27 +144,13 @@ class RoomServiceTest {
         amenities.add(Amenity.AIR_CONDITIONER);
         amenities.add(Amenity.TV);
 
-        Room room1 = Room.builder()
+        Room room = Room.builder()
+                .id(1L)
                 .hostId(1L)
                 .placeType(PlaceType.HOUSE)
                 .roomType(RoomType.ENTIRE_PLACE)
                 .address(address)
-                .maxNumberOfGuests(2) // 최대 인원 2명
-                .bedrooms(1)
-                .beds(1)
-                .amenities(amenities)
-                .title("Modern building in Kentucky")
-                .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
-                .currency(Currency.KRW)
-                .build();
-
-        Room room2 = Room.builder()
-                .hostId(1L)
-                .placeType(PlaceType.HOUSE)
-                .roomType(RoomType.ENTIRE_PLACE)
-                .address(address)
-                .maxNumberOfGuests(4) // 최대 인원 4명
+                .maxNumberOfGuests(2)
                 .bedrooms(1)
                 .beds(1)
                 .amenities(amenities)
@@ -174,24 +161,16 @@ class RoomServiceTest {
                 .build();
 
         // 최대 숙박 인원에 따른 검색
-        RoomSearchCondition searchCondition1 = RoomSearchCondition.builder().numberOfGuests(2).build();
-        RoomSearchCondition searchCondition2 = RoomSearchCondition.builder().numberOfGuests(4).build();
-        RoomSearchCondition searchCondition3 = RoomSearchCondition.builder().numberOfGuests(5).build();
+        RoomSearchCondition searchCondition = RoomSearchCondition.builder().numberOfGuests(2).build();
 
-        when(roomRepository.findAll(searchCondition1)).thenReturn(List.of(room1, room2));
-        when(roomRepository.findAll(searchCondition2)).thenReturn(List.of(room2));
-        when(roomRepository.findAll(searchCondition3)).thenReturn(List.of());
+        when(roomRepository.findAll(searchCondition)).thenReturn(List.of(room));
 
         // when
-        List<Room> rooms1 = roomService.findAll(searchCondition1);
-        List<Room> rooms2 = roomService.findAll(searchCondition2);
-        List<Room> rooms3 = roomService.findAll(searchCondition3);
+        List<Room> rooms = roomService.findAll(searchCondition);
 
         // then
-        verify(roomRepository, times(3)).findAll(any(RoomSearchCondition.class));
-        assertThat(rooms1.size()).isEqualTo(2);
-        assertThat(rooms2.size()).isEqualTo(1);
-        assertThat(rooms3.size()).isEqualTo(0);
+        verify(roomRepository, times(1)).findAll(any(RoomSearchCondition.class));
+        assertThat(rooms.size()).isEqualTo(1);
     }
 
     @Test
@@ -233,19 +212,36 @@ class RoomServiceTest {
                 .pricePerNight(800_000)
                 .build();
 
-        when(roomRepository.update(room.getId(), updateInfo)).thenAnswer(invocation -> {
-            room.updatePrice(updateInfo.getPricePerNight());
-            return room;
-        });
+        Room expected = Room.builder()
+                .id(roomId)
+                .hostId(1L)
+                .placeType(PlaceType.HOUSE)
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(updateInfo.getPricePerNight()) // updated
+                .currency(Currency.KRW)
+                .build();
+
+        when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 
         // when
-        Room updatedRoom = roomService.update(room.getId(), updateInfo);
+        roomService.update(room.getId(), updateInfo);
 
         // then
-        verify(roomRepository, times(1)).update(room.getId(), updateInfo);
-        assertThat(updatedRoom.getId()).isEqualTo(room.getId());
-        assertThat(updatedRoom.getTitle()).isEqualTo(room.getTitle());
-        assertThat(updatedRoom.getPricePerNight()).isEqualTo(room.getPricePerNight());
+        verify(roomRepository, times(1)).update(room.getId(), room);
+
+        verify(roomRepository).update(eq(room.getId()), roomCaptor.capture());
+        Room updatedRoom = roomCaptor.getValue();
+
+        assertThat(updatedRoom)
+                .usingRecursiveComparison()
+                .isEqualTo(expected);
     }
 
     @Test
@@ -283,16 +279,13 @@ class RoomServiceTest {
                 .currency(Currency.KRW)
                 .build();
 
-        doAnswer(invocation -> {
-            room.delete(LocalDateTime.now());
-            return null;
-        }).when(roomRepository).delete(roomId);
+        when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 
         // when
         roomService.delete(roomId);
 
         // then
-        verify(roomRepository, times(1)).delete(roomId);
+        verify(roomRepository, times(1)).delete(room);
         assertThat(room.isDeleted()).isTrue();
         assertThat(room.getDeletedAt()).isNotNull();
     }

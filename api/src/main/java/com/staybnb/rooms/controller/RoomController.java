@@ -33,7 +33,7 @@ public class RoomController {
 
     @GetMapping
     public List<RoomResponse> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
-        return roomService.findAll(searchRoomRequest.toDomain())
+        return roomService.findAll(searchRoomRequest.toCommand())
                 .stream()
                 .map(RoomResponse::fromDomain)
                 .collect(Collectors.toList());
@@ -41,7 +41,7 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<RoomResponse> createRoom(@RequestBody CreateRoomRequest createRoomRequest) {
-        Room room = roomService.save(createRoomRequest.toDomain());
+        Room room = roomService.save(createRoomRequest.toCommand());
         URI location = UriComponentsBuilder
                 .fromPath("/rooms/{roomId}")
                 .buildAndExpand(room.getId())
@@ -55,7 +55,7 @@ public class RoomController {
 
     @PatchMapping("/{roomId}")
     public RoomResponse updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
-        Room room = roomService.update(roomId, updateRoomRequest.toDomain());
+        Room room = roomService.update(roomId, updateRoomRequest.toCommand());
 
         log.info("Room updated: {}", room);
         log.info("fromDomain: {}", RoomResponse.fromDomain(room));

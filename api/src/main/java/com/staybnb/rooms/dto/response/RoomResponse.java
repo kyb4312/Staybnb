@@ -1,14 +1,14 @@
 package com.staybnb.rooms.dto.response;
 
 import com.staybnb.rooms.domain.vo.Address;
-import com.staybnb.rooms.domain.vo.Amenity;
+import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.domain.Room;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -22,32 +22,32 @@ public class RoomResponse {
     private Integer maxNumberOfGuests;
     private Integer bedrooms;
     private Integer beds;
-    private List<String> amenities;
+    private Set<String> amenities;
     private String title;
     private String description;
     private Integer pricePerNight;
     private String currency;
 
     public static RoomResponse fromDomain(Room room) {
-        List<String> amenityList = new ArrayList<>();
+        Set<String> amenitySet = new HashSet<>();
         for(Amenity amenity : room.getAmenities()) {
-            amenityList.add(amenity.toString());
+            amenitySet.add(amenity.getName());
         }
 
         return RoomResponse.builder()
                 .id(room.getId())
-                .hostId(room.getHostId())
-                .placeType(room.getPlaceType().toString())
+                .hostId(room.getHost().getId())
+                .placeType(room.getPlaceType().getName())
                 .roomType(room.getRoomType().toString())
                 .address(room.getAddress())
                 .maxNumberOfGuests(room.getMaxNumberOfGuests())
                 .bedrooms(room.getBedrooms())
                 .beds(room.getBeds())
-                .amenities(amenityList)
+                .amenities(amenitySet)
                 .title(room.getTitle())
                 .description(room.getDescription())
                 .pricePerNight(room.getPricePerNight())
-                .currency(room.getCurrency().toString())
+                .currency(room.getCurrency().getCode())
                 .build();
     }
 }

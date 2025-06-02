@@ -1,7 +1,9 @@
 package com.staybnb.rooms.domain.vo;
 
+import jakarta.persistence.Embeddable;
 import lombok.*;
 
+@Embeddable
 @Getter
 @Builder
 @ToString

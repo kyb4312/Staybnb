@@ -15,6 +15,3 @@ out/
 
 ### mac ###
 .DS_Store
-
-### personal
-application.properties

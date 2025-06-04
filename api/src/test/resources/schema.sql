@@ -64,7 +64,7 @@ CREATE TABLE `room` (
     CONSTRAINT `fk_room_currency_code` FOREIGN KEY (`currency_code`) REFERENCES `currency` (`code`),
     CONSTRAINT `fk_room_host_id` FOREIGN KEY (`host_id`) REFERENCES `user` (`id`),
     CONSTRAINT `fk_room_place_type_id` FOREIGN KEY (`place_type_id`) REFERENCES `place_type` (`id`)
-)
+);
 
 -- room_amenity
 CREATE TABLE `room_amenity` (
@@ -74,5 +74,4 @@ CREATE TABLE `room_amenity` (
     KEY `fk_amenity_id_idx` (`amenity_id`),
     CONSTRAINT `fk_amenity_id` FOREIGN KEY (`amenity_id`) REFERENCES `amenity` (`id`),
     CONSTRAINT `fk_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
-)
-
+);

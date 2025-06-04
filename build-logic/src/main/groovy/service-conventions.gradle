@@ -21,8 +21,10 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mysql'
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'io.rest-assured:json-path'
 }

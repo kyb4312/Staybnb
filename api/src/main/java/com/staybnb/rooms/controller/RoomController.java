@@ -6,6 +6,7 @@ import com.staybnb.rooms.dto.request.SearchRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
 import com.staybnb.rooms.service.RoomService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class RoomController {
     }
 
     @GetMapping
-    public List<RoomResponse> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
+    public List<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest) {
         return roomService.findAll(searchRoomRequest.toCommand())
                 .stream()
                 .map(RoomResponse::fromDomain)
@@ -40,7 +41,7 @@ public class RoomController {
     }
 
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(@RequestBody CreateRoomRequest createRoomRequest) {
+    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) {
         Room room = roomService.save(createRoomRequest.toCommand());
         URI location = UriComponentsBuilder
                 .fromPath("/rooms/{roomId}")
@@ -54,7 +55,7 @@ public class RoomController {
     }
 
     @PatchMapping("/{roomId}")
-    public RoomResponse updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
+    public RoomResponse updateRoom(@PathVariable long roomId, @Valid @RequestBody UpdateRoomRequest updateRoomRequest) {
         Room room = roomService.update(roomId, updateRoomRequest.toCommand());
 
         log.debug("Room updated: {}", room);

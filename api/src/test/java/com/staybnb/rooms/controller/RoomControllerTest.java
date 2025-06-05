@@ -68,7 +68,7 @@ public class RoomControllerTest {
     public void testGetRooms() {
         given().log().all()
                 .port(port)
-                .when().get("/rooms?startDate=2025-05-25&endDate=2025-05-26&currency=KRW") // TODO: null 예외 처리 필요..
+                .when().get("/rooms")
                 .then().log().all()
                 .statusCode(HttpStatus.SC_OK)
                 .contentType(ContentType.JSON);
@@ -266,5 +266,111 @@ public class RoomControllerTest {
                 .when().delete("/rooms/{roomId}", roomId)
                 .then().log().all()
                 .statusCode(HttpStatus.SC_NO_CONTENT);
+    }
+
+    @Test
+    public void testInvalidCreateRoom() {
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Set<String> amenities = new HashSet<>();
+        amenities.add("wifi");
+        amenities.add("kitchen");
+        amenities.add("air conditioner");
+        amenities.add("tv");
+
+        CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
+                .hostId(1L)
+                .placeType(" ") // blank
+                .roomType("ENTIRE_PLACE")
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .currency("KRW")
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRoomRequest)
+                .when().post("/rooms")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    public void testInvalidUpdateRoom() {
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Set<String> amenities = new HashSet<>();
+        amenities.add("wifi");
+        amenities.add("kitchen");
+        amenities.add("air conditioner");
+        amenities.add("tv");
+
+        CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
+                .hostId(1L)
+                .placeType("house")
+                .roomType("ENTIRE_PLACE")
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .currency("KRW")
+                .build();
+
+        long roomId =
+                given().log().all()
+                        .port(port)
+                        .contentType(ContentType.JSON)
+                        .body(createRoomRequest)
+                        .when().post("/rooms")
+                        .then().log().all()
+                        .statusCode(HttpStatus.SC_CREATED)
+                        .extract().as(RoomResponse.class)
+                        .getId();
+
+        UpdateRoomRequest updateRoomRequest = UpdateRoomRequest.builder()
+                .maxNumberOfGuests(4)
+                .title(" ")
+                .pricePerNight(900_000)
+                .currency("KRW")
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(updateRoomRequest)
+                .when().patch("/rooms/{roomId}", roomId)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    public void testInvalidGetRooms() {
+        given().log().all()
+                .port(port)
+                .when().get("/rooms?priceFrom=500000&priceTo=400000")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
+                .contentType(ContentType.JSON);
     }
 }

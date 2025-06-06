@@ -21,6 +21,10 @@ public class AmenityService {
     }
 
     public Amenity getByName(String name) {
-        return amenityCache.getIfPresent(name);
+        Amenity amenity = amenityCache.getIfPresent(name);
+        if (amenity == null) {
+            throw new IllegalArgumentException("Amenity가 유효하지 않습니다.");
+        }
+        return amenity;
     }
 }

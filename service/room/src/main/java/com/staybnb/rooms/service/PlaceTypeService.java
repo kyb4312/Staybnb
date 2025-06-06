@@ -23,6 +23,10 @@ public class PlaceTypeService {
     }
 
     public PlaceType getByName(String name) {
+        PlaceType placeType = placeTypeCache.getIfPresent(name);
+        if (placeType == null) {
+            throw new IllegalArgumentException("PlaceType이 유효하지 않습니다.");
+        }
         return placeTypeCache.getIfPresent(name);
     }
 }

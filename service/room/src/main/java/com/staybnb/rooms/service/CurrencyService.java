@@ -21,6 +21,10 @@ public class CurrencyService {
     }
 
     public Currency getByCode(String code) {
-        return currencyCache.getIfPresent(code);
+        Currency currency = currencyCache.getIfPresent(code);
+        if (currency == null) {
+            throw new IllegalArgumentException("Currency가 유효하지 않습니다.");
+        }
+        return currency;
     }
 }

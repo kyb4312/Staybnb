@@ -24,4 +24,10 @@ public class ExceptionControllerAdvice {
 
         return new ExceptionResponse("ERROR", errorMessage);
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ExceptionResponse("ERROR", e.getMessage());
+    }
 }

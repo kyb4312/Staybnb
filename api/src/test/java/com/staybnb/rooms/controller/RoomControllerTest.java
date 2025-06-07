@@ -8,6 +8,7 @@ import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -49,6 +50,7 @@ public class RoomControllerTest {
     int port;
 
     @Test
+    @DisplayName("GetOne: 정상")
     public void testGetRoom() {
         testCreateRoom();
 
@@ -65,6 +67,7 @@ public class RoomControllerTest {
     }
 
     @Test
+    @DisplayName("GetAll: 정상")
     public void testGetRooms() {
         given().log().all()
                 .port(port)
@@ -75,6 +78,7 @@ public class RoomControllerTest {
     }
 
     @Test
+    @DisplayName("Create: 정상")
     public void testCreateRoom() {
         Address address = Address.builder()
                 .country("United States")
@@ -143,6 +147,7 @@ public class RoomControllerTest {
     }
 
     @Test
+    @DisplayName("Update: 정상")
     public void testUpdateRoom() {
         Address address = Address.builder()
                 .country("United States")
@@ -221,6 +226,7 @@ public class RoomControllerTest {
     }
 
     @Test
+    @DisplayName("Delete: 정상")
     public void testDeleteRoom() {
         Address address = Address.builder()
                 .country("United States")
@@ -269,7 +275,8 @@ public class RoomControllerTest {
     }
 
     @Test
-    public void testInvalidCreateRoom() {
+    @DisplayName("Create: placeType이 공백인 경우")
+    public void testInvalidPlaceTypeCreateRoom() {
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -285,7 +292,7 @@ public class RoomControllerTest {
 
         CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
                 .hostId(1L)
-                .placeType(" ") // blank
+                .placeType(" ") // invalid @NotBlank
                 .roomType("ENTIRE_PLACE")
                 .address(address)
                 .maxNumberOfGuests(2)
@@ -308,7 +315,48 @@ public class RoomControllerTest {
     }
 
     @Test
-    public void testInvalidUpdateRoom() {
+    @DisplayName("Create: Country가 공백인 경우")
+    public void testInvalidCountryCreateRoom() {
+        Address address = Address.builder()
+                .country("house")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Set<String> amenities = new HashSet<>();
+        amenities.add("wifi");
+        amenities.add("kitchen");
+        amenities.add("air conditioner");
+        amenities.add("tv");
+
+        CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
+                .hostId(1L)
+                .placeType(" ") // invalid @NotBlank
+                .roomType("ENTIRE_PLACE")
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .currency("KRW")
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRoomRequest)
+                .when().post("/rooms")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("Update: Title이 공백인 경우")
+    public void testInvalidTitleUpdateRoom() {
         Address address = Address.builder()
                 .country("United States")
                 .province("Kentucky")
@@ -350,7 +398,7 @@ public class RoomControllerTest {
 
         UpdateRoomRequest updateRoomRequest = UpdateRoomRequest.builder()
                 .maxNumberOfGuests(4)
-                .title(" ")
+                .title(" ") // invalid @NotBlank
                 .pricePerNight(900_000)
                 .currency("KRW")
                 .build();
@@ -365,12 +413,186 @@ public class RoomControllerTest {
     }
 
     @Test
-    public void testInvalidGetRooms() {
+    @DisplayName("GetAll: PriceFrom > PriceTo 인 경우")
+    public void testInvalidPriceRangeGetRooms() {
         given().log().all()
                 .port(port)
-                .when().get("/rooms?priceFrom=500000&priceTo=400000")
+                .when().get("/rooms?priceFrom=500000&priceTo=400000") // invalid @ValidPriceRange
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .contentType(ContentType.JSON);
+    }
+
+    @Test
+    @DisplayName("Create: 지원하지 않는 PlaceType인 경우")
+    public void testUnsupportedPlaceTypeCreateRoom() {
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Set<String> amenities = new HashSet<>();
+        amenities.add("wifi");
+        amenities.add("kitchen");
+        amenities.add("air conditioner");
+        amenities.add("tv");
+
+        CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
+                .hostId(1L)
+                .placeType("unsupported") // unsupported PlaceType
+                .roomType("ENTIRE_PLACE")
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .currency("KRW")
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRoomRequest)
+                .when().post("/rooms")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("Create: 지원하지 않는 Amenity인 경우")
+    public void testUnsupportedAmenityCreateRoom() {
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Set<String> amenities = new HashSet<>();
+        amenities.add("wifi");
+        amenities.add("kitchen");
+        amenities.add("air conditioner");
+        amenities.add("unsupported"); // unsupported Amenity
+
+        CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
+                .hostId(1L)
+                .placeType("house")
+                .roomType("ENTIRE_PLACE")
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .currency("KRW")
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRoomRequest)
+                .when().post("/rooms")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("Create: 지원하지 않는 Currency인 경우")
+    public void testUnsupportedCurrencyCreateRoom() {
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Set<String> amenities = new HashSet<>();
+        amenities.add("wifi");
+        amenities.add("kitchen");
+        amenities.add("air conditioner");
+        amenities.add("tv");
+
+        CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
+                .hostId(1L)
+                .placeType("house")
+                .roomType("ENTIRE_PLACE")
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .currency("unsupported") // unsupported Currency
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRoomRequest)
+                .when().post("/rooms")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("Create: 지원하지 않는 RoomType인 경우")
+    public void testUnsupportedRoomTypeCreateRoom() {
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Set<String> amenities = new HashSet<>();
+        amenities.add("wifi");
+        amenities.add("kitchen");
+        amenities.add("air conditioner");
+        amenities.add("tv");
+
+        CreateRoomRequest createRoomRequest = CreateRoomRequest.builder()
+                .hostId(1L)
+                .placeType("house")
+                .roomType("unsupported")
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .pricePerNight(700_000)
+                .currency("KRW")
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRoomRequest)
+                .when().post("/rooms")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("GetOne: 존재하지 않는 숙소 검색")
+    public void testNonExistentRoomIdGetRoom() {
+        testCreateRoom();
+
+        long roomId = -1L;
+        given().log().all()
+                .port(port)
+                .when().get("/rooms/{roomId}", roomId)
+                .then().log().all()
+                .statusCode(400);
     }
 }

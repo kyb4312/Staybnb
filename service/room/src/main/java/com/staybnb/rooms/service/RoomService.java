@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Slf4j
@@ -35,7 +36,7 @@ public class RoomService {
     }
 
     public Room findById(long id) {
-        return roomRepository.findById(id).orElse(null);
+        return roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
     }
 
     public List<Room> findAll(SearchRoomCommand condition) {
@@ -44,7 +45,7 @@ public class RoomService {
 
     @Transactional
     public Room update(long id, UpdateRoomCommand updateInfo) {
-        Room room = roomRepository.findById(id).orElseThrow();
+        Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
         if(updateInfo.getMaxNumberOfGuests() != null) {
             room.setMaxNumberOfGuests(updateInfo.getMaxNumberOfGuests());
         }
@@ -79,7 +80,7 @@ public class RoomService {
 
     @Transactional
     public void delete(long id) {
-        Room room = roomRepository.findById(id).orElseThrow();
+        Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
         room.setDeleted(true);
         room.setDeletedAt(LocalDateTime.now());
     }

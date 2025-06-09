@@ -8,11 +8,12 @@ import com.staybnb.rooms.dto.UpdateRoomCommand;
 import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -36,8 +37,8 @@ public class RoomService {
         return roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
     }
 
-    public List<Room> findAll(SearchRoomCommand condition) {
-        return roomRepository.findAll(condition);
+    public Page<Room> findAll(SearchRoomCommand condition, Pageable pageable) {
+        return roomRepository.findAll(condition, pageable);
     }
 
     @Transactional

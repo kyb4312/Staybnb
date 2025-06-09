@@ -9,14 +9,14 @@ import com.staybnb.rooms.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -33,11 +33,9 @@ public class RoomController {
     }
 
     @GetMapping
-    public List<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest) {
-        return roomService.findAll(searchRoomRequest.toCommand())
-                .stream()
-                .map(RoomResponse::fromDomain)
-                .collect(Collectors.toList());
+    public Page<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
+        return roomService.findAll(searchRoomRequest.toCommand(), pageable)
+                .map(RoomResponse::fromDomain);
     }
 
     @PostMapping

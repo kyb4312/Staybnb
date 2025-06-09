@@ -19,6 +19,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.*;
 
@@ -86,7 +88,7 @@ class RoomServiceTest {
         // then
         verify(userService, times(1)).getById(hostId);
         verify(placeTypeService, times(1)).getByName(placeType);
-        verify(amenityService, times(2)).getByName(anyString());
+        verify(amenityService, times(1)).getAmenitySetByStringSet(amenities);
         verify(currencyService, times(1)).getByCode(currency);
         verify(roomRepository, times(1)).save(any(Room.class));
 
@@ -212,15 +214,15 @@ class RoomServiceTest {
                 .build();
 
         SearchRoomCommand searchCondition = SearchRoomCommand.builder().numberOfGuests(2).build();
-
-        when(roomRepository.findAll(searchCondition)).thenReturn(List.of(room));
+        Page<Room> pageResponse= new PageImpl<>(List.of(room));
+        when(roomRepository.findAll(searchCondition, null)).thenReturn(pageResponse);
 
         // when
-        List<Room> rooms = roomService.findAll(searchCondition);
+        Page<Room> rooms = roomService.findAll(searchCondition, null);
 
         // then
-        verify(roomRepository, times(1)).findAll(any(SearchRoomCommand.class));
-        assertThat(rooms.size()).isEqualTo(1);
+        verify(roomRepository, times(1)).findAll(any(SearchRoomCommand.class), eq(null));
+        assertThat(rooms.getContent().size()).isEqualTo(1);
     }
 
     @Test

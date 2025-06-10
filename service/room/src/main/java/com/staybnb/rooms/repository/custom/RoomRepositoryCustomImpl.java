@@ -5,6 +5,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.SearchRoomCommand;
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -22,8 +25,8 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
     }
 
     @Override
-    public List<Room> findAll(SearchRoomCommand cond) {
-        return query
+    public Page<Room> findAll(SearchRoomCommand cond, Pageable pageable) {
+        List<Room> content = query
                 .select(room)
                 .from(room)
                 .where(
@@ -33,7 +36,23 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
                         minPrice(cond.getPriceFrom()),
                         maxPrice(cond.getPriceTo())
                 )
+                .orderBy(room.id.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
+
+        Long total = query
+                .select(room.count())
+                .from(room)
+                .where(
+                        numberOfGuests(cond.getNumberOfGuests()),
+                        containsLocation(cond.getLocation()),
+                        minPrice(cond.getPriceFrom()),
+                        maxPrice(cond.getPriceTo())
+                )
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
 
     private BooleanExpression numberOfGuests(Integer numberOfGuests) {
@@ -54,14 +73,14 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
     }
 
     private BooleanExpression minPrice(Integer priceFrom) {
-        if(priceFrom != null) {
+        if (priceFrom != null) {
             return room.pricePerNight.goe(priceFrom);
         }
         return null;
     }
 
     private BooleanExpression maxPrice(Integer priceTo) {
-        if(priceTo != null) {
+        if (priceTo != null) {
             return room.pricePerNight.loe(priceTo);
         }
         return null;

@@ -1,6 +1,5 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.CreateRoomCommand;
@@ -9,14 +8,13 @@ import com.staybnb.rooms.dto.UpdateRoomCommand;
 import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -39,8 +37,8 @@ public class RoomService {
         return roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
     }
 
-    public List<Room> findAll(SearchRoomCommand condition) {
-        return roomRepository.findAll(condition);
+    public Page<Room> findAll(SearchRoomCommand condition, Pageable pageable) {
+        return roomRepository.findAll(condition, pageable);
     }
 
     @Transactional
@@ -56,11 +54,7 @@ public class RoomService {
             room.setBeds(updateInfo.getBeds());
         }
         if (updateInfo.getAmenities() != null && !updateInfo.getAmenities().isEmpty()) {
-            Set<Amenity> amenities = new HashSet<>();
-            updateInfo.getAmenities().forEach(amenity -> {
-                amenities.add(amenityService.getByName(amenity));
-            });
-            room.setAmenities(amenities);
+            room.setAmenities(amenityService.getAmenitySetByStringSet(updateInfo.getAmenities()));
         }
         if (updateInfo.getTitle() != null) {
             room.setTitle(updateInfo.getTitle());
@@ -86,12 +80,6 @@ public class RoomService {
     }
 
     private Room commandToEntity(CreateRoomCommand command) {
-
-        Set<Amenity> amenities = new HashSet<>();
-        command.getAmenities().forEach(amenity -> {
-           amenities.add(amenityService.getByName(amenity));
-        });
-
         return Room.builder()
                 .host(userService.getById(command.getHostId()))
                 .placeType(placeTypeService.getByName(command.getPlaceType()))
@@ -100,7 +88,7 @@ public class RoomService {
                 .maxNumberOfGuests(command.getMaxNumberOfGuests())
                 .bedrooms(command.getBedrooms())
                 .beds(command.getBeds())
-                .amenities(amenities)
+                .amenities(amenityService.getAmenitySetByStringSet(command.getAmenities()))
                 .title(command.getTitle())
                 .description(command.getDescription())
                 .pricePerNight(command.getPricePerNight())

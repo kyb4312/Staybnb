@@ -30,7 +30,3 @@ dependencies {
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'io.rest-assured:json-path'
 }
-
-clean {
-    delete file('src/main/generated')
-}

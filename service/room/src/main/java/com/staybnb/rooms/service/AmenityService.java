@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class AmenityService {
@@ -26,5 +29,9 @@ public class AmenityService {
             throw new IllegalArgumentException("Amenity가 유효하지 않습니다.");
         }
         return amenity;
+    }
+
+    public Set<Amenity> getAmenitySetByStringSet(Set<String> amenities) {
+        return amenities.stream().map(this::getByName).collect(Collectors.toSet());
     }
 }

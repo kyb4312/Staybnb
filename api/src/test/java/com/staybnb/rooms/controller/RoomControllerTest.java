@@ -69,6 +69,7 @@ public class RoomControllerTest {
     @Test
     @DisplayName("GetAll: 정상")
     public void testGetRooms() {
+        testCreateRoom();
         given().log().all()
                 .port(port)
                 .when().get("/rooms")

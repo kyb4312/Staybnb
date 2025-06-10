@@ -6,16 +6,17 @@ import com.staybnb.rooms.dto.request.SearchRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
 import com.staybnb.rooms.service.RoomService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -32,15 +33,13 @@ public class RoomController {
     }
 
     @GetMapping
-    public List<RoomResponse> getRooms(@ModelAttribute SearchRoomRequest searchRoomRequest) {
-        return roomService.findAll(searchRoomRequest.toCommand())
-                .stream()
-                .map(RoomResponse::fromDomain)
-                .collect(Collectors.toList());
+    public Page<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
+        return roomService.findAll(searchRoomRequest.toCommand(), pageable)
+                .map(RoomResponse::fromDomain);
     }
 
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(@RequestBody CreateRoomRequest createRoomRequest) {
+    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) {
         Room room = roomService.save(createRoomRequest.toCommand());
         URI location = UriComponentsBuilder
                 .fromPath("/rooms/{roomId}")
@@ -54,7 +53,7 @@ public class RoomController {
     }
 
     @PatchMapping("/{roomId}")
-    public RoomResponse updateRoom(@PathVariable long roomId, @RequestBody UpdateRoomRequest updateRoomRequest) {
+    public RoomResponse updateRoom(@PathVariable long roomId, @Valid @RequestBody UpdateRoomRequest updateRoomRequest) {
         Room room = roomService.update(roomId, updateRoomRequest.toCommand());
 
         log.debug("Room updated: {}", room);

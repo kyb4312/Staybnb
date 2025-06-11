@@ -2,9 +2,10 @@ package com.staybnb.rooms.service;
 
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.RoomType;
-import com.staybnb.rooms.dto.CreateRoomCommand;
-import com.staybnb.rooms.dto.SearchRoomCommand;
-import com.staybnb.rooms.dto.UpdateRoomCommand;
+import com.staybnb.rooms.dto.SearchRoomInfo;
+import com.staybnb.rooms.dto.request.CreateRoomRequest;
+import com.staybnb.rooms.dto.request.SearchRoomRequest;
+import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,44 +30,44 @@ public class RoomService {
     private final CurrencyService currencyService;
 
     @Transactional
-    public Room save(CreateRoomCommand room) {
-        return roomRepository.save(commandToEntity(room));
+    public Room save(CreateRoomRequest request) {
+        return roomRepository.save(toEntity(request));
     }
 
     public Room findById(long id) {
         return roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
     }
 
-    public Page<Room> findAll(SearchRoomCommand condition, Pageable pageable) {
-        return roomRepository.findAll(condition, pageable);
+    public Page<Room> findAll(SearchRoomRequest request, Pageable pageable) {
+        return roomRepository.findAll(toCommand(request), pageable);
     }
 
     @Transactional
-    public Room update(long id, UpdateRoomCommand updateInfo) {
+    public Room update(long id, UpdateRoomRequest request) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
-        if(updateInfo.getMaxNumberOfGuests() != null) {
-            room.setMaxNumberOfGuests(updateInfo.getMaxNumberOfGuests());
+        if(request.getMaxNumberOfGuests() != null) {
+            room.setMaxNumberOfGuests(request.getMaxNumberOfGuests());
         }
-        if(updateInfo.getBedrooms() != null) {
-            room.setBedrooms(updateInfo.getBedrooms());
+        if(request.getBedrooms() != null) {
+            room.setBedrooms(request.getBedrooms());
         }
-        if(updateInfo.getBeds() != null) {
-            room.setBeds(updateInfo.getBeds());
+        if(request.getBeds() != null) {
+            room.setBeds(request.getBeds());
         }
-        if (updateInfo.getAmenities() != null && !updateInfo.getAmenities().isEmpty()) {
-            room.setAmenities(amenityService.getAmenitySetByStringSet(updateInfo.getAmenities()));
+        if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
+            room.setAmenities(amenityService.getAmenitySetByStringSet(request.getAmenities()));
         }
-        if (updateInfo.getTitle() != null) {
-            room.setTitle(updateInfo.getTitle());
+        if (request.getTitle() != null) {
+            room.setTitle(request.getTitle());
         }
-        if (updateInfo.getDescription() != null) {
-            room.setDescription(updateInfo.getDescription());
+        if (request.getDescription() != null) {
+            room.setDescription(request.getDescription());
         }
-        if (updateInfo.getPricePerNight() != null) {
-            room.setPricePerNight(updateInfo.getPricePerNight());
+        if (request.getPricePerNight() != null) {
+            room.setPricePerNight(request.getPricePerNight());
         }
-        if (updateInfo.getCurrency() != null) {
-            room.setCurrency(currencyService.getByCode(updateInfo.getCurrency()));
+        if (request.getCurrency() != null) {
+            room.setCurrency(currencyService.getByCode(request.getCurrency()));
         }
 
         return room;
@@ -79,20 +80,32 @@ public class RoomService {
         room.setDeletedAt(LocalDateTime.now());
     }
 
-    private Room commandToEntity(CreateRoomCommand command) {
+    private Room toEntity(CreateRoomRequest request) {
         return Room.builder()
-                .host(userService.getById(command.getHostId()))
-                .placeType(placeTypeService.getByName(command.getPlaceType()))
-                .roomType(RoomType.valueOf(command.getRoomType()))
-                .address(command.getAddress())
-                .maxNumberOfGuests(command.getMaxNumberOfGuests())
-                .bedrooms(command.getBedrooms())
-                .beds(command.getBeds())
-                .amenities(amenityService.getAmenitySetByStringSet(command.getAmenities()))
-                .title(command.getTitle())
-                .description(command.getDescription())
-                .pricePerNight(command.getPricePerNight())
-                .currency(currencyService.getByCode(command.getCurrency()))
+                .host(userService.getById(request.getHostId()))
+                .placeType(placeTypeService.getByName(request.getPlaceType()))
+                .roomType(RoomType.valueOf(request.getRoomType()))
+                .address(request.getAddress())
+                .maxNumberOfGuests(request.getMaxNumberOfGuests())
+                .bedrooms(request.getBedrooms())
+                .beds(request.getBeds())
+                .amenities(amenityService.getAmenitySetByStringSet(request.getAmenities()))
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .pricePerNight(request.getPricePerNight())
+                .currency(currencyService.getByCode(request.getCurrency()))
+                .build();
+    }
+
+    private SearchRoomInfo toCommand(SearchRoomRequest request) {
+        return SearchRoomInfo.builder()
+                .numberOfGuests(request.getGuests())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .location(request.getLocation())
+                .priceFrom(request.getPriceFrom())
+                .priceTo(request.getPriceTo())
+                .currency(request.getCurrency())
                 .build();
     }
 }

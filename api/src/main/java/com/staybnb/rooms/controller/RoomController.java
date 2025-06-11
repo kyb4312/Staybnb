@@ -34,30 +34,24 @@ public class RoomController {
 
     @GetMapping
     public Page<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
-        return roomService.findAll(searchRoomRequest.toCommand(), pageable)
+        return roomService.findAll(searchRoomRequest, pageable)
                 .map(RoomResponse::fromDomain);
     }
 
     @PostMapping
     public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) {
-        Room room = roomService.save(createRoomRequest.toCommand());
+        Room room = roomService.save(createRoomRequest);
         URI location = UriComponentsBuilder
                 .fromPath("/rooms/{roomId}")
                 .buildAndExpand(room.getId())
                 .toUri();
-
-        log.debug("Room created: {}", room);
-        log.debug("fromDomain: {}", RoomResponse.fromDomain(room));
 
         return ResponseEntity.created(location).body(RoomResponse.fromDomain(room));
     }
 
     @PatchMapping("/{roomId}")
     public RoomResponse updateRoom(@PathVariable long roomId, @Valid @RequestBody UpdateRoomRequest updateRoomRequest) {
-        Room room = roomService.update(roomId, updateRoomRequest.toCommand());
-
-        log.debug("Room updated: {}", room);
-        log.debug("fromDomain: {}", RoomResponse.fromDomain(room));
+        Room room = roomService.update(roomId, updateRoomRequest);
 
         return RoomResponse.fromDomain(room);
     }

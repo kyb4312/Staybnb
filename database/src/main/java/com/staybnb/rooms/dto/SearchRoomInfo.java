@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @ToString
-public class SearchRoomCommand {
+public class SearchRoomInfo {
     Integer numberOfGuests;
     LocalDate startDate;
     LocalDate endDate;

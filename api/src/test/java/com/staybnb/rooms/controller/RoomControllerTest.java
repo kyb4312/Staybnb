@@ -137,7 +137,6 @@ public class RoomControllerTest {
                 .build();
 
         log.info("createRoomRequest: {}", createRoomRequest);
-        log.info("toDomain: {}", createRoomRequest.toCommand());
         log.info("response: {}", response);
 
         Assertions.assertThat(response)

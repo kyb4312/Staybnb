@@ -7,9 +7,10 @@ import com.staybnb.rooms.domain.User;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Address;
 import com.staybnb.rooms.domain.vo.RoomType;
-import com.staybnb.rooms.dto.CreateRoomCommand;
-import com.staybnb.rooms.dto.SearchRoomCommand;
-import com.staybnb.rooms.dto.UpdateRoomCommand;
+import com.staybnb.rooms.dto.SearchRoomInfo;
+import com.staybnb.rooms.dto.request.CreateRoomRequest;
+import com.staybnb.rooms.dto.request.SearchRoomRequest;
+import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.repository.RoomRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,7 +68,7 @@ class RoomServiceTest {
                 .street("610 W Magnolia Ave")
                 .build();
 
-        CreateRoomCommand room = CreateRoomCommand.builder()
+        CreateRoomRequest room = CreateRoomRequest.builder()
                 .hostId(hostId)
                 .placeType(placeType)
                 .roomType("ENTIRE_PLACE")
@@ -213,15 +214,15 @@ class RoomServiceTest {
                 .currency(currency)
                 .build();
 
-        SearchRoomCommand searchCondition = SearchRoomCommand.builder().numberOfGuests(2).build();
+        SearchRoomRequest searchRoomRequest = SearchRoomRequest.builder().guests(2).build();
         Page<Room> pageResponse= new PageImpl<>(List.of(room));
-        when(roomRepository.findAll(searchCondition, null)).thenReturn(pageResponse);
+        when(roomRepository.findAll(any(SearchRoomInfo.class), eq(null))).thenReturn(pageResponse);
 
         // when
-        Page<Room> rooms = roomService.findAll(searchCondition, null);
+        Page<Room> rooms = roomService.findAll(searchRoomRequest, null);
 
         // then
-        verify(roomRepository, times(1)).findAll(any(SearchRoomCommand.class), eq(null));
+        verify(roomRepository, times(1)).findAll(any(SearchRoomInfo.class), eq(null));
         assertThat(rooms.getContent().size()).isEqualTo(1);
     }
 
@@ -269,7 +270,7 @@ class RoomServiceTest {
                 .currency(currency)
                 .build();
 
-        UpdateRoomCommand updateInfo = UpdateRoomCommand.builder()
+        UpdateRoomRequest updateInfo = UpdateRoomRequest.builder()
                 .pricePerNight(800_000)
                 .build();
 

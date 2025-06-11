@@ -1,6 +1,5 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.rooms.dto.SearchRoomCommand;
 import com.staybnb.validation.annotation.NullOrNotBlank;
 import com.staybnb.validation.annotation.ValidDateRange;
 import com.staybnb.validation.annotation.ValidPriceRange;
@@ -39,15 +38,4 @@ public class SearchRoomRequest {
 
     String currency;
 
-    public SearchRoomCommand toCommand() {
-        return SearchRoomCommand.builder()
-                .numberOfGuests(guests)
-                .startDate(startDate)
-                .endDate(endDate)
-                .location(location)
-                .priceFrom(priceFrom)
-                .priceTo(priceTo)
-                .currency(currency)
-                .build();
-    }
 }

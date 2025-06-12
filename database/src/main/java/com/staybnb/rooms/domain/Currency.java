@@ -21,5 +21,5 @@ public class Currency {
 
     private Double exchangeRate;
 
-    private LocalDateTime lastUpdated;
+    private LocalDateTime updatedAt;
 }

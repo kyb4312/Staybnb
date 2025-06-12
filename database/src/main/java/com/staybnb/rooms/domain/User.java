@@ -16,5 +16,6 @@ public class User {
     private String userId;
     private String name;
     private String password;
-    private LocalDateTime createTime;
+
+    private LocalDateTime createdAt;
 }

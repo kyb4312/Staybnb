@@ -1,6 +1,6 @@
 package com.staybnb.rooms.controller;
 
-import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
@@ -105,8 +105,8 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
                 .currency("KRW")
+                .basePrice(700_000)
                 .build();
 
         RoomResponse response =
@@ -132,7 +132,7 @@ public class RoomControllerTest {
                 .amenities(createRoomRequest.getAmenities())
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
-                .pricePerNight(createRoomRequest.getPricePerNight()) // updated
+                .basePrice(createRoomRequest.getBasePrice()) // updated
                 .currency(createRoomRequest.getCurrency()) // updated
                 .build();
 
@@ -173,7 +173,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -190,7 +190,7 @@ public class RoomControllerTest {
 
         UpdateRoomRequest updateRoomRequest = UpdateRoomRequest.builder()
                 .maxNumberOfGuests(4)
-                .pricePerNight(900_000)
+                .basePrice(900_000)
                 .currency("KRW")
                 .build();
 
@@ -216,7 +216,7 @@ public class RoomControllerTest {
                 .amenities(createRoomRequest.getAmenities())
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
-                .pricePerNight(updateRoomRequest.getPricePerNight()) // updated
+                .basePrice(updateRoomRequest.getBasePrice()) // updated
                 .currency(updateRoomRequest.getCurrency()) // updated
                 .build();
 
@@ -252,7 +252,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -301,7 +301,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -341,7 +341,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -381,7 +381,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -399,7 +399,7 @@ public class RoomControllerTest {
         UpdateRoomRequest updateRoomRequest = UpdateRoomRequest.builder()
                 .maxNumberOfGuests(4)
                 .title(" ") // invalid @NotBlank
-                .pricePerNight(900_000)
+                .basePrice(900_000)
                 .currency("KRW")
                 .build();
 
@@ -450,7 +450,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -490,7 +490,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -530,7 +530,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("unsupported") // unsupported Currency
                 .build();
 
@@ -570,7 +570,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 

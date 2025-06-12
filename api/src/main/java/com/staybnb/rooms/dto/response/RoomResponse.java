@@ -1,6 +1,6 @@
 package com.staybnb.rooms.dto.response;
 
-import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.domain.Room;
 import lombok.Builder;

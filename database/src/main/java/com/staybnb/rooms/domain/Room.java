@@ -1,5 +1,6 @@
 package com.staybnb.rooms.domain;
 
+import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.*;
 import jakarta.persistence.*;
 import lombok.*;

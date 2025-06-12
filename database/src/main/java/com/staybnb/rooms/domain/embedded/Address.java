@@ -1,4 +1,4 @@
-package com.staybnb.rooms.domain.vo;
+package com.staybnb.rooms.domain.embedded;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

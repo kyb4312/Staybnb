@@ -25,7 +25,7 @@ public class RoomResponse {
     private Set<String> amenities;
     private String title;
     private String description;
-    private Integer pricePerNight;
+    private Integer basePrice;
     private String currency;
 
     public static RoomResponse fromDomain(Room room) {
@@ -46,7 +46,7 @@ public class RoomResponse {
                 .amenities(amenitySet)
                 .title(room.getTitle())
                 .description(room.getDescription())
-                .pricePerNight(room.getPricePerNight())
+                .basePrice(room.getBasePrice())
                 .currency(room.getCurrency().getCode())
                 .build();
     }

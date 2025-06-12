@@ -92,7 +92,7 @@ public class RoomService {
                 .amenities(amenityService.getAmenitySetByStringSet(request.getAmenities()))
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .pricePerNight(request.getPricePerNight())
+                .basePrice(request.getBasePrice())
                 .currency(currencyService.getByCode(request.getCurrency()))
                 .build();
     }

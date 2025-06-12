@@ -49,7 +49,7 @@ public class CreateRoomRequest {
 
     @NotNull
     @Min(0)
-    private Integer pricePerNight;
+    private Integer basePrice;
 
     @NotBlank
     private String currency;

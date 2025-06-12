@@ -1,7 +1,6 @@
 package com.staybnb.rooms.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,8 +16,7 @@ public class Currency {
 
     private String name;
 
-    private String symbol;
-
+    @Column(nullable = false)
     private Double exchangeRate;
 
     private LocalDateTime updatedAt;

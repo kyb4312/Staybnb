@@ -10,11 +10,17 @@ import java.time.LocalDateTime;
 @Setter
 public class User {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userId;
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(nullable = false, length = 50)
     private String name;
+
+    @Column(nullable = false)
     private String password;
 
     private LocalDateTime createdAt;

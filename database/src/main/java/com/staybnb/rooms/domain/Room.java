@@ -65,6 +65,9 @@ public class Room {
     @JoinColumn(name = "currency_code", nullable = false)
     private Currency currency;
 
+    @Column(nullable = false)
+    private Double basePriceInUsd;
+
     private boolean isDeleted;
 
     private LocalDateTime deletedAt;

@@ -72,4 +72,5 @@ public class Room {
 
     private LocalDateTime deletedAt;
 
+    private LocalDateTime createdAt;
 }

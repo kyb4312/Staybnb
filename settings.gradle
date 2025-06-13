@@ -5,9 +5,8 @@ plugins {
 rootProject.name = 'staybnb'
 
 include 'api'
+include 'database'
+include 'batch'
 include 'common'
-include 'service:user'
-include 'service:room'
-include 'service:reservation'
 
 includeBuild 'build-logic'

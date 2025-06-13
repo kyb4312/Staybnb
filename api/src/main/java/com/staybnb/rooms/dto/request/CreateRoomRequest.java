@@ -1,7 +1,6 @@
 package com.staybnb.rooms.dto.request;
 
 import com.staybnb.rooms.domain.vo.Address;
-import com.staybnb.rooms.dto.CreateRoomCommand;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -55,20 +54,4 @@ public class CreateRoomRequest {
     @NotBlank
     private String currency;
 
-    public CreateRoomCommand toCommand() {
-        return CreateRoomCommand.builder()
-                .hostId(hostId)
-                .placeType(placeType)
-                .roomType(roomType)
-                .address(address)
-                .maxNumberOfGuests(maxNumberOfGuests)
-                .bedrooms(bedrooms)
-                .beds(beds)
-                .amenities(amenities)
-                .title(title)
-                .description(description)
-                .pricePerNight(pricePerNight)
-                .currency(currency)
-                .build();
-    }
 }

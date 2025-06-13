@@ -74,3 +74,17 @@ CREATE TABLE `room_amenity` (
     CONSTRAINT `fk_room_amenity_amenity_id` FOREIGN KEY (`amenity_id`) REFERENCES `amenity` (`id`),
     CONSTRAINT `fk_room_amenity_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
 );
+
+-- pricing
+CREATE TABLE `pricing`
+(
+    `id`              bigint NOT NULL AUTO_INCREMENT,
+    `room_id`         bigint NOT NULL,
+    `start_date`      date   NOT NULL,
+    `end_date`        date   NOT NULL,
+    `price_per_night` int    NOT NULL,
+    `updated_at`      datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY               `fk_room_id_idx` (`room_id`),
+    CONSTRAINT `fk_pricing_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
+);

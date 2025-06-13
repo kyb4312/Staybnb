@@ -1,10 +1,10 @@
 package com.staybnb.rooms.controller;
 
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.dto.request.CreateRoomRequest;
-import com.staybnb.rooms.dto.request.SearchRoomRequest;
-import com.staybnb.rooms.dto.request.UpdateRoomRequest;
+import com.staybnb.rooms.dto.request.*;
+import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;
+import com.staybnb.rooms.service.PricingService;
 import com.staybnb.rooms.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ import java.net.URI;
 public class RoomController {
 
     private final RoomService roomService;
+    private final PricingService pricingService;
 
     @GetMapping("/{roomId}")
     public RoomResponse getRoom(@PathVariable long roomId) {
@@ -60,5 +61,15 @@ public class RoomController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRoom(@PathVariable long roomId) {
         roomService.delete(roomId);
+    }
+
+    @PostMapping("/{roomId}/pricing")
+    public void updatePricing(@PathVariable long roomId, @Valid @RequestBody UpdatePricingRequest updatePricingRequest) {
+        pricingService.updateSelectedDatesPricing(roomId, updatePricingRequest);
+    }
+
+    @GetMapping("/{roomId}/pricing")
+    public PricingResponse getPricing(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
+        return pricingService.getPricing(roomId, searchPricingRequest);
     }
 }

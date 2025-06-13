@@ -5,7 +5,7 @@ import com.staybnb.rooms.domain.Currency;
 import com.staybnb.rooms.domain.PlaceType;
 import com.staybnb.rooms.domain.User;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.SearchRoomInfo;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
@@ -79,7 +79,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 
@@ -104,7 +104,7 @@ class RoomServiceTest {
                 .beds(1)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .build();
 
         assertThat(savedRoom)
@@ -153,7 +153,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 
@@ -210,7 +210,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 
@@ -266,12 +266,12 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 
         UpdateRoomRequest updateInfo = UpdateRoomRequest.builder()
-                .pricePerNight(800_000)
+                .basePrice(800_000)
                 .build();
 
         Room expected = Room.builder()
@@ -286,7 +286,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(updateInfo.getPricePerNight()) // updated
+                .basePrice(updateInfo.getBasePrice()) // updated
                 .currency(currency)
                 .build();
 
@@ -343,7 +343,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 

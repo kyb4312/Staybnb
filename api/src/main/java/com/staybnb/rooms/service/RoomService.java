@@ -31,7 +31,9 @@ public class RoomService {
 
     @Transactional
     public Room save(CreateRoomRequest request) {
-        return roomRepository.save(toEntity(request));
+        Room room = toEntity(request);
+        room.setBasePriceInUsd(exchangeToUsd(room.getBasePrice(), room.getCurrency().getExchangeRate()));
+        return roomRepository.save(room);
     }
 
     public Room findById(long id) {
@@ -63,8 +65,9 @@ public class RoomService {
         if (request.getDescription() != null) {
             room.setDescription(request.getDescription());
         }
-        if (request.getPricePerNight() != null) {
-            room.setPricePerNight(request.getPricePerNight());
+        if (request.getBasePrice() != null) {
+            room.setBasePrice(request.getBasePrice());
+            room.setBasePriceInUsd(exchangeToUsd(room.getBasePrice(), room.getCurrency().getExchangeRate()));
         }
         if (request.getCurrency() != null) {
             room.setCurrency(currencyService.getByCode(request.getCurrency()));
@@ -80,6 +83,10 @@ public class RoomService {
         room.setDeletedAt(LocalDateTime.now());
     }
 
+    private double exchangeToUsd(int price, double exchangeRate) {
+        return price / exchangeRate;
+    }
+
     private Room toEntity(CreateRoomRequest request) {
         return Room.builder()
                 .host(userService.getById(request.getHostId()))
@@ -92,7 +99,7 @@ public class RoomService {
                 .amenities(amenityService.getAmenitySetByStringSet(request.getAmenities()))
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .pricePerNight(request.getPricePerNight())
+                .basePrice(request.getBasePrice())
                 .currency(currencyService.getByCode(request.getCurrency()))
                 .build();
     }

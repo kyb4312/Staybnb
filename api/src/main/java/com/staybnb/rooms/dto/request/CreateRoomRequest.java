@@ -1,6 +1,6 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.embedded.Address;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -49,7 +49,7 @@ public class CreateRoomRequest {
 
     @NotNull
     @Min(0)
-    private Integer pricePerNight;
+    private Integer basePrice;
 
     @NotBlank
     private String currency;

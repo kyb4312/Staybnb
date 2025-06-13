@@ -31,7 +31,7 @@ public class UpdateRoomRequest {
     private String description;
 
     @Min(0)
-    private Integer pricePerNight;
+    private Integer basePrice;
 
     private String currency;
 

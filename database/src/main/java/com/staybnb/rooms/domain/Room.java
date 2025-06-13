@@ -1,5 +1,6 @@
 package com.staybnb.rooms.domain;
 
+import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,8 +17,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class Room {
 
-    @Setter
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -59,14 +60,18 @@ public class Room {
     private String description;
 
     @Column(nullable = false)
-    private Integer pricePerNight;
+    private Integer basePrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency_code", nullable = false)
     private Currency currency;
 
+    @Column(nullable = false)
+    private Double basePriceInUsd;
+
     private boolean isDeleted;
 
     private LocalDateTime deletedAt;
 
+    private LocalDateTime createdAt;
 }

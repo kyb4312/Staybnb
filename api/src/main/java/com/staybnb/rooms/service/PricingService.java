@@ -1,6 +1,7 @@
 package com.staybnb.rooms.service;
 
 import com.staybnb.rooms.domain.Pricing;
+import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.SearchPricingRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.response.PricingResponse;
@@ -38,54 +39,41 @@ public class PricingService {
     }
 
     /**
-     * 선택 구간 숙박 가격 변경
+     * 선택 구간들 숙박 가격 변경
      */
     @Transactional
     public void updateSelectedDatesPricing(Long roomId, UpdatePricingRequest request) {
         // TODO: 요청값 유효성 검사 (존재하는 roomId 인지, 유효한 날짜 범위인지)
+        Room room = roomRepository.findById(roomId).orElseThrow(); // TODO: Exception handling
 
         // 숙박 가격 변경
         request.getDateSelected().forEach(range ->
-                updatePricing(roomId, range.getStartDate(), range.getEndDate(), request.getPricePerNight()));
+                updatePricing(room, range.getStartDate(), range.getEndDate(), request.getPricePerNight()));
     }
 
     /**
      * startDate ~ endDate 구간 숙박 가격 변경
      */
-    private void updatePricing(Long roomId, LocalDate startDate, LocalDate endDate, int pricePerNight) {
-        // 날짜가 겹치는 기존 pricing 데이터 업데이트
-        updateExistingPricing(roomId, startDate, endDate);
-
-        // 요청에 대한 새로운 pricing 데이터 저장
-        pricingRepository.save(Pricing.builder()
-                .room(roomRepository.findById(roomId).get())
-                .startDate(startDate)
-                .endDate(endDate)
-                .pricePerNight(pricePerNight)
-                .build());
+    private void updatePricing(Room room, LocalDate startDate, LocalDate endDate, int pricePerNight) {
+        updateExistingPricing(room, startDate, endDate);
+        pricingRepository.save(new Pricing(room, startDate, endDate, pricePerNight));
     }
 
     /**
      * 날짜가 겹치는 기존 pricing 데이터가 있을 경우,
-     * 겹치지 않는 구간 데이터만 다시 저장하고 기존 데이터는 삭제
+     * 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updateExistingPricing(Long roomId, LocalDate startDate, LocalDate endDate) {
-        // 날짜가 겹치는 pricing 데이터 조회
-        List<Pricing> pricingList = pricingRepository.findPricingsByDate(roomId, startDate, endDate);
+    private void updateExistingPricing(Room room, LocalDate startDate, LocalDate endDate) {
+        List<Pricing> conflictedPricingList = pricingRepository.findPricingsByDate(room.getId(), startDate, endDate);
+        pricingRepository.deleteAll(conflictedPricingList);
 
-        for (Pricing pricing : pricingList) {
-            // startDate 보다 이전 날짜 구간이 있는 경우
-            Pricing pricingBeforeStartDate = getPricingBeforeStartDate(pricing, startDate);
-            if (pricingBeforeStartDate != null) {
-                pricingRepository.save(pricingBeforeStartDate);
+        for (Pricing conflicted : conflictedPricingList) {
+            if (conflicted.getStartDate().isBefore(startDate)) {
+                pricingRepository.save(new Pricing(room, conflicted.getStartDate(), startDate.minusDays(1), conflicted.getPricePerNight()));
             }
-            // endDate 보다 이후 날짜 구간이 있는 경우
-            Pricing pricingAfterEndDate = getPricingAfterEndDate(pricing, endDate);
-            if (pricingAfterEndDate != null) {
-                pricingRepository.save(pricingAfterEndDate);
+            if (conflicted.getEndDate().isAfter(endDate)) {
+                pricingRepository.save(new Pricing(room, endDate.plusDays(1), conflicted.getEndDate(), conflicted.getPricePerNight()));
             }
-            // 기존 데이터 삭제
-            pricingRepository.delete(pricing);
         }
     }
 
@@ -124,35 +112,5 @@ public class PricingService {
                 pricing.getStartDate().isBefore(startDate) ? startDate : pricing.getStartDate(),
                 pricing.getEndDate().isAfter(endDate) ? endDate : pricing.getEndDate()
         ) + 1;
-    }
-
-    /**
-     * startDate 보다 이전 구간 pricing 추출
-     */
-    private Pricing getPricingBeforeStartDate(Pricing pricing, LocalDate startDate) {
-        if (pricing.getStartDate().isBefore(startDate)) {
-            return Pricing.builder()
-                    .room(pricing.getRoom())
-                    .startDate(pricing.getStartDate())
-                    .endDate(startDate.minusDays(1))
-                    .pricePerNight(pricing.getPricePerNight())
-                    .build();
-        }
-        return null;
-    }
-
-    /**
-     * endDate 보다 이후 구간 pricing 추출
-     */
-    private Pricing getPricingAfterEndDate(Pricing pricing, LocalDate endDate) {
-        if (pricing.getEndDate().isAfter(endDate)) {
-            return Pricing.builder()
-                    .room(pricing.getRoom())
-                    .startDate(endDate.plusDays(1))
-                    .endDate(pricing.getEndDate())
-                    .pricePerNight(pricing.getPricePerNight())
-                    .build();
-        }
-        return null;
     }
 }

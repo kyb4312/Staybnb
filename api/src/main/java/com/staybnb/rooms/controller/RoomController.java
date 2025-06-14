@@ -2,9 +2,10 @@ package com.staybnb.rooms.controller;
 
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.*;
+import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;
-import com.staybnb.rooms.service.PricingService;
+import com.staybnb.rooms.service.PricingAndAvailabilityService;
 import com.staybnb.rooms.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.YearMonth;
 
 @Slf4j
 @RestController
@@ -25,7 +27,7 @@ import java.net.URI;
 public class RoomController {
 
     private final RoomService roomService;
-    private final PricingService pricingService;
+    private final PricingAndAvailabilityService pricingAndAvailabilityService;
 
     @GetMapping("/{roomId}")
     public RoomResponse getRoom(@PathVariable long roomId) {
@@ -65,11 +67,21 @@ public class RoomController {
 
     @PostMapping("/{roomId}/pricing")
     public void updatePricing(@PathVariable long roomId, @Valid @RequestBody UpdatePricingRequest updatePricingRequest) {
-        pricingService.updateSelectedDatesPricing(roomId, updatePricingRequest);
+        pricingAndAvailabilityService.updateSelectedDatesPricing(roomId, updatePricingRequest);
     }
 
     @GetMapping("/{roomId}/pricing")
     public PricingResponse getPricing(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
-        return pricingService.getPricing(roomId, searchPricingRequest);
+        return pricingAndAvailabilityService.getPricing(roomId, searchPricingRequest);
+    }
+
+    @PostMapping("/{roomId}/availability")
+    public void updateAvailability(@PathVariable long roomId, @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest) {
+        pricingAndAvailabilityService.updateSelectedDatesAvailability(roomId, updateAvailabilityRequest);
+    }
+
+    @GetMapping("/{roomId}/calendar")
+    public CalendarResponse getCalendar(@PathVariable long roomId, @RequestParam String currency, @RequestParam YearMonth yearMonth) {
+        return pricingAndAvailabilityService.getCalendar(roomId, currency, yearMonth);
     }
 }

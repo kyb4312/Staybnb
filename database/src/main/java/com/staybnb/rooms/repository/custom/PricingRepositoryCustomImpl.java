@@ -7,12 +7,14 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 import static com.staybnb.rooms.domain.QPricing.pricing;
 
 @Repository
 public class PricingRepositoryCustomImpl implements PricingRepositoryCustom {
+
     private final JPAQueryFactory query;
 
     PricingRepositoryCustomImpl(EntityManager em) {
@@ -26,8 +28,21 @@ public class PricingRepositoryCustomImpl implements PricingRepositoryCustom {
                 .from(pricing)
                 .where(
                         roomId(roomId),
-                        startBeforeEndDate(endDate),
-                        endAfterStartDate(startDate)
+                        startBefore(endDate),
+                        endAfter(startDate)
+                )
+                .fetch();
+    }
+
+    @Override
+    public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {
+        return query
+                .select(pricing)
+                .from(pricing)
+                .where(
+                        roomId(roomId),
+                        startBefore(yearMonth.atEndOfMonth()),
+                        endAfter(yearMonth.atDay(1))
                 )
                 .orderBy(pricing.startDate.asc())
                 .fetch();
@@ -37,11 +52,11 @@ public class PricingRepositoryCustomImpl implements PricingRepositoryCustom {
         return pricing.room.id.eq(id);
     }
 
-    private BooleanExpression startBeforeEndDate(LocalDate endDate) {
+    private BooleanExpression startBefore(LocalDate endDate) {
         return pricing.startDate.loe(endDate);
     }
 
-    private BooleanExpression endAfterStartDate(LocalDate startDate) {
+    private BooleanExpression endAfter(LocalDate startDate) {
         return pricing.endDate.goe(startDate);
     }
 }

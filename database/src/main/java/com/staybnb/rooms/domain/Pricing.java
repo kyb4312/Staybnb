@@ -8,11 +8,17 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Pricing {
+
+    public Pricing() {
+    }
+
+    public Pricing(Room room, LocalDate startDate, LocalDate endDate, Integer pricePerNight) {
+        this.room = room;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.pricePerNight = pricePerNight;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,16 +1,24 @@
 package com.staybnb.rooms.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
 public class Availability {
+
+    public Availability() {
+    }
+
+    public Availability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
+        this.room = room;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.isAvailable = isAvailable;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

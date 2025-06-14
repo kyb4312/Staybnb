@@ -14,4 +14,9 @@ public class CurrencyService {
     public Currency getByCode(String code) {
         return currencyRepository.getByCode(code);
     }
+
+    public double convert(Currency from, Currency to, int amount) {
+        return amount * (to.getExchangeRate() / from.getExchangeRate());
+    }
+
 }

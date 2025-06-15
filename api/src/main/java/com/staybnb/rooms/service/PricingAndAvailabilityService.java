@@ -7,10 +7,13 @@ import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.SearchPricingRequest;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
+import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.vo.DailyInfo;
+import com.staybnb.rooms.exception.InvalidDateRangeException;
 import com.staybnb.rooms.exception.InvalidRoomIdException;
+import com.staybnb.rooms.exception.InvalidYearMonthException;
 import com.staybnb.rooms.repository.AvailabilityRepository;
 import com.staybnb.rooms.repository.PricingRepository;
 import com.staybnb.rooms.repository.RoomRepository;
@@ -36,8 +39,8 @@ public class PricingAndAvailabilityService {
      * 숙박 총 가격 조회
      */
     public PricingResponse getPricing(Long roomId, SearchPricingRequest request) {
-        // TODO: 요청값 유효성 검사 (존재하는 roomId 인지, 유효한 날짜 범위인지)
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
+        validateDateRange(request);
 
         double totalPrice = currencyService.convert(
                 room.getCurrency(),
@@ -91,10 +94,9 @@ public class PricingAndAvailabilityService {
      */
     @Transactional
     public void updateSelectedDatesPricing(Long roomId, UpdatePricingRequest request) {
-        // TODO: 요청값 유효성 검사 (존재하는 roomId 인지, 유효한 날짜 범위인지)
-        Room room = roomRepository.findById(roomId).orElseThrow(); // TODO: Exception handling
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
+        validateDateSelected(request.getDateSelected());
 
-        // 숙박 가격 변경
         request.getDateSelected().forEach(range ->
                 updatePricing(room, range.getStartDate(), range.getEndDate(), request.getPricePerNight()));
     }
@@ -130,8 +132,8 @@ public class PricingAndAvailabilityService {
      */
     @Transactional
     public void updateSelectedDatesAvailability(long roomId, UpdateAvailabilityRequest request) {
-        // TODO: 요청값 유효성 검사 (존재하는 roomId 인지, 유효한 날짜 범위인지)
-        Room room = roomRepository.findById(roomId).orElseThrow(); // TODO: Exception handling
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
+        validateDateSelected(request.getDateSelected());
 
         request.getDateSelected().forEach(range ->
                 updateAvailability(room, range.getStartDate(), range.getEndDate(), request.getIsAvailable()));
@@ -167,8 +169,9 @@ public class PricingAndAvailabilityService {
      * yearMonth에 해당하는 달의 price, availability 리스트 반환
      */
     public CalendarResponse getCalendar(long roomId, String currency, YearMonth yearMonth) {
-        // TODO: 입력값 유효성 검사
-        Room room = roomRepository.findById(roomId).orElseThrow(); // Exception handling
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
+        validateYearMonth(yearMonth);
+
         Currency requestCurrency = currencyService.getByCode(currency);
         Currency roomCurrency = room.getCurrency();
 
@@ -220,6 +223,38 @@ public class PricingAndAvailabilityService {
 
     LocalDate min(LocalDate date1, LocalDate date2) {
         return date1.isBefore(date2) ? date1 : date2;
+    }
+
+    private void validateDateRange(SearchPricingRequest request) {
+        if (request.getStartDate().isBefore(LocalDate.now())) {
+            throw new InvalidDateRangeException("startDate가 과거 일자입니다.", request.getStartDate(), LocalDate.now());
+        }
+        if (!request.getStartDate().isBefore(request.getEndDate())) {
+            throw new InvalidDateRangeException("startDate는 endDate 보다 이전 일자여야 합니다.", request.getStartDate(), request.getEndDate());
+        }
+        if (!request.getEndDate().isBefore(LocalDate.now().plusYears(1))) {
+            throw new InvalidDateRangeException("1년 이내의 가격만 조회 가능합니다.", request.getStartDate(), request.getEndDate());
+        }
+    }
+
+    private void validateDateSelected(List<DateRange> dateSelected) {
+        dateSelected.forEach(dateRange -> {
+            if (dateRange.getStartDate().isBefore(LocalDate.now())) {
+                throw new InvalidDateRangeException("startDate가 과거 일자입니다.", dateRange.getStartDate(), LocalDate.now());
+            }
+            if (dateRange.getStartDate().isAfter(dateRange.getEndDate())) {
+                throw new InvalidDateRangeException("startDate는 endDate 보다 같거나 이전 일자여야 합니다.", dateRange.getStartDate(), dateRange.getEndDate());
+            }
+            if (!dateRange.getEndDate().isBefore(LocalDate.now().plusYears(1))) {
+                throw new InvalidDateRangeException("1년 이내의 가격만 설정 가능합니다.", dateRange.getStartDate(), dateRange.getEndDate());
+            }
+        });
+    }
+
+    private void validateYearMonth(YearMonth yearMonth) {
+        if (yearMonth.isAfter(YearMonth.now().plusYears(1))) {
+            throw new InvalidYearMonthException("1년 이내의 값만 조회 가능합니다.", yearMonth);
+        }
     }
 
 }

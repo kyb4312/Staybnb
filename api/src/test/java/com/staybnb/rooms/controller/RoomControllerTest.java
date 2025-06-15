@@ -2,7 +2,12 @@ package com.staybnb.rooms.controller;
 
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
+import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
+import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
+import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.response.CalendarResponse;
+import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;
 import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +23,9 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
@@ -594,5 +601,65 @@ public class RoomControllerTest {
                 .when().get("/rooms/{roomId}", roomId)
                 .then().log().all()
                 .statusCode(400);
+    }
+
+    @Test
+    public void updatePricing() {
+        UpdatePricingRequest request = UpdatePricingRequest.builder()
+                .dateSelected(List.of(
+                        new DateRange(LocalDate.parse("2025-09-13"), LocalDate.parse("2025-09-15")),
+                        new DateRange(LocalDate.parse("2025-09-09"), LocalDate.parse("2025-09-09"))
+                ))
+                .pricePerNight(400000)
+                .build();
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/rooms/{roomId}/pricing", 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK);
+    }
+
+    @Test
+    public void getPricing() {
+        PricingResponse pricingResponse = given().log().all()
+                .port(port)
+                .when().get("/rooms/{roomId}/pricing?startDate=2025-10-13&endDate=2025-10-14&currency=KRW", 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().as(PricingResponse.class);
+
+        assertThat(pricingResponse.getTotalPrice(), equalTo(300000.0));
+    }
+
+    @Test
+    public void updateAvailability() {
+        UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
+                List.of(
+                        new DateRange(LocalDate.parse("2025-09-13"), LocalDate.parse("2025-09-15")),
+                        new DateRange(LocalDate.parse("2025-09-09"), LocalDate.parse("2025-09-09"))
+                ), true);
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/rooms/{roomId}/availability", 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK);
+    }
+
+    @Test
+    public void getCalendar() {
+        CalendarResponse response = given().log().all()
+                .port(port)
+                .when().get("/rooms/{roomId}/calendar?currency=KRW&yearMonth=2025-09", 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().as(CalendarResponse.class);
+
+        assertThat(response.getDailyInfos().size(), equalTo(30));
     }
 }

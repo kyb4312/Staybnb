@@ -8,10 +8,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Availability {
-
-    public Availability() {
-    }
 
     public Availability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
         this.room = room;

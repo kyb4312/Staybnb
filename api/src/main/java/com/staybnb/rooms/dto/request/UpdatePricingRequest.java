@@ -13,7 +13,7 @@ import java.util.List;
 public class UpdatePricingRequest {
 
     @NotNull
-    List<DateRange> dateSelected;
+    private List<DateRange> dateSelected;
 
     @Min(0)
     private Integer pricePerNight;

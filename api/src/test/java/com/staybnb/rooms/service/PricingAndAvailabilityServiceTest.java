@@ -60,8 +60,9 @@ class PricingAndAvailabilityServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -69,15 +70,6 @@ class PricingAndAvailabilityServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
@@ -128,8 +120,9 @@ class PricingAndAvailabilityServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -137,15 +130,6 @@ class PricingAndAvailabilityServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
@@ -200,8 +184,9 @@ class PricingAndAvailabilityServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -209,15 +194,6 @@ class PricingAndAvailabilityServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
@@ -272,8 +248,9 @@ class PricingAndAvailabilityServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -281,15 +258,6 @@ class PricingAndAvailabilityServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)

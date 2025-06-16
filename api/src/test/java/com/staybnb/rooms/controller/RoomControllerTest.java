@@ -605,13 +605,13 @@ public class RoomControllerTest {
 
     @Test
     public void updatePricing() {
-        UpdatePricingRequest request = UpdatePricingRequest.builder()
-                .dateSelected(List.of(
+        UpdatePricingRequest request = new UpdatePricingRequest(
+                List.of(
                         new DateRange(LocalDate.parse("2025-09-13"), LocalDate.parse("2025-09-15")),
                         new DateRange(LocalDate.parse("2025-09-09"), LocalDate.parse("2025-09-09"))
-                ))
-                .pricePerNight(400000)
-                .build();
+                ),
+                400000
+        );
 
         given().log().all()
                 .port(port)

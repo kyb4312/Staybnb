@@ -217,11 +217,11 @@ public class PricingAndAvailabilityService {
         return availabilityMap;
     }
 
-    LocalDate max(LocalDate date1, LocalDate date2) {
+    private LocalDate max(LocalDate date1, LocalDate date2) {
         return date1.isAfter(date2) ? date1 : date2;
     }
 
-    LocalDate min(LocalDate date1, LocalDate date2) {
+    private LocalDate min(LocalDate date1, LocalDate date2) {
         return date1.isBefore(date2) ? date1 : date2;
     }
 

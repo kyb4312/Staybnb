@@ -3,7 +3,6 @@ package com.staybnb.rooms.dto.request;
 import com.staybnb.rooms.dto.request.vo.DateRange;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;

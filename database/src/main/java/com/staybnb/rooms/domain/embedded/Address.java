@@ -8,7 +8,6 @@ import lombok.*;
 @Embeddable
 @Getter
 @Builder
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Address {

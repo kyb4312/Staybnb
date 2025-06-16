@@ -17,10 +17,9 @@ import static com.staybnb.rooms.domain.QRoom.room;
 
 @Repository
 public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
-
     private final JPAQueryFactory query;
 
-    public RoomRepositoryCustomImpl(EntityManager em) {
+    RoomRepositoryCustomImpl(EntityManager em) {
         this.query = new JPAQueryFactory(em);
     }
 

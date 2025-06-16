@@ -58,7 +58,7 @@ class RoomServiceTest {
         // given
         Long hostId = 1L;
         String placeType = "house";
-        String currency = "KRW";
+        String currencyCode = "KRW";
         Set<String> amenities = Set.of("wifi", "tv");
 
         Address address = Address.builder()
@@ -80,8 +80,11 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
-                .currency(currency)
+                .currency(currencyCode)
                 .build();
+
+        Currency currency = new Currency(currencyCode, "Korean won", 1350.0);
+        when(currencyService.getByCode(currencyCode)).thenReturn(currency);
 
         // when
         roomService.save(room);
@@ -90,7 +93,7 @@ class RoomServiceTest {
         verify(userService, times(1)).getById(hostId);
         verify(placeTypeService, times(1)).getByName(placeType);
         verify(amenityService, times(1)).getAmenitySetByStringSet(amenities);
-        verify(currencyService, times(1)).getByCode(currency);
+        verify(currencyService, times(1)).getByCode(currencyCode);
         verify(roomRepository, times(1)).save(any(Room.class));
 
         verify(roomRepository).save(roomCaptor.capture());
@@ -105,6 +108,8 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
+                .currency(currency)
+                .basePriceInUsd(700_000 / currency.getExchangeRate())
                 .build();
 
         assertThat(savedRoom)
@@ -264,6 +269,7 @@ class RoomServiceTest {
                 .description("Modern building in Kentucky")
                 .basePrice(updateInfo.getBasePrice()) // updated
                 .currency(currency)
+                .basePriceInUsd(updateInfo.getBasePrice() / currency.getExchangeRate())
                 .build();
 
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));

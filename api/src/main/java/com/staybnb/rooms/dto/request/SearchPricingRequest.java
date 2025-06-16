@@ -1,13 +1,13 @@
 package com.staybnb.rooms.dto.request;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
 @Getter
-@Builder
+@AllArgsConstructor
 public class SearchPricingRequest {
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

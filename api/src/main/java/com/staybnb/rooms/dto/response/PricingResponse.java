@@ -5,7 +5,6 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class PricingResponse {
 

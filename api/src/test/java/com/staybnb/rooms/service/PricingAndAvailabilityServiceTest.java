@@ -87,8 +87,8 @@ class PricingAndAvailabilityServiceTest {
                 .currency(currency)
                 .build();
 
-        LocalDate startDate = LocalDate.parse("2025-09-13");
-        LocalDate endDate = LocalDate.parse("2025-09-15");
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now().plusDays(2);
         String currencyCode = "KRW";
 
         SearchPricingRequest request = new SearchPricingRequest(startDate, endDate, currencyCode);
@@ -147,14 +147,14 @@ class PricingAndAvailabilityServiceTest {
                 .currency(currency)
                 .build();
 
-        LocalDate startDate = LocalDate.parse("2025-09-13");
-        LocalDate endDate = LocalDate.parse("2025-09-15");
+        LocalDate startDate = LocalDate.now().plusDays(3);
+        LocalDate endDate = LocalDate.now().plusDays(5);
 
         UpdatePricingRequest request = new UpdatePricingRequest(List.of(new DateRange(startDate, endDate)), 400_000);
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
         when(pricingRepository.findPricingsByDate(roomId, startDate, endDate))
-                .thenReturn(List.of(new Pricing(room, LocalDate.parse("2025-09-11"), LocalDate.parse("2025-09-16"), 500_000)));
+                .thenReturn(List.of(new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), 500_000)));
 
         // when
         pricingAndAvailabilityService.updateSelectedDatesPricing(roomId, request);
@@ -167,8 +167,8 @@ class PricingAndAvailabilityServiceTest {
         verify(pricingRepository, times(3)).save(pricingCaptor.capture());
         List<Pricing> allValues = pricingCaptor.getAllValues();
 
-        Pricing expected0 = new Pricing(room, LocalDate.parse("2025-09-11"), LocalDate.parse("2025-09-12"), 500_000);
-        Pricing expected1 = new Pricing(room, LocalDate.parse("2025-09-16"), LocalDate.parse("2025-09-16"), 500_000);
+        Pricing expected0 = new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), 500_000);
+        Pricing expected1 = new Pricing(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), 500_000);
         Pricing expected2 = new Pricing(room, startDate, endDate, 400_000);
 
         assertThat(allValues.get(0)).usingRecursiveComparison().isEqualTo(expected0);
@@ -211,14 +211,14 @@ class PricingAndAvailabilityServiceTest {
                 .currency(currency)
                 .build();
 
-        LocalDate startDate = LocalDate.parse("2025-09-13");
-        LocalDate endDate = LocalDate.parse("2025-09-15");
+        LocalDate startDate = LocalDate.now().plusDays(3);
+        LocalDate endDate = LocalDate.now().plusDays(5);
 
         UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(List.of(new DateRange(startDate, endDate)), true);
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
         when(availabilityRepository.findAvailabilitiesByDate(roomId, startDate, endDate))
-                .thenReturn(List.of(new Availability(room, LocalDate.parse("2025-09-11"), LocalDate.parse("2025-09-16"), true)));
+                .thenReturn(List.of(new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), true)));
 
         // when
         pricingAndAvailabilityService.updateSelectedDatesAvailability(roomId, request);
@@ -231,8 +231,8 @@ class PricingAndAvailabilityServiceTest {
         verify(availabilityRepository, times(3)).save(availabilityCaptor.capture());
         List<Availability> allValues = availabilityCaptor.getAllValues();
 
-        Availability expected0 = new Availability(room, LocalDate.parse("2025-09-11"), LocalDate.parse("2025-09-12"), true);
-        Availability expected1 = new Availability(room, LocalDate.parse("2025-09-16"), LocalDate.parse("2025-09-16"), true);
+        Availability expected0 = new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), true);
+        Availability expected1 = new Availability(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), true);
         Availability expected2 = new Availability(room, startDate, endDate, true);
 
         assertThat(allValues.get(0)).usingRecursiveComparison().isEqualTo(expected0);
@@ -275,7 +275,7 @@ class PricingAndAvailabilityServiceTest {
                 .currency(currency)
                 .build();
 
-        YearMonth yearMonth = YearMonth.parse("2025-09");
+        YearMonth yearMonth = YearMonth.now();
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
 
@@ -286,6 +286,6 @@ class PricingAndAvailabilityServiceTest {
         verify(roomRepository, times(1)).findById(roomId);
         verify(pricingRepository, times(1)).findPricingsByMonth(roomId, yearMonth);
         verify(availabilityRepository, times(1)).findAvailabilitiesByMonth(roomId, yearMonth);
-        verify(currencyService, times(30)).convert(any(), any(), anyInt());
+        verify(currencyService, times(YearMonth.now().lengthOfMonth())).convert(any(), any(), anyInt());
     }
 }

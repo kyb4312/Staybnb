@@ -24,6 +24,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -607,8 +608,8 @@ public class RoomControllerTest {
     public void updatePricing() {
         UpdatePricingRequest request = new UpdatePricingRequest(
                 List.of(
-                        new DateRange(LocalDate.parse("2025-09-13"), LocalDate.parse("2025-09-15")),
-                        new DateRange(LocalDate.parse("2025-09-09"), LocalDate.parse("2025-09-09"))
+                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
                 ),
                 400000
         );
@@ -624,9 +625,13 @@ public class RoomControllerTest {
 
     @Test
     public void getPricing() {
+        String path = String.format("/rooms/{roomId}/pricing?startDate=%s&endDate=%s&currency=KRW",
+                LocalDate.now().plusMonths(1).plusDays(1),
+                LocalDate.now().plusMonths(1).plusDays(2));
+
         PricingResponse pricingResponse = given().log().all()
                 .port(port)
-                .when().get("/rooms/{roomId}/pricing?startDate=2025-10-13&endDate=2025-10-14&currency=KRW", 1L)
+                .when().get(path, 1L)
                 .then().log().all()
                 .statusCode(HttpStatus.SC_OK)
                 .extract().as(PricingResponse.class);
@@ -638,8 +643,8 @@ public class RoomControllerTest {
     public void updateAvailability() {
         UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
                 List.of(
-                        new DateRange(LocalDate.parse("2025-09-13"), LocalDate.parse("2025-09-15")),
-                        new DateRange(LocalDate.parse("2025-09-09"), LocalDate.parse("2025-09-09"))
+                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
                 ), true);
 
         given().log().all()
@@ -653,13 +658,15 @@ public class RoomControllerTest {
 
     @Test
     public void getCalendar() {
+        String path = String.format("/rooms/{roomId}/calendar?currency=KRW&yearMonth=%s", YearMonth.now());
+
         CalendarResponse response = given().log().all()
                 .port(port)
-                .when().get("/rooms/{roomId}/calendar?currency=KRW&yearMonth=2025-09", 1L)
+                .when().get(path, 1L)
                 .then().log().all()
                 .statusCode(HttpStatus.SC_OK)
                 .extract().as(CalendarResponse.class);
 
-        assertThat(response.getDailyInfos().size(), equalTo(30));
+        assertThat(response.getDailyInfos().size(), equalTo(YearMonth.now().lengthOfMonth()));
     }
 }

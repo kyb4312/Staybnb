@@ -60,8 +60,6 @@ public class RoomControllerTest {
     @Test
     @DisplayName("GetOne: 정상")
     public void testGetRoom() {
-        testCreateRoom();
-
         long roomId = 1L;
         RoomResponse roomResponse =
                 given().log().all()
@@ -77,7 +75,6 @@ public class RoomControllerTest {
     @Test
     @DisplayName("GetAll: 정상")
     public void testGetRooms() {
-        testCreateRoom();
         given().log().all()
                 .port(port)
                 .when().get("/rooms")
@@ -594,8 +591,6 @@ public class RoomControllerTest {
     @Test
     @DisplayName("GetOne: 존재하지 않는 숙소 검색")
     public void testNonExistentRoomIdGetRoom() {
-        testCreateRoom();
-
         long roomId = -1L;
         given().log().all()
                 .port(port)

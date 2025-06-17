@@ -29,7 +29,6 @@ public class RoomService {
     private final AmenityService amenityService;
     private final CurrencyService currencyService;
 
-    @Transactional
     public Room save(CreateRoomRequest request) {
         Room room = toEntity(request);
         room.setBasePriceInUsd(exchangeToUsd(room.getBasePrice(), room.getCurrency().getExchangeRate()));
@@ -44,7 +43,6 @@ public class RoomService {
         return roomRepository.findAll(toCommand(request), pageable);
     }
 
-    @Transactional
     public Room update(long id, UpdateRoomRequest request) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
         if(request.getMaxNumberOfGuests() != null) {
@@ -76,7 +74,6 @@ public class RoomService {
         return room;
     }
 
-    @Transactional
     public void delete(long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
         room.setDeleted(true);

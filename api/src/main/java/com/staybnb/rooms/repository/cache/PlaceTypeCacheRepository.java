@@ -27,6 +27,6 @@ public class PlaceTypeCacheRepository {
         if (placeType == null) {
             throw new IllegalArgumentException("PlaceType이 유효하지 않습니다.");
         }
-        return placeTypeCache.getIfPresent(name);
+        return placeType;
     }
 }

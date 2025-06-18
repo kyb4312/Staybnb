@@ -24,7 +24,7 @@ public class CurrencyService {
 
         currencyRepository.findAll().forEach(currency -> {
             currency.setExchangeRate(response.getRates().get(currency.getCode()));
-            currency.setLastUpdated(LocalDateTime.now());
+            currency.setUpdatedAt(LocalDateTime.now());
         });
 
     }

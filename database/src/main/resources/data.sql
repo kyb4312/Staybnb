@@ -22,3 +22,9 @@ insert into amenity (name) values ('wifi');
 insert into amenity (name) values ('tv');
 insert into amenity (name) values ('kitchen');
 insert into amenity (name) values ('air conditioner');
+
+-- room
+insert into room (host_id, place_type_id, room_type, country, city, street, max_number_of_guests, bedrooms, beds, title,
+                  description, currency_code, base_price, base_price_in_usd, is_deleted)
+values (1, 1, 'ENTIRE_PLACE', 'South Korea', 'city', 'street', 2, 2, 2, 'title', 'description', 'KRW', 300000, 0,
+        false);

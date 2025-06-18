@@ -74,3 +74,48 @@ CREATE TABLE `room_amenity` (
     CONSTRAINT `fk_room_amenity_amenity_id` FOREIGN KEY (`amenity_id`) REFERENCES `amenity` (`id`),
     CONSTRAINT `fk_room_amenity_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
 );
+
+-- pricing
+CREATE TABLE `pricing`
+(
+    `id`              bigint NOT NULL AUTO_INCREMENT,
+    `room_id`         bigint NOT NULL,
+    `start_date`      date   NOT NULL,
+    `end_date`        date   NOT NULL,
+    `price_per_night` int    NOT NULL,
+    `updated_at`      datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY               `fk_room_id_idx` (`room_id`),
+    CONSTRAINT `fk_pricing_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
+);
+
+-- availability
+CREATE TABLE `availability`
+(
+    `id`           bigint NOT NULL AUTO_INCREMENT,
+    `room_id`      bigint NOT NULL,
+    `start_date`   date   NOT NULL,
+    `end_date`     date   NOT NULL,
+    `is_available` bit(1) NOT NULL,
+    `updated_at`   datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY            `fk_availability_room_id_idx` (`room_id`),
+    CONSTRAINT `fk_availability_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
+);
+
+-- reservation
+CREATE TABLE `reservation`
+(
+    `id`         int         NOT NULL,
+    `room_id`    bigint      NOT NULL,
+    `guest_id`   bigint      NOT NULL,
+    `price` double NOT NULL,
+    `currency`   varchar(3)  NOT NULL,
+    `status`     varchar(20) NOT NULL,
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY          `fk_reservation_room_id_idx` (`room_id`),
+    KEY          `fk_reservation_guest_id_idx` (`guest_id`),
+    CONSTRAINT `fk_reservation_guest_id` FOREIGN KEY (`guest_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_reservation_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
+);

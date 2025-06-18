@@ -2,6 +2,7 @@ package com.staybnb.rooms.service;
 
 import com.staybnb.rooms.domain.*;
 import com.staybnb.rooms.domain.embedded.Address;
+import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.request.SearchPricingRequest;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
@@ -44,7 +45,7 @@ class PricingAndAvailabilityServiceTest {
     RoomRepository roomRepository;
 
     @Mock
-    CurrencyService currencyService;
+    ExchangeRateService currencyService;
 
     @Captor
     ArgumentCaptor<Pricing> pricingCaptor;
@@ -62,7 +63,6 @@ class PricingAndAvailabilityServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -84,18 +84,16 @@ class PricingAndAvailabilityServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(300_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = LocalDate.now().plusDays(2);
-        String currencyCode = "KRW";
 
-        SearchPricingRequest request = new SearchPricingRequest(startDate, endDate, currencyCode);
+        SearchPricingRequest request = new SearchPricingRequest(startDate, endDate, "KRW");
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
-        when(currencyService.getByCode(currencyCode)).thenReturn(currency);
-        when(currencyService.convert(currency, currency, 600_000)).thenReturn((double) 600_000);
+        when(currencyService.convert(Currency.KRW, Currency.KRW, 600_000)).thenReturn((double) 600_000);
 
         // when
         PricingResponse response = pricingAndAvailabilityService.getPricing(roomId, request);
@@ -103,10 +101,9 @@ class PricingAndAvailabilityServiceTest {
         // then
         verify(roomRepository, times(1)).findById(roomId);
         verify(pricingRepository, times(1)).findPricingsByDate(roomId, startDate, endDate.minusDays(1));
-        verify(currencyService, times(1)).getByCode(currencyCode);
-        verify(currencyService, times(1)).convert(currency, currency, 600_000);
+        verify(currencyService, times(1)).convert(Currency.KRW, Currency.KRW, 600_000);
 
-        PricingResponse expected = new PricingResponse(roomId, startDate, endDate, (double) 600_000, currencyCode);
+        PricingResponse expected = new PricingResponse(roomId, startDate, endDate, (double) 600_000, "KRW");
         assertThat(response)
                 .usingRecursiveComparison()
                 .isEqualTo(expected);
@@ -122,7 +119,6 @@ class PricingAndAvailabilityServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -144,7 +140,7 @@ class PricingAndAvailabilityServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(300_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         LocalDate startDate = LocalDate.now().plusDays(3);
@@ -186,7 +182,6 @@ class PricingAndAvailabilityServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -208,7 +203,7 @@ class PricingAndAvailabilityServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(300_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         LocalDate startDate = LocalDate.now().plusDays(3);
@@ -250,7 +245,6 @@ class PricingAndAvailabilityServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -272,7 +266,7 @@ class PricingAndAvailabilityServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(300_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         YearMonth yearMonth = YearMonth.now();

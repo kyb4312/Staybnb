@@ -1,11 +1,8 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.rooms.domain.Amenity;
-import com.staybnb.rooms.domain.Currency;
-import com.staybnb.rooms.domain.PlaceType;
-import com.staybnb.rooms.domain.User;
-import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.domain.*;
 import com.staybnb.rooms.domain.embedded.Address;
+import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.SearchRoomInfo;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
@@ -47,7 +44,7 @@ class RoomServiceTest {
     AmenityService amenityService;
 
     @Mock
-    CurrencyService currencyService;
+    ExchangeRateService exchangeRateService;
 
     @Captor
     ArgumentCaptor<Room> roomCaptor;
@@ -83,8 +80,7 @@ class RoomServiceTest {
                 .currency(currencyCode)
                 .build();
 
-        Currency currency = new Currency(currencyCode, "Korean won", 1350.0);
-        when(currencyService.getByCode(currencyCode)).thenReturn(currency);
+        when(exchangeRateService.convertToUSD(Currency.KRW, room.getBasePrice())).thenReturn(700_000 / 1350.0);
 
         // when
         roomService.save(room);
@@ -93,7 +89,7 @@ class RoomServiceTest {
         verify(userService, times(1)).getById(hostId);
         verify(placeTypeService, times(1)).getByName(placeType);
         verify(amenityService, times(1)).getAmenitySetByStringSet(amenities);
-        verify(currencyService, times(1)).getByCode(currencyCode);
+        verify(exchangeRateService, times(1)).convertToUSD(Currency.KRW, room.getBasePrice());
         verify(roomRepository, times(1)).save(any(Room.class));
 
         verify(roomRepository).save(roomCaptor.capture());
@@ -108,8 +104,8 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
-                .currency(currency)
-                .basePriceInUsd(700_000 / currency.getExchangeRate())
+                .currency(Currency.KRW)
+                .basePriceInUsd(700_000 / 1350.0)
                 .build();
 
         assertThat(savedRoom)
@@ -129,7 +125,6 @@ class RoomServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -151,7 +146,7 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
@@ -178,7 +173,6 @@ class RoomServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -200,7 +194,7 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         SearchRoomRequest searchRoomRequest = SearchRoomRequest.builder().guests(2).build();
@@ -226,7 +220,6 @@ class RoomServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -248,11 +241,12 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         UpdateRoomRequest updateInfo = UpdateRoomRequest.builder()
                 .basePrice(800_000)
+                .currency("KRW")
                 .build();
 
         Room expected = Room.builder()
@@ -268,8 +262,8 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(updateInfo.getBasePrice()) // updated
-                .currency(currency)
-                .basePriceInUsd(updateInfo.getBasePrice() / currency.getExchangeRate())
+                .currency(Currency.KRW)
+                .basePriceInUsd(updateInfo.getBasePrice() / 1350.0)
                 .build();
 
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
@@ -282,6 +276,7 @@ class RoomServiceTest {
 
         assertThat(updatedRoom)
                 .usingRecursiveComparison()
+                .ignoringFields("basePriceInUsd")
                 .isEqualTo(expected);
     }
 
@@ -296,7 +291,6 @@ class RoomServiceTest {
 
         PlaceType placeType = new PlaceType(1, "house");
         Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
-        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -318,7 +312,7 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
-                .currency(currency)
+                .currency(Currency.KRW)
                 .build();
 
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));

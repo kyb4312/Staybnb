@@ -1,6 +1,7 @@
 package com.staybnb.rooms.controller;
 
 import com.staybnb.rooms.domain.embedded.Address;
+import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
@@ -138,7 +139,7 @@ public class RoomControllerTest {
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
                 .basePrice(createRoomRequest.getBasePrice()) // updated
-                .currency(createRoomRequest.getCurrency()) // updated
+                .currency(Currency.valueOf(createRoomRequest.getCurrency())) // updated
                 .build();
 
         log.info("createRoomRequest: {}", createRoomRequest);
@@ -222,7 +223,7 @@ public class RoomControllerTest {
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
                 .basePrice(updateRoomRequest.getBasePrice()) // updated
-                .currency(updateRoomRequest.getCurrency()) // updated
+                .currency(Currency.valueOf(updateRoomRequest.getCurrency())) // updated
                 .build();
 
         Assertions.assertThat(response)

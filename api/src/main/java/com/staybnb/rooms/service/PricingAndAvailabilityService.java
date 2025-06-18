@@ -1,7 +1,7 @@
 package com.staybnb.rooms.service;
 
+import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.Availability;
-import com.staybnb.rooms.domain.Currency;
 import com.staybnb.rooms.domain.Pricing;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.SearchPricingRequest;
@@ -24,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +36,7 @@ public class PricingAndAvailabilityService {
     private final PricingRepository pricingRepository;
     private final AvailabilityRepository availabilityRepository;
     private final RoomRepository roomRepository;
-    private final CurrencyService currencyService;
+    private final ExchangeRateService exchangeRateService;
 
     /**
      * 숙박 총 가격 조회
@@ -42,9 +45,9 @@ public class PricingAndAvailabilityService {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
         validateDateRange(request);
 
-        double totalPrice = currencyService.convert(
+        double totalPrice = exchangeRateService.convert(
                 room.getCurrency(),
-                currencyService.getByCode(request.getCurrency()),
+                Currency.valueOf(request.getCurrency()),
                 calcTotalPrice(room, request.getStartDate(), request.getEndDate().minusDays(1))
         );
 
@@ -172,9 +175,6 @@ public class PricingAndAvailabilityService {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
         validateYearMonth(yearMonth);
 
-        Currency requestCurrency = currencyService.getByCode(currency);
-        Currency roomCurrency = room.getCurrency();
-
         List<Pricing> pricingList = pricingRepository.findPricingsByMonth(roomId, yearMonth);
         List<Availability> availabilities = availabilityRepository.findAvailabilitiesByMonth(roomId, yearMonth);
 
@@ -185,7 +185,7 @@ public class PricingAndAvailabilityService {
 
         for (LocalDate date = yearMonth.atDay(1); !date.isAfter(yearMonth.atEndOfMonth()); date = date.plusDays(1)) {
             int amount = pricingMap.getOrDefault(date, room.getBasePrice());
-            double price = currencyService.convert(roomCurrency, requestCurrency, amount);
+            double price = exchangeRateService.convert(room.getCurrency(), Currency.valueOf(currency), amount);
             boolean isAvailable = availabilityMap.getOrDefault(date, false);
             dailyInfos.add(new DailyInfo(date, price, isAvailable));
         }

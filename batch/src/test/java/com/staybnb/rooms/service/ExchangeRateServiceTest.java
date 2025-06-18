@@ -1,6 +1,6 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.rooms.repository.CurrencyRepository;
+import com.staybnb.rooms.repository.ExchangeRateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 @Testcontainers
 @SpringBootTest
-class CurrencyServiceTest {
+class ExchangeRateServiceTest {
 
     @Autowired
-    private CurrencyService currencyService;
+    private ExchangeRateService exchangeRateService;
     @Autowired
-    private CurrencyRepository currencyRepository;
+    private ExchangeRateRepository exchangeRateRepository;
 
     @Container
     static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
@@ -41,11 +41,11 @@ class CurrencyServiceTest {
 
     @Test
     void testCurrencyService() {
-        currencyService.updateCurrencyRates();
-        currencyRepository.findAll().forEach(currency -> {
-            log.info("exchangeRate: {}, updated_at: {}", currency.getExchangeRate(), currency.getUpdatedAt());
-            assertNotNull(currency.getExchangeRate());
-            assertNotNull(currency.getUpdatedAt());
+        exchangeRateService.updateExchangeRates();
+        exchangeRateRepository.findAll().forEach(exchangeRate -> {
+            log.info("currency: {}, rate: {}", exchangeRate.getCurrency(), exchangeRate.getRate());
+            assertNotNull(exchangeRate.getRate());
+            assertNotNull(exchangeRate.getUpdatedAt());
         });
     }
 }

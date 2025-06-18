@@ -3,6 +3,7 @@ package com.staybnb.rooms.dto.response;
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.domain.vo.Currency;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -26,7 +27,7 @@ public class RoomResponse {
     private String title;
     private String description;
     private Integer basePrice;
-    private String currency;
+    private Currency currency;
 
     public static RoomResponse fromDomain(Room room) {
         Set<String> amenitySet = new HashSet<>();
@@ -47,7 +48,7 @@ public class RoomResponse {
                 .title(room.getTitle())
                 .description(room.getDescription())
                 .basePrice(room.getBasePrice())
-                .currency(room.getCurrency().getCode())
+                .currency(room.getCurrency())
                 .build();
     }
 }

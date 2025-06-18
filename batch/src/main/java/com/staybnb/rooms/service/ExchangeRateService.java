@@ -1,7 +1,8 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.rooms.dto.CurrencyRateResponse;
-import com.staybnb.rooms.repository.CurrencyRepository;
+import com.staybnb.rooms.domain.vo.Currency;
+import com.staybnb.rooms.dto.ExchangeRateResponse;
+import com.staybnb.rooms.repository.ExchangeRateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,30 +13,30 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class CurrencyService {
+public class ExchangeRateService {
 
-    private final CurrencyRepository currencyRepository;
+    private final ExchangeRateRepository exchangeRateRepository;
     private final RestClient restClient = RestClient.builder().build();
 
     @Transactional
     @Scheduled(initialDelay = 0, fixedDelay = 15 * 60 * 1000)
-    public void updateCurrencyRates() {
-        CurrencyRateResponse response = getCurrencyRate();
+    public void updateExchangeRates() {
+        ExchangeRateResponse response = getCurrencyRate();
 
-        currencyRepository.findAll().forEach(currency -> {
-            currency.setExchangeRate(response.getRates().get(currency.getCode()));
-            currency.setUpdatedAt(LocalDateTime.now());
+        exchangeRateRepository.findAll().forEach(exchangeRate -> {
+            exchangeRate.setRate(response.getRates().get(exchangeRate.getCurrency().toString()));
+            exchangeRate.setUpdatedAt(LocalDateTime.now());
         });
 
     }
 
-    private CurrencyRateResponse getCurrencyRate() {
-        String baseCurrency = "USD";
+    private ExchangeRateResponse getCurrencyRate() {
+        String baseCurrency = Currency.USD.toString();
 
-        CurrencyRateResponse response = restClient.get()
+        ExchangeRateResponse response = restClient.get()
                 .uri("https://api.frankfurter.app/latest?base={base}", baseCurrency)
                 .retrieve()
-                .body(CurrencyRateResponse.class);
+                .body(ExchangeRateResponse.class);
 
         if (response == null || response.getRates() == null) {
             throw new RuntimeException("Error getting currency rates");

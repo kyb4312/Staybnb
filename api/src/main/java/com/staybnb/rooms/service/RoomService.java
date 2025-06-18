@@ -1,6 +1,7 @@
 package com.staybnb.rooms.service;
 
 import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.SearchRoomInfo;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
@@ -12,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
@@ -27,11 +27,11 @@ public class RoomService {
     private final UserService userService;
     private final PlaceTypeService placeTypeService;
     private final AmenityService amenityService;
-    private final CurrencyService currencyService;
+    private final ExchangeRateService exchangeRateService;
 
     public Room save(CreateRoomRequest request) {
         Room room = toEntity(request);
-        room.setBasePriceInUsd(exchangeToUsd(room.getBasePrice(), room.getCurrency().getExchangeRate()));
+        room.setBasePriceInUsd(exchangeRateService.convertToUSD(room.getCurrency(), room.getBasePrice()));
         return roomRepository.save(room);
     }
 
@@ -65,10 +65,10 @@ public class RoomService {
         }
         if (request.getBasePrice() != null) {
             room.setBasePrice(request.getBasePrice());
-            room.setBasePriceInUsd(exchangeToUsd(room.getBasePrice(), room.getCurrency().getExchangeRate()));
+            room.setBasePriceInUsd(exchangeRateService.convertToUSD(Currency.valueOf(request.getCurrency()), request.getBasePrice()));
         }
         if (request.getCurrency() != null) {
-            room.setCurrency(currencyService.getByCode(request.getCurrency()));
+            room.setCurrency(Currency.valueOf(request.getCurrency()));
         }
 
         return room;
@@ -78,10 +78,6 @@ public class RoomService {
         Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
         room.setDeleted(true);
         room.setDeletedAt(LocalDateTime.now());
-    }
-
-    private double exchangeToUsd(int price, double exchangeRate) {
-        return price / exchangeRate;
     }
 
     private Room toEntity(CreateRoomRequest request) {
@@ -97,7 +93,7 @@ public class RoomService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .basePrice(request.getBasePrice())
-                .currency(currencyService.getByCode(request.getCurrency()))
+                .currency(Currency.valueOf(request.getCurrency()))
                 .build();
     }
 

@@ -17,13 +17,13 @@ CREATE TABLE `place_type` (
     UNIQUE KEY `name_UNIQUE` (`name`)
 );
 
--- currency
-CREATE TABLE `currency` (
-    `code` varchar(3) NOT NULL,
-    `name`       varchar(50) DEFAULT NULL,
-    `exchange_rate` double NOT NULL,
-    `updated_at` datetime    DEFAULT NULL,
-    PRIMARY KEY (`code`)
+-- exchange_rate
+CREATE TABLE `exchange_rate`
+(
+    `currency`   varchar(3) NOT NULL,
+    `rate` double NOT NULL,
+    `updated_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`currency`)
 );
 
 -- amenity
@@ -50,7 +50,7 @@ CREATE TABLE `room` (
     `beds` int NOT NULL,
     `title` varchar(100) NOT NULL,
     `description` text,
-    `currency_code` varchar(3) NOT NULL,
+    `currency` varchar(3) NOT NULL,
     `base_price` int    NOT NULL,
     `base_price_in_usd` double NOT NULL,
     `is_deleted` bit(1) NOT NULL,
@@ -58,9 +58,7 @@ CREATE TABLE `room` (
     `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `fk_room_place_type_id_idx` (`place_type_id`),
-    KEY `fk_room_currency_idx` (`currency_code`),
     KEY          `fk_host_id_idx` (`host_id`),
-    CONSTRAINT `fk_room_currency_code` FOREIGN KEY (`currency_code`) REFERENCES `currency` (`code`),
     CONSTRAINT `fk_room_host_id` FOREIGN KEY (`host_id`) REFERENCES `user` (`id`),
     CONSTRAINT `fk_room_place_type_id` FOREIGN KEY (`place_type_id`) REFERENCES `place_type` (`id`)
 );

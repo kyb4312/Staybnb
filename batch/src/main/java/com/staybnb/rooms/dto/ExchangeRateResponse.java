@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.Map;
 
 @Getter
-public class CurrencyRateResponse {
+public class ExchangeRateResponse {
     String base;
     LocalDate date;
     Map<String, Double> rates;

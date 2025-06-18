@@ -1,32 +1,34 @@
 package com.staybnb.rooms.repository.cache;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.staybnb.rooms.domain.PlaceType;
 import com.staybnb.rooms.repository.PlaceTypeRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Repository
-@RequiredArgsConstructor
 public class PlaceTypeCacheRepository {
 
     private final PlaceTypeRepository placeTypeRepository;
-    private final Cache<String, PlaceType> placeTypeCache = Caffeine.newBuilder().build();
+    private final LoadingCache<String, Optional<PlaceType>> placeTypeCache;
 
-    @Scheduled(initialDelay = 0, fixedDelay = 24 * 60 * 60 * 1000)
-    public void loadPlaceTypeCache() {
-        placeTypeRepository.findAll().forEach(placeType -> placeTypeCache.put(placeType.getName(), placeType));
+    public PlaceTypeCacheRepository(PlaceTypeRepository placeTypeRepository) {
+        this.placeTypeRepository = placeTypeRepository;
+        this.placeTypeCache = Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .build(this.placeTypeRepository::findByName);
     }
 
     public PlaceType getByName(String name) {
-        PlaceType placeType = placeTypeCache.getIfPresent(name);
-        if (placeType == null) {
+        Optional<PlaceType> placeType = placeTypeCache.get(name);
+        if (placeType.isEmpty()) {
             throw new IllegalArgumentException("PlaceType이 유효하지 않습니다.");
         }
-        return placeType;
+        return placeType.get();
     }
 }

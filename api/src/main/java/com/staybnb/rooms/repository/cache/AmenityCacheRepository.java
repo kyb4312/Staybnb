@@ -1,32 +1,34 @@
 package com.staybnb.rooms.repository.cache;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.repository.AmenityRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Repository
-@RequiredArgsConstructor
 public class AmenityCacheRepository {
 
     private final AmenityRepository amenityRepository;
-    private final Cache<String, Amenity> amenityCache = Caffeine.newBuilder().build();
+    private final LoadingCache<String, Optional<Amenity>> amenityCache;
 
-    @Scheduled(initialDelay = 0, fixedDelay = 24 * 60 * 60 * 1000)
-    public void refreshAmenityCache() {
-        amenityRepository.findAll().forEach(amenity -> amenityCache.put(amenity.getName(), amenity));
+    public AmenityCacheRepository(AmenityRepository amenityRepository) {
+        this.amenityRepository = amenityRepository;
+        this.amenityCache = Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .build(this.amenityRepository::findByName);
     }
 
     public Amenity getByName(String name) {
-        Amenity amenity = amenityCache.getIfPresent(name);
-        if (amenity == null) {
+        Optional<Amenity> amenity = amenityCache.get(name);
+        if (amenity.isEmpty()) {
             throw new IllegalArgumentException("Amenity가 유효하지 않습니다.");
         }
-        return amenity;
+        return amenity.get();
     }
 }

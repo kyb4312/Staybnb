@@ -1,32 +1,34 @@
 package com.staybnb.rooms.repository.cache;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.staybnb.rooms.domain.Currency;
 import com.staybnb.rooms.repository.CurrencyRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Repository
-@RequiredArgsConstructor
 public class CurrencyCacheRepository {
 
     private final CurrencyRepository currencyRepository;
-    private final Cache<String, Currency> currencyCache = Caffeine.newBuilder().build();
+    private final LoadingCache<String, Optional<Currency>> currencyCache;
 
-    @Scheduled(initialDelay = 0, fixedDelay = 24 * 60 * 60 * 1000)
-    public void loadCurrencyCache() {
-        currencyRepository.findAll().forEach(currency -> currencyCache.put(currency.getCode(), currency));
+    public CurrencyCacheRepository(CurrencyRepository currencyRepository) {
+        this.currencyRepository = currencyRepository;
+        this.currencyCache = Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .build(this.currencyRepository::findByCode);
     }
 
     public Currency getByCode(String code) {
-        Currency currency = currencyCache.getIfPresent(code);
-        if (currency == null) {
-            throw new IllegalArgumentException("Currency가 유효하지 않습니다.");
+        Optional<Currency> currency = currencyCache.get(code);
+        if (currency.isEmpty()) {
+            throw new IllegalArgumentException("Currency가 유효하지 않습니다. Invalid code: " + code);
         }
-        return currency;
+        return currency.get();
     }
 }

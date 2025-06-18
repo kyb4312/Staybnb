@@ -5,7 +5,7 @@ import com.staybnb.rooms.domain.Currency;
 import com.staybnb.rooms.domain.PlaceType;
 import com.staybnb.rooms.domain.User;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.SearchRoomInfo;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
@@ -31,11 +31,11 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class RoomServiceTest {
 
-    @Mock
-    RoomRepository roomRepository;
-
     @InjectMocks
     RoomService roomService;
+
+    @Mock
+    RoomRepository roomRepository;
 
     @Mock
     UserService userService;
@@ -58,7 +58,7 @@ class RoomServiceTest {
         // given
         Long hostId = 1L;
         String placeType = "house";
-        String currency = "KRW";
+        String currencyCode = "KRW";
         Set<String> amenities = Set.of("wifi", "tv");
 
         Address address = Address.builder()
@@ -79,9 +79,12 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
-                .currency(currency)
+                .basePrice(700_000)
+                .currency(currencyCode)
                 .build();
+
+        Currency currency = new Currency(currencyCode, "Korean won", 1350.0);
+        when(currencyService.getByCode(currencyCode)).thenReturn(currency);
 
         // when
         roomService.save(room);
@@ -90,7 +93,7 @@ class RoomServiceTest {
         verify(userService, times(1)).getById(hostId);
         verify(placeTypeService, times(1)).getByName(placeType);
         verify(amenityService, times(1)).getAmenitySetByStringSet(amenities);
-        verify(currencyService, times(1)).getByCode(currency);
+        verify(currencyService, times(1)).getByCode(currencyCode);
         verify(roomRepository, times(1)).save(any(Room.class));
 
         verify(roomRepository).save(roomCaptor.capture());
@@ -104,7 +107,9 @@ class RoomServiceTest {
                 .beds(1)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
+                .currency(currency)
+                .basePriceInUsd(700_000 / currency.getExchangeRate())
                 .build();
 
         assertThat(savedRoom)
@@ -122,8 +127,9 @@ class RoomServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -131,15 +137,6 @@ class RoomServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
@@ -153,7 +150,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 
@@ -179,8 +176,9 @@ class RoomServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -188,15 +186,6 @@ class RoomServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
@@ -210,7 +199,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 
@@ -235,8 +224,9 @@ class RoomServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -244,15 +234,6 @@ class RoomServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
@@ -266,12 +247,12 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 
         UpdateRoomRequest updateInfo = UpdateRoomRequest.builder()
-                .pricePerNight(800_000)
+                .basePrice(800_000)
                 .build();
 
         Room expected = Room.builder()
@@ -286,8 +267,9 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(updateInfo.getPricePerNight()) // updated
+                .basePrice(updateInfo.getBasePrice()) // updated
                 .currency(currency)
+                .basePriceInUsd(updateInfo.getBasePrice() / currency.getExchangeRate())
                 .build();
 
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
@@ -312,8 +294,9 @@ class RoomServiceTest {
         User user = new User();
         user.setId(1L);
 
-        PlaceType placeType = new PlaceType();
-        placeType.setId(1);
+        PlaceType placeType = new PlaceType(1, "house");
+        Set<Amenity> amenities = Set.of(new Amenity(1, "wifi"), new Amenity(2, "tv"));
+        Currency currency = new Currency("KRW", "Korean won", 1350.0);
 
         Address address = Address.builder()
                 .country("United States")
@@ -321,15 +304,6 @@ class RoomServiceTest {
                 .city("Louisville")
                 .street("610 W Magnolia Ave")
                 .build();
-
-        Amenity amenity = new Amenity();
-        amenity.setId(1);
-        Amenity amenity2 = new Amenity();
-        amenity.setId(2);
-        Set<Amenity> amenities = Set.of(amenity, amenity2);
-
-        Currency currency = new Currency();
-        currency.setCode("KRW");
 
         Room room = Room.builder()
                 .id(roomId)
@@ -343,7 +317,7 @@ class RoomServiceTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency(currency)
                 .build();
 

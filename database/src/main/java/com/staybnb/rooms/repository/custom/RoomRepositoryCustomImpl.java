@@ -17,10 +17,9 @@ import static com.staybnb.rooms.domain.QRoom.room;
 
 @Repository
 public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
-
     private final JPAQueryFactory query;
 
-    public RoomRepositoryCustomImpl(EntityManager em) {
+    RoomRepositoryCustomImpl(EntityManager em) {
         this.query = new JPAQueryFactory(em);
     }
 
@@ -74,14 +73,14 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
 
     private BooleanExpression minPrice(Integer priceFrom) {
         if (priceFrom != null) {
-            return room.pricePerNight.goe(priceFrom);
+            return room.basePrice.goe(priceFrom);
         }
         return null;
     }
 
     private BooleanExpression maxPrice(Integer priceTo) {
         if (priceTo != null) {
-            return room.pricePerNight.loe(priceTo);
+            return room.basePrice.loe(priceTo);
         }
         return null;
     }

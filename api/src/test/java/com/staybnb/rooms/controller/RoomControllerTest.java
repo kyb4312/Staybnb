@@ -1,8 +1,13 @@
 package com.staybnb.rooms.controller;
 
-import com.staybnb.rooms.domain.vo.Address;
+import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
+import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
+import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
+import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.response.CalendarResponse;
+import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;
 import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +23,10 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
@@ -105,8 +113,8 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
                 .currency("KRW")
+                .basePrice(700_000)
                 .build();
 
         RoomResponse response =
@@ -132,7 +140,7 @@ public class RoomControllerTest {
                 .amenities(createRoomRequest.getAmenities())
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
-                .pricePerNight(createRoomRequest.getPricePerNight()) // updated
+                .basePrice(createRoomRequest.getBasePrice()) // updated
                 .currency(createRoomRequest.getCurrency()) // updated
                 .build();
 
@@ -173,7 +181,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -190,7 +198,7 @@ public class RoomControllerTest {
 
         UpdateRoomRequest updateRoomRequest = UpdateRoomRequest.builder()
                 .maxNumberOfGuests(4)
-                .pricePerNight(900_000)
+                .basePrice(900_000)
                 .currency("KRW")
                 .build();
 
@@ -216,7 +224,7 @@ public class RoomControllerTest {
                 .amenities(createRoomRequest.getAmenities())
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
-                .pricePerNight(updateRoomRequest.getPricePerNight()) // updated
+                .basePrice(updateRoomRequest.getBasePrice()) // updated
                 .currency(updateRoomRequest.getCurrency()) // updated
                 .build();
 
@@ -252,7 +260,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -301,7 +309,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -341,7 +349,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -381,7 +389,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -399,7 +407,7 @@ public class RoomControllerTest {
         UpdateRoomRequest updateRoomRequest = UpdateRoomRequest.builder()
                 .maxNumberOfGuests(4)
                 .title(" ") // invalid @NotBlank
-                .pricePerNight(900_000)
+                .basePrice(900_000)
                 .currency("KRW")
                 .build();
 
@@ -450,7 +458,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -490,7 +498,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -530,7 +538,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("unsupported") // unsupported Currency
                 .build();
 
@@ -570,7 +578,7 @@ public class RoomControllerTest {
                 .amenities(amenities)
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
-                .pricePerNight(700_000)
+                .basePrice(700_000)
                 .currency("KRW")
                 .build();
 
@@ -594,5 +602,71 @@ public class RoomControllerTest {
                 .when().get("/rooms/{roomId}", roomId)
                 .then().log().all()
                 .statusCode(400);
+    }
+
+    @Test
+    public void updatePricing() {
+        UpdatePricingRequest request = new UpdatePricingRequest(
+                List.of(
+                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
+                ),
+                400000
+        );
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/rooms/{roomId}/pricing", 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK);
+    }
+
+    @Test
+    public void getPricing() {
+        String path = String.format("/rooms/{roomId}/pricing?startDate=%s&endDate=%s&currency=KRW",
+                LocalDate.now().plusMonths(1).plusDays(1),
+                LocalDate.now().plusMonths(1).plusDays(2));
+
+        PricingResponse pricingResponse = given().log().all()
+                .port(port)
+                .when().get(path, 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().as(PricingResponse.class);
+
+        assertThat(pricingResponse.getTotalPrice(), equalTo(300000.0));
+    }
+
+    @Test
+    public void updateAvailability() {
+        UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
+                List.of(
+                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
+                ), true);
+
+        given().log().all()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/rooms/{roomId}/availability", 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK);
+    }
+
+    @Test
+    public void getCalendar() {
+        String path = String.format("/rooms/{roomId}/calendar?currency=KRW&yearMonth=%s", YearMonth.now());
+
+        CalendarResponse response = given().log().all()
+                .port(port)
+                .when().get(path, 1L)
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().as(CalendarResponse.class);
+
+        assertThat(response.getDailyInfos().size(), equalTo(YearMonth.now().lengthOfMonth()));
     }
 }

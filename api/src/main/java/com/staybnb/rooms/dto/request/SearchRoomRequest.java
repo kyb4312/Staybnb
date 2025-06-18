@@ -1,6 +1,5 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.rooms.dto.SearchRoomCommand;
 import com.staybnb.validation.annotation.NullOrNotBlank;
 import com.staybnb.validation.annotation.ValidDateRange;
 import com.staybnb.validation.annotation.ValidPriceRange;
@@ -20,34 +19,23 @@ import java.time.LocalDate;
 public class SearchRoomRequest {
 
     @Min(1)
-    Integer guests;
+    private Integer guests;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    LocalDate startDate;
+    private LocalDate startDate;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    LocalDate endDate;
+    private LocalDate endDate;
 
     @NullOrNotBlank
-    String location;
+    private String location;
 
     @Min(0)
-    Integer priceFrom;
+    private Integer priceFrom;
 
     @Min(0)
-    Integer priceTo;
+    private Integer priceTo;
 
-    String currency;
+    private String currency;
 
-    public SearchRoomCommand toCommand() {
-        return SearchRoomCommand.builder()
-                .numberOfGuests(guests)
-                .startDate(startDate)
-                .endDate(endDate)
-                .location(location)
-                .priceFrom(priceFrom)
-                .priceTo(priceTo)
-                .currency(currency)
-                .build();
-    }
 }

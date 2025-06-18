@@ -1,6 +1,5 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.rooms.dto.UpdateRoomCommand;
 import com.staybnb.validation.annotation.NullOrNotBlank;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
@@ -32,20 +31,8 @@ public class UpdateRoomRequest {
     private String description;
 
     @Min(0)
-    private Integer pricePerNight;
+    private Integer basePrice;
 
     private String currency;
 
-    public UpdateRoomCommand toCommand() {
-        return UpdateRoomCommand.builder()
-                .maxNumberOfGuests(maxNumberOfGuests)
-                .bedrooms(bedrooms)
-                .beds(beds)
-                .amenities(amenities)
-                .title(title)
-                .description(description)
-                .pricePerNight(pricePerNight)
-                .currency(currency)
-                .build();
-    }
 }

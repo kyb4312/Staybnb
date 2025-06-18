@@ -1,22 +1,14 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.rooms.domain.vo.Currency;
-import com.staybnb.rooms.domain.Availability;
 import com.staybnb.rooms.domain.Pricing;
 import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.request.SearchPricingRequest;
-import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.vo.DateRange;
-import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.PricingResponse;
-import com.staybnb.rooms.dto.response.vo.DailyInfo;
 import com.staybnb.rooms.exception.InvalidDateRangeException;
-import com.staybnb.rooms.exception.InvalidRoomIdException;
-import com.staybnb.rooms.exception.InvalidYearMonthException;
-import com.staybnb.rooms.repository.AvailabilityRepository;
 import com.staybnb.rooms.repository.PricingRepository;
-import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,25 +16,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class PricingAndAvailabilityService {
+public class PricingService {
 
     private final PricingRepository pricingRepository;
-    private final AvailabilityRepository availabilityRepository;
-    private final RoomRepository roomRepository;
+
+    private final RoomService roomService;
     private final ExchangeRateService exchangeRateService;
 
     /**
      * 숙박 총 가격 조회
      */
-    public PricingResponse getPricing(Long roomId, SearchPricingRequest request) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
+    public PricingResponse getTotalPrice(Long roomId, SearchPricingRequest request) {
+        Room room = roomService.findById(roomId);
         validateDateRange(request);
 
         double totalPrice = exchangeRateService.convert(
@@ -97,7 +86,7 @@ public class PricingAndAvailabilityService {
      */
     @Transactional
     public void updateSelectedDatesPricing(Long roomId, UpdatePricingRequest request) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
+        Room room = roomService.findById(roomId);
         validateDateSelected(request.getDateSelected());
 
         request.getDateSelected().forEach(range ->
@@ -130,99 +119,8 @@ public class PricingAndAvailabilityService {
         }
     }
 
-    /**
-     * 선택 구간들 숙박 가능 여부 변경
-     */
-    @Transactional
-    public void updateSelectedDatesAvailability(long roomId, UpdateAvailabilityRequest request) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
-        validateDateSelected(request.getDateSelected());
-
-        request.getDateSelected().forEach(range ->
-                updateAvailability(room, range.getStartDate(), range.getEndDate(), request.getIsAvailable()));
-    }
-
-    /**
-     * startDate ~ endDate 구간 숙박 가능 여부 변경
-     */
-    private void updateAvailability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
-        updateConflictedAvailability(room, startDate, endDate);
-        availabilityRepository.save(new Availability(room, startDate, endDate, isAvailable));
-    }
-
-    /**
-     * 날짜가 겹치는 기존 availability 데이터가 있을 경우,
-     * 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
-     */
-    private void updateConflictedAvailability(Room room, LocalDate startDate, LocalDate endDate) {
-        List<Availability> conflictedAvailabilities = availabilityRepository.findAvailabilitiesByDate(room.getId(), startDate, endDate);
-        availabilityRepository.deleteAll(conflictedAvailabilities);
-
-        for (Availability conflicted : conflictedAvailabilities) {
-            if (conflicted.getStartDate().isBefore(startDate)) {
-                availabilityRepository.save(new Availability(room, conflicted.getStartDate(), startDate.minusDays(1), conflicted.isAvailable()));
-            }
-            if (conflicted.getEndDate().isAfter(endDate)) {
-                availabilityRepository.save(new Availability(room, endDate.plusDays(1), conflicted.getEndDate(), conflicted.isAvailable()));
-            }
-        }
-    }
-
-    /**
-     * yearMonth에 해당하는 달의 price, availability 리스트 반환
-     */
-    public CalendarResponse getCalendar(long roomId, String currency, YearMonth yearMonth) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new InvalidRoomIdException(roomId));
-        validateYearMonth(yearMonth);
-
-        List<Pricing> pricingList = pricingRepository.findPricingsByMonth(roomId, yearMonth);
-        List<Availability> availabilities = availabilityRepository.findAvailabilitiesByMonth(roomId, yearMonth);
-
-        Map<LocalDate, Integer> pricingMap = flattenPricingList(pricingList, yearMonth.atDay(1), yearMonth.atEndOfMonth());
-        Map<LocalDate, Boolean> availabilityMap = flattenAvailabilities(availabilities, yearMonth.atDay(1), yearMonth.atEndOfMonth());
-
-        List<DailyInfo> dailyInfos = new ArrayList<>();
-
-        for (LocalDate date = yearMonth.atDay(1); !date.isAfter(yearMonth.atEndOfMonth()); date = date.plusDays(1)) {
-            int amount = pricingMap.getOrDefault(date, room.getBasePrice());
-            double price = exchangeRateService.convert(room.getCurrency(), Currency.valueOf(currency), amount);
-            boolean isAvailable = availabilityMap.getOrDefault(date, false);
-            dailyInfos.add(new DailyInfo(date, price, isAvailable));
-        }
-
-        return new CalendarResponse(roomId, currency, dailyInfos);
-    }
-
-    private Map<LocalDate, Integer> flattenPricingList(List<Pricing> pricingList, LocalDate start, LocalDate end) {
-        Map<LocalDate, Integer> pricingMap = new HashMap<>();
-
-        for (Pricing pricing : pricingList) {
-            for (LocalDate date = max(start, pricing.getStartDate()); !date.isAfter(min(end, pricing.getEndDate())); date = date.plusDays(1)) {
-                pricingMap.put(date, pricing.getPricePerNight());
-            }
-        }
-
-        return pricingMap;
-    }
-
-    private Map<LocalDate, Boolean> flattenAvailabilities(List<Availability> availabilities, LocalDate start, LocalDate end) {
-        Map<LocalDate, Boolean> availabilityMap = new HashMap<>();
-
-        for (Availability availability : availabilities) {
-            for (LocalDate date = max(start, availability.getStartDate()); !date.isAfter(min(end, availability.getEndDate())); date = date.plusDays(1)) {
-                availabilityMap.put(date, availability.isAvailable());
-            }
-        }
-
-        return availabilityMap;
-    }
-
-    private LocalDate max(LocalDate date1, LocalDate date2) {
-        return date1.isAfter(date2) ? date1 : date2;
-    }
-
-    private LocalDate min(LocalDate date1, LocalDate date2) {
-        return date1.isBefore(date2) ? date1 : date2;
+    public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {
+        return pricingRepository.findPricingsByMonth(roomId, yearMonth);
     }
 
     private void validateDateRange(SearchPricingRequest request) {
@@ -250,11 +148,4 @@ public class PricingAndAvailabilityService {
             }
         });
     }
-
-    private void validateYearMonth(YearMonth yearMonth) {
-        if (yearMonth.isAfter(YearMonth.now().plusYears(1))) {
-            throw new InvalidYearMonthException("1년 이내의 값만 조회 가능합니다.", yearMonth);
-        }
-    }
-
 }

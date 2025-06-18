@@ -29,7 +29,9 @@ import java.time.YearMonth;
 public class RoomController {
 
     private final RoomService roomService;
-    private final PricingAndAvailabilityService pricingAndAvailabilityService;
+    private final PricingService pricingService;
+    private final AvailabilityService availabilityService;
+    private final CalendarService pricingAndAvailabilityService;
 
     private final UserService userService;
     private final PlaceTypeService placeTypeService;
@@ -74,17 +76,17 @@ public class RoomController {
 
     @PostMapping("/{roomId}/pricing")
     public void updatePricing(@PathVariable long roomId, @Valid @RequestBody UpdatePricingRequest updatePricingRequest) {
-        pricingAndAvailabilityService.updateSelectedDatesPricing(roomId, updatePricingRequest);
+        pricingService.updateSelectedDatesPricing(roomId, updatePricingRequest);
     }
 
     @GetMapping("/{roomId}/pricing")
     public PricingResponse getPricing(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
-        return pricingAndAvailabilityService.getPricing(roomId, searchPricingRequest);
+        return pricingService.getTotalPrice(roomId, searchPricingRequest);
     }
 
     @PostMapping("/{roomId}/availability")
     public void updateAvailability(@PathVariable long roomId, @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest) {
-        pricingAndAvailabilityService.updateSelectedDatesAvailability(roomId, updateAvailabilityRequest);
+        availabilityService.updateSelectedDatesAvailability(roomId, updateAvailabilityRequest);
     }
 
     @GetMapping("/{roomId}/calendar")

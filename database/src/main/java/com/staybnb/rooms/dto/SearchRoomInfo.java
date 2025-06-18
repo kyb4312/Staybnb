@@ -10,11 +10,13 @@ import java.time.LocalDate;
 @Builder
 @ToString
 public class SearchRoomInfo {
-    Integer numberOfGuests;
-    LocalDate startDate;
-    LocalDate endDate;
-    String location;
-    String currency;
-    Integer priceFrom;
-    Integer priceTo;
+
+    private Integer numberOfGuests;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String location;
+    private String currency;
+    private Integer priceFrom;
+    private Integer priceTo;
+
 }

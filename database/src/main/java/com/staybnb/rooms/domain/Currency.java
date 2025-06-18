@@ -1,25 +1,30 @@
 package com.staybnb.rooms.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Currency {
+
+    public Currency(String code, String name, Double exchangeRate) {
+        this.code = code;
+        this.name = name;
+        this.exchangeRate = exchangeRate;
+    }
 
     @Id
     private String code;
 
     private String name;
 
-    private String symbol;
-
+    @Column(nullable = false)
     private Double exchangeRate;
 
-    private LocalDateTime lastUpdated;
+    private LocalDateTime updatedAt;
 }

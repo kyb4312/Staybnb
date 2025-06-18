@@ -43,9 +43,9 @@ class CurrencyServiceTest {
     void testCurrencyService() {
         currencyService.updateCurrencyRates();
         currencyRepository.findAll().forEach(currency -> {
-            log.info("exchangeRate: {}, updated_at: {}", currency.getExchangeRate(), currency.getLastUpdated());
+            log.info("exchangeRate: {}, updated_at: {}", currency.getExchangeRate(), currency.getUpdatedAt());
             assertNotNull(currency.getExchangeRate());
-            assertNotNull(currency.getLastUpdated());
+            assertNotNull(currency.getUpdatedAt());
         });
     }
 }

@@ -33,15 +33,6 @@ class RoomServiceTest {
     RoomRepository roomRepository;
 
     @Mock
-    UserService userService;
-
-    @Mock
-    PlaceTypeService placeTypeService;
-
-    @Mock
-    AmenityService amenityService;
-
-    @Mock
     ExchangeRateService exchangeRateService;
 
     @Captor

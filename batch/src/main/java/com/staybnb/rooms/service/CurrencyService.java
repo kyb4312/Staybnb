@@ -18,7 +18,7 @@ public class CurrencyService {
     private final RestClient restClient = RestClient.builder().build();
 
     @Transactional
-    @Scheduled(initialDelay = 0, fixedDelay = 24 * 60 * 60 * 1000)
+    @Scheduled(initialDelay = 0, fixedDelay = 15 * 60 * 1000)
     public void updateCurrencyRates() {
         CurrencyRateResponse response = getCurrencyRate();
 

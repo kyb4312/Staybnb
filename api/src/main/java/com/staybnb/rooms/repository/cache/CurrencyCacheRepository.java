@@ -20,7 +20,7 @@ public class CurrencyCacheRepository {
     public CurrencyCacheRepository(CurrencyRepository currencyRepository) {
         this.currencyRepository = currencyRepository;
         this.currencyCache = Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
+                .expireAfterWrite(15, TimeUnit.MINUTES)
                 .build(this.currencyRepository::findByCode);
     }
 

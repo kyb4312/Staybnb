@@ -37,7 +37,7 @@ public class PricingService {
         double totalPrice = exchangeRateService.convert(
                 room.getCurrency(),
                 Currency.valueOf(request.getCurrency()),
-                calcTotalPrice(room, request.getStartDate(), request.getEndDate().minusDays(1))
+                calcTotalPrice(room, request.getStartDate(), request.getEndDate())
         );
 
         return new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency()
@@ -51,7 +51,7 @@ public class PricingService {
         int totalDays = countDays(startDate, endDate);
         int totalPrice = 0;
 
-        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), startDate, endDate);
+        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), startDate, endDate.minusDays(1));
 
         for (Pricing pricing : pricingList) {
             int days = countDaysWithinRange(pricing, startDate, endDate);
@@ -68,7 +68,7 @@ public class PricingService {
      * [(startDate, endDate] 일수 카운트
      */
     private int countDays(LocalDate startDate, LocalDate endDate) {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        return (int) ChronoUnit.DAYS.between(startDate, endDate);
     }
 
     /**

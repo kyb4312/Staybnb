@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @ToString
-public class SearchRoomInfo {
+public class SearchRoomCondition {
 
     private Integer numberOfGuests;
     private LocalDate startDate;

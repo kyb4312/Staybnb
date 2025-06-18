@@ -4,9 +4,7 @@ import com.staybnb.rooms.domain.*;
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
-import com.staybnb.rooms.dto.SearchRoomInfo;
-import com.staybnb.rooms.dto.request.CreateRoomRequest;
-import com.staybnb.rooms.dto.request.SearchRoomRequest;
+import com.staybnb.rooms.dto.SearchRoomCondition;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.repository.RoomRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -53,10 +51,9 @@ class RoomServiceTest {
     @DisplayName("save(): 숙소 등록 시 id가 포함된 객체 반환")
     void save() {
         // given
-        Long hostId = 1L;
-        String placeType = "house";
-        String currencyCode = "KRW";
-        Set<String> amenities = Set.of("wifi", "tv");
+        User host = new User();
+        PlaceType placeType = new PlaceType(1, "HOUSE");
+        Set<Amenity> amenities = Set.of();
 
         Address address = Address.builder()
                 .country("United States")
@@ -65,10 +62,10 @@ class RoomServiceTest {
                 .street("610 W Magnolia Ave")
                 .build();
 
-        CreateRoomRequest room = CreateRoomRequest.builder()
-                .hostId(hostId)
+        Room room = Room.builder()
+                .host(host)
                 .placeType(placeType)
-                .roomType("ENTIRE_PLACE")
+                .roomType(RoomType.ENTIRE_PLACE)
                 .address(address)
                 .maxNumberOfGuests(2)
                 .bedrooms(1)
@@ -77,7 +74,7 @@ class RoomServiceTest {
                 .title("Modern building in Kentucky")
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
-                .currency(currencyCode)
+                .currency(Currency.KRW)
                 .build();
 
         when(exchangeRateService.convertToUSD(Currency.KRW, room.getBasePrice())).thenReturn(700_000 / 1350.0);
@@ -86,9 +83,6 @@ class RoomServiceTest {
         roomService.save(room);
 
         // then
-        verify(userService, times(1)).getById(hostId);
-        verify(placeTypeService, times(1)).getByName(placeType);
-        verify(amenityService, times(1)).getAmenitySetByStringSet(amenities);
         verify(exchangeRateService, times(1)).convertToUSD(Currency.KRW, room.getBasePrice());
         verify(roomRepository, times(1)).save(any(Room.class));
 
@@ -197,15 +191,15 @@ class RoomServiceTest {
                 .currency(Currency.KRW)
                 .build();
 
-        SearchRoomRequest searchRoomRequest = SearchRoomRequest.builder().guests(2).build();
+        SearchRoomCondition searchRoomCondition = SearchRoomCondition.builder().numberOfGuests(2).build();
         Page<Room> pageResponse= new PageImpl<>(List.of(room));
-        when(roomRepository.findAll(any(SearchRoomInfo.class), eq(null))).thenReturn(pageResponse);
+        when(roomRepository.findAll(any(SearchRoomCondition.class), eq(null))).thenReturn(pageResponse);
 
         // when
-        Page<Room> rooms = roomService.findAll(searchRoomRequest, null);
+        Page<Room> rooms = roomService.findAll(searchRoomCondition, null);
 
         // then
-        verify(roomRepository, times(1)).findAll(any(SearchRoomInfo.class), eq(null));
+        verify(roomRepository, times(1)).findAll(any(SearchRoomCondition.class), eq(null));
         assertThat(rooms.getContent().size()).isEqualTo(1);
     }
 

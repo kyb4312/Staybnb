@@ -1,12 +1,14 @@
 package com.staybnb.rooms.controller;
 
 import com.staybnb.rooms.domain.Room;
+import com.staybnb.rooms.domain.vo.Currency;
+import com.staybnb.rooms.domain.vo.RoomType;
+import com.staybnb.rooms.dto.SearchRoomCondition;
 import com.staybnb.rooms.dto.request.*;
 import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;
-import com.staybnb.rooms.service.PricingAndAvailabilityService;
-import com.staybnb.rooms.service.RoomService;
+import com.staybnb.rooms.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,10 @@ public class RoomController {
     private final RoomService roomService;
     private final PricingAndAvailabilityService pricingAndAvailabilityService;
 
+    private final UserService userService;
+    private final PlaceTypeService placeTypeService;
+    private final AmenityService amenityService;
+
     @GetMapping("/{roomId}")
     public RoomResponse getRoom(@PathVariable long roomId) {
         Room room = roomService.findById(roomId);
@@ -37,13 +43,14 @@ public class RoomController {
 
     @GetMapping
     public Page<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
-        return roomService.findAll(searchRoomRequest, pageable)
+        return roomService.findAll(toCondition(searchRoomRequest), pageable)
                 .map(RoomResponse::fromDomain);
     }
 
     @PostMapping
     public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) {
-        Room room = roomService.save(createRoomRequest);
+        Room room = roomService.save(toEntity(createRoomRequest));
+
         URI location = UriComponentsBuilder
                 .fromPath("/rooms/{roomId}")
                 .buildAndExpand(room.getId())
@@ -83,5 +90,34 @@ public class RoomController {
     @GetMapping("/{roomId}/calendar")
     public CalendarResponse getCalendar(@PathVariable long roomId, @RequestParam String currency, @RequestParam YearMonth yearMonth) {
         return pricingAndAvailabilityService.getCalendar(roomId, currency, yearMonth);
+    }
+
+    private Room toEntity(CreateRoomRequest request) {
+        return Room.builder()
+                .host(userService.getById(request.getHostId()))
+                .placeType(placeTypeService.getByName(request.getPlaceType()))
+                .roomType(RoomType.valueOf(request.getRoomType()))
+                .address(request.getAddress())
+                .maxNumberOfGuests(request.getMaxNumberOfGuests())
+                .bedrooms(request.getBedrooms())
+                .beds(request.getBeds())
+                .amenities(amenityService.getAmenitySetByStringSet(request.getAmenities()))
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .basePrice(request.getBasePrice())
+                .currency(Currency.valueOf(request.getCurrency()))
+                .build();
+    }
+
+    private SearchRoomCondition toCondition(SearchRoomRequest request) {
+        return SearchRoomCondition.builder()
+                .numberOfGuests(request.getGuests())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .location(request.getLocation())
+                .priceFrom(request.getPriceFrom())
+                .priceTo(request.getPriceTo())
+                .currency(request.getCurrency())
+                .build();
     }
 }

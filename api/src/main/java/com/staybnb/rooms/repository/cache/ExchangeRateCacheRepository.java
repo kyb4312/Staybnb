@@ -27,9 +27,6 @@ public class ExchangeRateCacheRepository {
 
     public ExchangeRate getExchangeRate(Currency currency) {
         Optional<ExchangeRate> exchangeRate = exchangeRateCache.get(currency);
-        if (exchangeRate.isEmpty()) {
-            throw new IllegalArgumentException("Currency가 유효하지 않습니다: " + currency);
-        }
-        return exchangeRate.get();
+        return exchangeRate.orElseThrow(() -> new IllegalArgumentException("Currency가 유효하지 않습니다: " + currency));
     }
 }

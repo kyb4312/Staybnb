@@ -26,9 +26,6 @@ public class AmenityCacheRepository {
 
     public Amenity getByName(String name) {
         Optional<Amenity> amenity = amenityCache.get(name);
-        if (amenity.isEmpty()) {
-            throw new IllegalArgumentException("Amenity가 유효하지 않습니다.");
-        }
-        return amenity.get();
+        return amenity.orElseThrow(() -> new IllegalArgumentException("Amenity가 유효하지 않습니다."));
     }
 }

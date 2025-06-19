@@ -26,9 +26,6 @@ public class PlaceTypeCacheRepository {
 
     public PlaceType getByName(String name) {
         Optional<PlaceType> placeType = placeTypeCache.get(name);
-        if (placeType.isEmpty()) {
-            throw new IllegalArgumentException("PlaceType이 유효하지 않습니다.");
-        }
-        return placeType.get();
+        return placeType.orElseThrow(() -> new IllegalArgumentException("PlaceType이 유효하지 않습니다."));
     }
 }

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -37,6 +38,7 @@ public class RoomService {
         return roomRepository.findAll(condition, pageable);
     }
 
+    @Transactional
     public Room update(long roomId, UpdateRoomRequest request) {
         Room room = findById(roomId);
         if(request.getMaxNumberOfGuests() != null) {
@@ -68,6 +70,7 @@ public class RoomService {
         return room;
     }
 
+    @Transactional
     public void delete(long roomId) {
         Room room = findById(roomId);
         room.setDeleted(true);

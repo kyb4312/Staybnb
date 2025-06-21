@@ -71,7 +71,7 @@ public class HostRoomController {
 
     private Room toEntity(CreateRoomRequest request) {
         return Room.builder()
-                .host(userService.getById(request.getHostId()))
+                .host(userService.findById(request.getHostId()))
                 .placeType(placeTypeService.getByName(request.getPlaceType()))
                 .roomType(RoomType.valueOf(request.getRoomType()))
                 .address(request.getAddress())

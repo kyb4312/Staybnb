@@ -55,7 +55,7 @@ public class Booking {
     public Booking() {
     }
 
-    public Booking(Room room, User user, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut, Double bookingPrice, Currency currency, BookingStatus status) {
+    public Booking(Room room, User user, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut, Double bookingPrice, Currency currency) {
         this.room = room;
         this.user = user;
         this.numberOfGuests = numberOfGuests;
@@ -63,6 +63,5 @@ public class Booking {
         this.checkOut = checkOut;
         this.bookingPrice = bookingPrice;
         this.currency = currency;
-        this.status = status;
     }
 }

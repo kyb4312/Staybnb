@@ -14,11 +14,13 @@ public class CreateBookingRequest {
     private Long roomId;
 
     @NotNull
-    private Long userId;
+    private Long guestId;
 
+    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate checkIn;
 
+    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate checkOut;
 
@@ -32,9 +34,9 @@ public class CreateBookingRequest {
     @NotNull
     private String currency;
 
-    public CreateBookingRequest(Long roomId, Long userId, LocalDate checkIn, LocalDate checkOut, Integer numberOfGuests, Double bookingPrice, String currency) {
+    public CreateBookingRequest(Long roomId, Long guestId, LocalDate checkIn, LocalDate checkOut, Integer numberOfGuests, Double bookingPrice, String currency) {
         this.roomId = roomId;
-        this.userId = userId;
+        this.guestId = guestId;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.numberOfGuests = numberOfGuests;

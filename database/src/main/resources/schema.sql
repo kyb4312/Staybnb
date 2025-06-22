@@ -101,19 +101,23 @@ CREATE TABLE `availability`
     CONSTRAINT `fk_availability_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
 );
 
--- reservation
-CREATE TABLE `reservation`
+-- booking
+CREATE TABLE `booking`
 (
-    `id`         int         NOT NULL,
-    `room_id`    bigint      NOT NULL,
-    `guest_id`   bigint      NOT NULL,
-    `price` double NOT NULL,
-    `currency`   varchar(3)  NOT NULL,
-    `status`     varchar(20) NOT NULL,
+    `id`               int         NOT NULL AUTO_INCREMENT,
+    `room_id`          bigint      NOT NULL,
+    `guest_id`         bigint      NOT NULL,
+    `check_in`         date        NOT NULL,
+    `check_out`        date        NOT NULL,
+    `number_of_guests` int         NOT NULL,
+    `booking_price` double NOT NULL,
+    `currency`         varchar(3)  NOT NULL,
+    `status`           varchar(20) NOT NULL,
     `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`       datetime DEFAULT NULL,
     PRIMARY KEY (`id`),
-    KEY          `fk_reservation_room_id_idx` (`room_id`),
-    KEY          `fk_reservation_guest_id_idx` (`guest_id`),
-    CONSTRAINT `fk_reservation_guest_id` FOREIGN KEY (`guest_id`) REFERENCES `user` (`id`),
-    CONSTRAINT `fk_reservation_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
+    KEY                `fk_booking_room_id_idx` (`room_id`),
+    KEY                `fk_booking_guest_id_idx` (`guest_id`),
+    CONSTRAINT `fk_booking_guest_id` FOREIGN KEY (`guest_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_booking_room_id` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
 );

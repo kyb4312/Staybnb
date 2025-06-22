@@ -29,18 +29,28 @@ public class PricingService {
 
     /**
      * 숙박 총 가격 조회
+     * @return PricingResponse
      */
-    public PricingResponse getTotalPrice(Long roomId, SearchPricingRequest request) {
+    public PricingResponse getTotalPricing(Long roomId, SearchPricingRequest request) {
         Room room = roomService.findById(roomId);
         validateDateRange(request);
 
-        double totalPrice = exchangeRateService.convert(
-                room.getCurrency(),
-                Currency.valueOf(request.getCurrency()),
-                calcTotalPrice(room, request.getStartDate(), request.getEndDate())
-        );
+        double totalPrice = getTotalPrice(room, request.getStartDate(), request.getEndDate(), Currency.valueOf(request.getCurrency()));
 
         return new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency()
+        );
+    }
+
+    /**
+     * 숙박 총 가격 조회
+     *
+     * @return double
+     */
+    public double getTotalPrice(Room room, LocalDate checkIn, LocalDate checkOut, Currency currency) {
+        return exchangeRateService.convert(
+                room.getCurrency(),
+                currency,
+                calcTotalPrice(room, checkIn, checkOut)
         );
     }
 

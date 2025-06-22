@@ -87,7 +87,7 @@ public class PricingServiceTest {
         when(exchangeRateService.convert(Currency.KRW, Currency.KRW, 600_000)).thenReturn((double) 600_000);
 
         // when
-        PricingResponse response = pricingService.getTotalPrice(roomId, request);
+        PricingResponse response = pricingService.getTotalPricing(roomId, request);
 
         // then
         verify(roomService, times(1)).findById(roomId);

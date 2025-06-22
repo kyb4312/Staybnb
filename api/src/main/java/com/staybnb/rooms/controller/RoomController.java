@@ -40,8 +40,8 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}/pricing")
-    public PricingResponse getTotalPrice(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
-        return pricingService.getTotalPrice(roomId, searchPricingRequest);
+    public PricingResponse getTotalPricing(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
+        return pricingService.getTotalPricing(roomId, searchPricingRequest);
     }
 
     @GetMapping("/{roomId}/calendar")

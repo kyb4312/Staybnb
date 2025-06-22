@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 
 @Getter
-public class GetPreBookingInfoRequest {
+public class GetBookingPreviewRequest {
 
     @NotNull
     private Long roomId;
@@ -17,16 +17,18 @@ public class GetPreBookingInfoRequest {
     @Min(1)
     private Integer numberOfGuests;
 
+    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate checkIn;
 
+    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate checkOut;
 
     @NotNull
     private String guestCurrency;
 
-    public GetPreBookingInfoRequest(Long roomId, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut, String guestCurrency) {
+    public GetBookingPreviewRequest(Long roomId, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut, String guestCurrency) {
         this.roomId = roomId;
         this.numberOfGuests = numberOfGuests;
         this.checkIn = checkIn;

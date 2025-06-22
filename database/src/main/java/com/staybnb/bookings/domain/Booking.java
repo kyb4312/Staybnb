@@ -29,19 +29,16 @@ public class Booking {
     private User user;
 
     @Column(nullable = false)
+    private Integer numberOfGuests;
+
+    @Column(nullable = false)
     private LocalDate checkIn;
 
     @Column(nullable = false)
     private LocalDate checkOut;
 
     @Column(nullable = false)
-    private Double basePrice;
-
-    @Column(nullable = false)
-    private Double serviceFee;
-
-    @Column(nullable = false)
-    private Double totalPrice;
+    private Double bookingPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -55,15 +52,16 @@ public class Booking {
 
     private LocalDateTime updatedAt;
 
-    public Booking(Long id, Room room, User user, LocalDate checkIn, LocalDate checkOut, Double basePrice, Double serviceFee, Double totalPrice, Currency currency, BookingStatus status) {
-        this.id = id;
+    public Booking() {
+    }
+
+    public Booking(Room room, User user, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut, Double bookingPrice, Currency currency, BookingStatus status) {
         this.room = room;
         this.user = user;
+        this.numberOfGuests = numberOfGuests;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
-        this.basePrice = basePrice;
-        this.serviceFee = serviceFee;
-        this.totalPrice = totalPrice;
+        this.bookingPrice = bookingPrice;
         this.currency = currency;
         this.status = status;
     }

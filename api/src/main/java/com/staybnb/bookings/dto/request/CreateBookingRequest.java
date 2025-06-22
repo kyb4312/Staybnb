@@ -27,18 +27,18 @@ public class CreateBookingRequest {
     private Integer numberOfGuests;
 
     @NotNull
-    private Double totalPrice;
+    private Double bookingPrice;
 
     @NotNull
     private String currency;
 
-    public CreateBookingRequest(Long roomId, Long userId, LocalDate checkIn, LocalDate checkOut, Integer numberOfGuests, Double totalPrice, String currency) {
+    public CreateBookingRequest(Long roomId, Long userId, LocalDate checkIn, LocalDate checkOut, Integer numberOfGuests, Double bookingPrice, String currency) {
         this.roomId = roomId;
         this.userId = userId;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.numberOfGuests = numberOfGuests;
-        this.totalPrice = totalPrice;
+        this.bookingPrice = bookingPrice;
         this.currency = currency;
     }
 }

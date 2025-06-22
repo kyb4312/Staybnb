@@ -37,7 +37,7 @@ public class AvailabilityService {
     /**
      * startDate ~ endDate 구간 숙박 가능 여부 변경
      */
-    private void updateAvailability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
+    public void updateAvailability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
         updateConflictedAvailability(room, startDate, endDate);
         availabilityRepository.save(new Availability(room, startDate, endDate, isAvailable));
     }

@@ -35,6 +35,20 @@ public class AvailabilityRepositoryCustomImpl implements AvailabilityRepositoryC
     }
 
     @Override
+    public List<Availability> findTrueAvailabilitiesByDate(Long roomId, LocalDate startDate, LocalDate endDate) {
+        return query
+                .select(availability)
+                .from(availability)
+                .where(
+                        roomId(roomId),
+                        isAvailable(true),
+                        startBefore(endDate),
+                        endAfter(startDate)
+                )
+                .fetch();
+    }
+
+    @Override
     public List<Availability> findAvailabilitiesByMonth(Long roomId, YearMonth yearMonth) {
         return query
                 .select(availability)
@@ -58,5 +72,9 @@ public class AvailabilityRepositoryCustomImpl implements AvailabilityRepositoryC
 
     private BooleanExpression endAfter(LocalDate startDate) {
         return availability.endDate.goe(startDate);
+    }
+
+    private BooleanExpression isAvailable(boolean isAvailable) {
+        return availability.isAvailable.eq(isAvailable);
     }
 }

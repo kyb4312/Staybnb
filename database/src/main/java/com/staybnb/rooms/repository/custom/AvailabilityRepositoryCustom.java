@@ -13,6 +13,11 @@ public interface AvailabilityRepositoryCustom {
     List<Availability> findAvailabilitiesByDate(Long roomId, LocalDate startDate, LocalDate endDate);
 
     /**
+     * [startDate, endDate] 구간과 겹치고, isAvailable == true 인 availability list 반환
+     */
+    List<Availability> findTrueAvailabilitiesByDate(Long roomId, LocalDate startDate, LocalDate endDate);
+
+    /**
      * yearMonth 달에 해당하는 availability list 반환
      */
     List<Availability> findAvailabilitiesByMonth(Long roomId, YearMonth yearMonth);

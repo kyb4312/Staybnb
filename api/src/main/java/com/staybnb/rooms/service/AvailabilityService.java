@@ -64,6 +64,18 @@ public class AvailabilityService {
         return availabilityRepository.findAvailabilitiesByMonth(roomId, yearMonth);
     }
 
+    public boolean isAvailable(long roomId, LocalDate checkIn, LocalDate checkOut) {
+        LocalDate date = checkIn;
+        List<Availability> availabilities = availabilityRepository.findTrueAvailabilitiesByDate(roomId, checkIn, checkOut.minusDays(1));
+        for (Availability availability : availabilities) {
+            if (availability.getStartDate().isAfter(date)) {
+                return false;
+            }
+            date = availability.getEndDate().plusDays(1);
+        }
+        return date.isAfter(checkOut);
+    }
+
     private void validateDateSelected(List<DateRange> dateSelected) {
         dateSelected.forEach(dateRange -> {
             if (dateRange.getStartDate().isBefore(LocalDate.now())) {

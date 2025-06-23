@@ -3,10 +3,7 @@ package com.staybnb.bookings.service;
 import com.staybnb.bookings.domain.Booking;
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
-import com.staybnb.bookings.exception.BookingPriceChangedException;
-import com.staybnb.bookings.exception.ExceededNumberOfGuestException;
-import com.staybnb.bookings.exception.NoSuchBookingException;
-import com.staybnb.bookings.exception.UnavailableDateException;
+import com.staybnb.bookings.exception.*;
 import com.staybnb.bookings.repository.BookingRepository;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
@@ -57,9 +54,9 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    private void checkAvailability(Room room, LocalDate checkIn, LocalDate checkOut) {
-        if (!availabilityService.isAvailable(room.getId(), checkIn, checkOut)) {
-            throw new UnavailableDateException(checkIn, checkOut);
+    private void checkAvailability(Room room, LocalDate checkInInclusive, LocalDate checkOutExclusive) {
+        if (!availabilityService.isAvailable(room.getId(), checkInInclusive, checkOutExclusive)) {
+            throw new UnavailableDateException(checkInInclusive, checkOutExclusive);
         }
     }
 
@@ -82,7 +79,26 @@ public class BookingService {
     @Transactional
     public Booking cancelBooking(Long bookingId) {
         Booking booking = getBooking(bookingId);
-        booking.setStatus(BookingStatus.CANCELLED);
+        if (!(booking.getStatus() == BookingStatus.REQUESTED || booking.getStatus() == BookingStatus.RESERVED)) {
+            throw new InvalidStatusChangeException();
+        }
+        return updateBookingStatus(booking, BookingStatus.CANCELLED);
+    }
+
+    @Transactional
+    public Booking updateBooking(Long bookingId, BookingStatus status) {
+        Booking booking = getBooking(bookingId);
+        if (!(status == BookingStatus.RESERVED || status == BookingStatus.REJECTED)) {
+            throw new InvalidStatusChangeException();
+        }
+        if (booking.getStatus() != BookingStatus.REQUESTED) {
+            throw new InvalidStatusChangeException();
+        }
+        return updateBookingStatus(booking, status);
+    }
+
+    private Booking updateBookingStatus(Booking booking, BookingStatus bookingStatus) {
+        booking.setStatus(bookingStatus);
         return booking;
     }
 
@@ -96,5 +112,10 @@ public class BookingService {
 
     public Page<Booking> findCancelledBookings(Long userId, Pageable pageable) {
         return bookingRepository.findBookingsByStatus(pageable, userId, BookingStatus.CANCELLED, BookingStatus.REJECTED);
+    }
+
+    public Page<Booking> findBookingsByRoomId(Long roomId, Pageable pageable) {
+        Room room = roomService.findById(roomId);
+        return bookingRepository.findByRoom(room, pageable);
     }
 }

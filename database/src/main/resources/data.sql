@@ -43,7 +43,7 @@ insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, b
 values (2, 2, now() + interval 2 day, now() + interval 4 day, 2, 550000, "KRW", 'RESERVED');
 
 insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
-values (2, 2, now() + interval 4 day, now() + interval 8 day, 2, 550000, "KRW", 'CANCELED');
+values (2, 2, now() + interval 4 day, now() + interval 8 day, 2, 550000, "KRW", 'CANCELLED');
 
 insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
 values (2, 2, now() + interval 8 day, now() + interval 10 day, 2, 550000, "KRW", 'REJECTED');

@@ -94,7 +94,7 @@ public class BookingService {
         return bookingRepository.findBookingsByStatus(pageable, userId, BookingStatus.ENDED);
     }
 
-    public Page<Booking> findCanceledBookings(Long userId, Pageable pageable) {
+    public Page<Booking> findCancelledBookings(Long userId, Pageable pageable) {
         return bookingRepository.findBookingsByStatus(pageable, userId, BookingStatus.CANCELLED, BookingStatus.REJECTED);
     }
 }

@@ -67,9 +67,9 @@ public class BookingController {
         return bookingService.findPastBookings(userId, pageable).map(BookingResponse::fromEntity);
     }
 
-    @GetMapping("/canceled/{userId}")
-    public Page<BookingResponse> findCanceledBookings(@PathVariable Long userId, Pageable pageable) {
-        return bookingService.findCanceledBookings(userId, pageable).map(BookingResponse::fromEntity);
+    @GetMapping("/cancelled/{userId}")
+    public Page<BookingResponse> findCancelledBookings(@PathVariable Long userId, Pageable pageable) {
+        return bookingService.findCancelledBookings(userId, pageable).map(BookingResponse::fromEntity);
     }
 
     private Booking toEntity(CreateBookingRequest request) {

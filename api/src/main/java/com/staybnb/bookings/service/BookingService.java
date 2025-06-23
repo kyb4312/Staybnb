@@ -41,6 +41,7 @@ public class BookingService {
         return new Booking(room, null, request.getNumberOfGuests(), request.getCheckIn(), request.getCheckOut(), bookingPrice, guestCurrency);
     }
 
+    @Transactional
     public Booking createBooking(Booking booking) {
         checkAvailability(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
         checkNumberOfGuests(booking.getRoom(), booking.getNumberOfGuests());

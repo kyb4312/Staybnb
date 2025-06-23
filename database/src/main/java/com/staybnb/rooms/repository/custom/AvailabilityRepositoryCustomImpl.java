@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.staybnb.rooms.domain.Availability;
 import jakarta.persistence.EntityManager;
-import org.springframework.stereotype.Repository;
+import jakarta.persistence.LockModeType;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -44,6 +44,7 @@ public class AvailabilityRepositoryCustomImpl implements AvailabilityRepositoryC
                         startBefore(endDateInclusive),
                         endAfter(startDateInclusive)
                 )
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetch();
     }
 

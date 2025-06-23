@@ -1,6 +1,5 @@
 package com.staybnb.bookings.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.bookings.dto.request.CreateBookingRequest;
 import com.staybnb.bookings.dto.response.BookingPreviewResponse;
@@ -10,11 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 
@@ -23,27 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @Slf4j
-@Testcontainers
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BookingControllerTest {
 
-    @Container
-    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
-            .withDatabaseName("staybnb")
-            .withUsername("test")
-            .withPassword("test");
     @LocalServerPort
     int port;
-
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysql::getJdbcUrl);
-        registry.add("spring.datasource.username", mysql::getUsername);
-        registry.add("spring.datasource.password", mysql::getPassword);
-        registry.add("spring.datasource.driver-class-name", mysql::getDriverClassName);
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none"); // jpa 에서 ddl 실행 방지
-        registry.add("spring.sql.init.mode", () -> "always"); // schema.sql, data.sql 스크립트 실행
-    }
 
     @Test
     void getBookingPreview() {
@@ -125,7 +105,7 @@ class BookingControllerTest {
 
     @Test
     void cancelBooking() {
-        long bookingId = 1L;
+        long bookingId = 2L; // status: RESERVED
 
         BookingResponse response = given().log().all()
                 .port(port)
@@ -141,7 +121,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void findUpcomingBookings() throws JsonProcessingException {
+    void findUpcomingBookings() {
         long userId = 2L;
 
         given().log().all()
@@ -157,7 +137,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void findPastBookings() throws JsonProcessingException {
+    void findPastBookings() {
         long userId = 2L;
 
         given().log().all()

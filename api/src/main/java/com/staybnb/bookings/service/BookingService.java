@@ -80,7 +80,7 @@ public class BookingService {
     public Booking cancelBooking(Long bookingId) {
         Booking booking = getBooking(bookingId);
         if (!(booking.getStatus() == BookingStatus.REQUESTED || booking.getStatus() == BookingStatus.RESERVED)) {
-            throw new InvalidStatusChangeException();
+            throw new InvalidStatusChangeException(booking.getStatus().toString());
         }
         return updateBookingStatus(booking, BookingStatus.CANCELLED);
     }
@@ -92,7 +92,7 @@ public class BookingService {
             throw new InvalidStatusChangeException();
         }
         if (booking.getStatus() != BookingStatus.REQUESTED) {
-            throw new InvalidStatusChangeException();
+            throw new InvalidStatusChangeException(booking.getStatus().toString());
         }
         return updateBookingStatus(booking, status);
     }

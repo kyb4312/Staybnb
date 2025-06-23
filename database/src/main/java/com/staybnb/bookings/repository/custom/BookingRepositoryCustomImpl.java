@@ -48,6 +48,9 @@ public class BookingRepositoryCustomImpl implements BookingRepositoryCustom {
     }
 
     private BooleanExpression guestId(Long guestId) {
+        if (guestId == null) {
+            return null;
+        }
         return booking.user.id.eq(guestId);
     }
 

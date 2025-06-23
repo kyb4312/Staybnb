@@ -12,7 +12,6 @@ import java.util.List;
 
 import static com.staybnb.rooms.domain.QPricing.pricing;
 
-@Repository
 public class PricingRepositoryCustomImpl implements PricingRepositoryCustom {
 
     private final JPAQueryFactory query;

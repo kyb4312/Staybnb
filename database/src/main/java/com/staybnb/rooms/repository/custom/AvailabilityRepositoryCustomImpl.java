@@ -12,7 +12,6 @@ import java.util.List;
 
 import static com.staybnb.rooms.domain.QAvailability.availability;
 
-@Repository
 public class AvailabilityRepositoryCustomImpl implements AvailabilityRepositoryCustom {
 
     private final JPAQueryFactory query;

@@ -10,12 +10,12 @@ public interface AvailabilityRepositoryCustom {
     /**
      * [startDate, endDate] 구간과 겹치는 availability list 반환
      */
-    List<Availability> findAvailabilitiesByDate(Long roomId, LocalDate startDate, LocalDate endDate);
+    List<Availability> findAvailabilitiesByDate(Long roomId, LocalDate startDateInclusive, LocalDate endDateInclusive);
 
     /**
      * [startDate, endDate] 구간과 겹치고, isAvailable == true 인 availability list 반환
      */
-    List<Availability> findTrueAvailabilitiesByDate(Long roomId, LocalDate startDate, LocalDate endDate);
+    List<Availability> findTrueAvailabilitiesByDate(Long roomId, LocalDate startDateInclusive, LocalDate endDateInclusive);
 
     /**
      * yearMonth 달에 해당하는 availability list 반환

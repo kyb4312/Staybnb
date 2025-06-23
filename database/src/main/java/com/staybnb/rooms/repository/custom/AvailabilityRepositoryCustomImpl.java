@@ -22,28 +22,28 @@ public class AvailabilityRepositoryCustomImpl implements AvailabilityRepositoryC
     }
 
     @Override
-    public List<Availability> findAvailabilitiesByDate(Long roomId, LocalDate startDate, LocalDate endDate) {
+    public List<Availability> findAvailabilitiesByDate(Long roomId, LocalDate startDateInclusive, LocalDate endDateInclusive) {
         return query
                 .select(availability)
                 .from(availability)
                 .where(
                         roomId(roomId),
-                        startBefore(endDate),
-                        endAfter(startDate)
+                        startBefore(endDateInclusive),
+                        endAfter(startDateInclusive)
                 )
                 .fetch();
     }
 
     @Override
-    public List<Availability> findTrueAvailabilitiesByDate(Long roomId, LocalDate startDate, LocalDate endDate) {
+    public List<Availability> findTrueAvailabilitiesByDate(Long roomId, LocalDate startDateInclusive, LocalDate endDateInclusive) {
         return query
                 .select(availability)
                 .from(availability)
                 .where(
                         roomId(roomId),
                         isAvailable(true),
-                        startBefore(endDate),
-                        endAfter(startDate)
+                        startBefore(endDateInclusive),
+                        endAfter(startDateInclusive)
                 )
                 .fetch();
     }

@@ -37,25 +37,25 @@ public class AvailabilityService {
     /**
      * startDate ~ endDate 구간 숙박 가능 여부 변경
      */
-    public void updateAvailability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
-        updateConflictedAvailability(room, startDate, endDate);
-        availabilityRepository.save(new Availability(room, startDate, endDate, isAvailable));
+    public void updateAvailability(Room room, LocalDate startDateInclusive, LocalDate endDateInclusive, boolean isAvailable) {
+        updateConflictedAvailability(room, startDateInclusive, endDateInclusive);
+        availabilityRepository.save(new Availability(room, startDateInclusive, endDateInclusive, isAvailable));
     }
 
     /**
      * 날짜가 겹치는 기존 availability 데이터가 있을 경우,
      * 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updateConflictedAvailability(Room room, LocalDate startDate, LocalDate endDate) {
-        List<Availability> conflictedAvailabilities = availabilityRepository.findAvailabilitiesByDate(room.getId(), startDate, endDate);
+    private void updateConflictedAvailability(Room room, LocalDate startDateInclusive, LocalDate endDateInclusive) {
+        List<Availability> conflictedAvailabilities = availabilityRepository.findAvailabilitiesByDate(room.getId(), startDateInclusive, endDateInclusive);
         availabilityRepository.deleteAll(conflictedAvailabilities);
 
         for (Availability conflicted : conflictedAvailabilities) {
-            if (conflicted.getStartDate().isBefore(startDate)) {
-                availabilityRepository.save(new Availability(room, conflicted.getStartDate(), startDate.minusDays(1), conflicted.isAvailable()));
+            if (conflicted.getStartDate().isBefore(startDateInclusive)) {
+                availabilityRepository.save(new Availability(room, conflicted.getStartDate(), startDateInclusive.minusDays(1), conflicted.isAvailable()));
             }
-            if (conflicted.getEndDate().isAfter(endDate)) {
-                availabilityRepository.save(new Availability(room, endDate.plusDays(1), conflicted.getEndDate(), conflicted.isAvailable()));
+            if (conflicted.getEndDate().isAfter(endDateInclusive)) {
+                availabilityRepository.save(new Availability(room, endDateInclusive.plusDays(1), conflicted.getEndDate(), conflicted.isAvailable()));
             }
         }
     }
@@ -64,16 +64,16 @@ public class AvailabilityService {
         return availabilityRepository.findAvailabilitiesByMonth(roomId, yearMonth);
     }
 
-    public boolean isAvailable(long roomId, LocalDate checkIn, LocalDate checkOut) {
-        LocalDate date = checkIn;
-        List<Availability> availabilities = availabilityRepository.findTrueAvailabilitiesByDate(roomId, checkIn, checkOut.minusDays(1));
+    public boolean isAvailable(long roomId, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive) {
+        LocalDate date = checkInDateInclusive;
+        List<Availability> availabilities = availabilityRepository.findTrueAvailabilitiesByDate(roomId, checkInDateInclusive, checkOutDateExclusive.minusDays(1));
         for (Availability availability : availabilities) {
             if (availability.getStartDate().isAfter(date)) {
                 return false;
             }
             date = availability.getEndDate().plusDays(1);
         }
-        return date.isAfter(checkOut);
+        return !date.isBefore(checkOutDateExclusive);
     }
 
     private void validateDateSelected(List<DateRange> dateSelected) {

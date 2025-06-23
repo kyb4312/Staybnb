@@ -46,25 +46,25 @@ public class PricingService {
      *
      * @return double
      */
-    public double getTotalPrice(Room room, LocalDate checkIn, LocalDate checkOut, Currency currency) {
+    public double getTotalPrice(Room room, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive, Currency currency) {
         return exchangeRateService.convert(
                 room.getCurrency(),
                 currency,
-                calcTotalPrice(room, checkIn, checkOut)
+                calcTotalPrice(room, checkInDateInclusive, checkOutDateExclusive)
         );
     }
 
     /**
      * [startDate, endDate] 기간 총 숙박 가격 계산
      */
-    private int calcTotalPrice(Room room, LocalDate startDate, LocalDate endDate) {
-        int totalDays = countDays(startDate, endDate);
+    private int calcTotalPrice(Room room, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive) {
+        int totalDays = (int) ChronoUnit.DAYS.between(checkInDateInclusive, checkOutDateExclusive);
         int totalPrice = 0;
 
-        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), startDate, endDate.minusDays(1));
+        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), checkInDateInclusive, checkOutDateExclusive.minusDays(1));
 
         for (Pricing pricing : pricingList) {
-            int days = countDaysWithinRange(pricing, startDate, endDate);
+            int days = countDaysWithinRange(pricing, checkInDateInclusive, checkOutDateExclusive.minusDays(1));
             totalPrice += days * pricing.getPricePerNight();
             totalDays -= days;
         }
@@ -75,19 +75,12 @@ public class PricingService {
     }
 
     /**
-     * [(startDate, endDate] 일수 카운트
-     */
-    private int countDays(LocalDate startDate, LocalDate endDate) {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate);
-    }
-
-    /**
      * pricing 날짜 범위 중 [startDate, endDate] 구간에 포함되는 일수 카운트
      */
-    private int countDaysWithinRange(Pricing pricing, LocalDate startDate, LocalDate endDate) {
+    private int countDaysWithinRange(Pricing pricing, LocalDate startDateInclusive, LocalDate endDateInclusive) {
         return (int) ChronoUnit.DAYS.between(
-                pricing.getStartDate().isBefore(startDate) ? startDate : pricing.getStartDate(),
-                pricing.getEndDate().isAfter(endDate) ? endDate : pricing.getEndDate()
+                pricing.getStartDate().isBefore(startDateInclusive) ? startDateInclusive : pricing.getStartDate(),
+                pricing.getEndDate().isAfter(endDateInclusive) ? endDateInclusive : pricing.getEndDate()
         ) + 1;
     }
 
@@ -106,25 +99,25 @@ public class PricingService {
     /**
      * startDate ~ endDate 구간 숙박 가격 변경
      */
-    private void updatePricing(Room room, LocalDate startDate, LocalDate endDate, int pricePerNight) {
-        updateExistingPricing(room, startDate, endDate);
-        pricingRepository.save(new Pricing(room, startDate, endDate, pricePerNight));
+    private void updatePricing(Room room, LocalDate startDateInclusive, LocalDate endDateInclusive, int pricePerNight) {
+        updateExistingPricing(room, startDateInclusive, endDateInclusive);
+        pricingRepository.save(new Pricing(room, startDateInclusive, endDateInclusive, pricePerNight));
     }
 
     /**
      * 날짜가 겹치는 기존 pricing 데이터가 있을 경우,
      * 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updateExistingPricing(Room room, LocalDate startDate, LocalDate endDate) {
-        List<Pricing> conflictedPricingList = pricingRepository.findPricingsByDate(room.getId(), startDate, endDate);
+    private void updateExistingPricing(Room room, LocalDate startDateInclusive, LocalDate endDateInclusive) {
+        List<Pricing> conflictedPricingList = pricingRepository.findPricingsByDate(room.getId(), startDateInclusive, endDateInclusive);
         pricingRepository.deleteAll(conflictedPricingList);
 
         for (Pricing conflicted : conflictedPricingList) {
-            if (conflicted.getStartDate().isBefore(startDate)) {
-                pricingRepository.save(new Pricing(room, conflicted.getStartDate(), startDate.minusDays(1), conflicted.getPricePerNight()));
+            if (conflicted.getStartDate().isBefore(startDateInclusive)) {
+                pricingRepository.save(new Pricing(room, conflicted.getStartDate(), startDateInclusive.minusDays(1), conflicted.getPricePerNight()));
             }
-            if (conflicted.getEndDate().isAfter(endDate)) {
-                pricingRepository.save(new Pricing(room, endDate.plusDays(1), conflicted.getEndDate(), conflicted.getPricePerNight()));
+            if (conflicted.getEndDate().isAfter(endDateInclusive)) {
+                pricingRepository.save(new Pricing(room, endDateInclusive.plusDays(1), conflicted.getEndDate(), conflicted.getPricePerNight()));
             }
         }
     }

@@ -22,14 +22,14 @@ public class PricingRepositoryCustomImpl implements PricingRepositoryCustom {
     }
 
     @Override
-    public List<Pricing> findPricingsByDate(Long roomId, LocalDate startDate, LocalDate endDate) {
+    public List<Pricing> findPricingsByDate(Long roomId, LocalDate startDateInclusive, LocalDate endDateInclusive) {
         return query
                 .select(pricing)
                 .from(pricing)
                 .where(
                         roomId(roomId),
-                        startBefore(endDate),
-                        endAfter(startDate)
+                        startBefore(endDateInclusive),
+                        endAfter(startDateInclusive)
                 )
                 .fetch();
     }

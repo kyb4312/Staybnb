@@ -15,7 +15,6 @@ import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.service.AvailabilityService;
 import com.staybnb.rooms.service.PricingService;
 import com.staybnb.rooms.service.RoomService;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

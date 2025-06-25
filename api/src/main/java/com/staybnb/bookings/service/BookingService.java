@@ -29,6 +29,7 @@ public class BookingService {
     private final AvailabilityService availabilityService;
     private final PricingService pricingService;
 
+    @Transactional
     public Booking getBookingPreview(@Valid GetBookingPreviewRequest request) {
         Room room = roomService.findById(request.getRoomId());
         Currency guestCurrency = Currency.valueOf(request.getGuestCurrency());

@@ -80,7 +80,7 @@ public class AvailabilityServiceTest {
         UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(List.of(new DateRange(startDate, endDate)), true);
 
         when(roomService.findById(roomId)).thenReturn(room);
-        when(availabilityRepository.findAvailabilitiesByDate(roomId, startDate, endDate))
+        when(availabilityRepository.findAvailabilitiesByDate(roomId, startDate, endDate.plusDays(1)))
                 .thenReturn(List.of(new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), true)));
 
         // when
@@ -88,15 +88,15 @@ public class AvailabilityServiceTest {
 
         //then
         verify(roomService, times(1)).findById(roomId);
-        verify(availabilityRepository, times(1)).findAvailabilitiesByDate(roomId, startDate, endDate);
+        verify(availabilityRepository, times(1)).findAvailabilitiesByDate(roomId, startDate, endDate.plusDays(1));
         verify(availabilityRepository, times(1)).deleteAll(anyList());
 
         verify(availabilityRepository, times(3)).save(availabilityCaptor.capture());
         List<Availability> allValues = availabilityCaptor.getAllValues();
 
-        Availability expected0 = new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), true);
+        Availability expected0 = new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), true);
         Availability expected1 = new Availability(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), true);
-        Availability expected2 = new Availability(room, startDate, endDate, true);
+        Availability expected2 = new Availability(room, startDate, endDate.plusDays(1), true);
 
         assertThat(allValues.get(0)).usingRecursiveComparison().isEqualTo(expected0);
         assertThat(allValues.get(1)).usingRecursiveComparison().isEqualTo(expected1);

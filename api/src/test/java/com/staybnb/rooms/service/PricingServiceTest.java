@@ -91,7 +91,7 @@ public class PricingServiceTest {
 
         // then
         verify(roomService, times(1)).findById(roomId);
-        verify(pricingRepository, times(1)).findPricingsByDate(roomId, startDate, endDate.minusDays(1));
+        verify(pricingRepository, times(1)).findPricingsByDate(roomId, startDate, endDate);
         verify(exchangeRateService, times(1)).convert(Currency.KRW, Currency.KRW, 600_000);
 
         PricingResponse expected = new PricingResponse(roomId, startDate, endDate, (double) 600_000, "KRW");
@@ -140,7 +140,7 @@ public class PricingServiceTest {
         UpdatePricingRequest request = new UpdatePricingRequest(List.of(new DateRange(startDate, endDate)), 400_000);
 
         when(roomService.findById(roomId)).thenReturn(room);
-        when(pricingRepository.findPricingsByDate(roomId, startDate, endDate))
+        when(pricingRepository.findPricingsByDate(roomId, startDate, endDate.plusDays(1)))
                 .thenReturn(List.of(new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), 500_000)));
 
         // when
@@ -148,15 +148,15 @@ public class PricingServiceTest {
 
         //then
         verify(roomService, times(1)).findById(roomId);
-        verify(pricingRepository, times(1)).findPricingsByDate(roomId, startDate, endDate);
+        verify(pricingRepository, times(1)).findPricingsByDate(roomId, startDate, endDate.plusDays(1));
         verify(pricingRepository, times(1)).deleteAll(anyList());
 
         verify(pricingRepository, times(3)).save(pricingCaptor.capture());
         List<Pricing> allValues = pricingCaptor.getAllValues();
 
-        Pricing expected0 = new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), 500_000);
+        Pricing expected0 = new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), 500_000);
         Pricing expected1 = new Pricing(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), 500_000);
-        Pricing expected2 = new Pricing(room, startDate, endDate, 400_000);
+        Pricing expected2 = new Pricing(room, startDate, endDate.plusDays(1), 400_000);
 
         assertThat(allValues.get(0)).usingRecursiveComparison().isEqualTo(expected0);
         assertThat(allValues.get(1)).usingRecursiveComparison().isEqualTo(expected1);

@@ -142,7 +142,7 @@ class BookingServiceTest {
 
         Booking booking = new Booking(room, guest, numberOfGuests, checkIn, checkOut, totalPrice, Currency.KRW);
 
-        when(availabilityService.isAvailable(room.getId(), checkIn, checkOut)).thenReturn(true);
+        when(availabilityService.isAvailableForUpdate(room.getId(), checkIn, checkOut)).thenReturn(true);
         when(pricingService.getTotalPrice(room, checkIn, checkOut, Currency.KRW)).thenReturn(totalPrice);
         when(bookingRepository.save(booking)).thenReturn(booking);
 
@@ -150,9 +150,9 @@ class BookingServiceTest {
         bookingService.createBooking(booking);
 
         // then
-        verify(availabilityService, times(1)).isAvailable(room.getId(), checkIn, checkOut);
+        verify(availabilityService, times(1)).isAvailableForUpdate(room.getId(), checkIn, checkOut);
         verify(pricingService, times(1)).getTotalPrice(room, checkIn, checkOut, Currency.KRW);
-        verify(availabilityService, times(1)).updateAvailability(room, checkIn, checkOut.minusDays(1), false);
+        verify(availabilityService, times(1)).updateAvailability(room, checkIn, checkOut, false);
         verify(bookingRepository, times(1)).save(booking);
     }
 

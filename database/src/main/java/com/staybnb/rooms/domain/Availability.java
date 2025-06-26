@@ -1,7 +1,10 @@
 package com.staybnb.rooms.domain;
 
+import io.hypersistence.utils.hibernate.type.range.PostgreSQLRangeType;
+import io.hypersistence.utils.hibernate.type.range.Range;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Type;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,13 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Availability {
 
-    public Availability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
-        this.room = room;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.isAvailable = isAvailable;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,14 +22,26 @@ public class Availability {
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
-    @Column(nullable = false)
-    private LocalDate startDate;
-
-    @Column(nullable = false)
-    private LocalDate endDate;
+    @Type(PostgreSQLRangeType.class)
+    @Column(nullable = false, columnDefinition = "daterange")
+    private Range<LocalDate> dateRange;
 
     @Column(nullable = false)
     private boolean isAvailable;
 
     private LocalDateTime updatedAt;
+
+    public Availability(Room room, LocalDate startDate, LocalDate endDate, boolean isAvailable) {
+        this.room = room;
+        this.dateRange = Range.closedOpen(startDate, endDate);
+        this.isAvailable = isAvailable;
+    }
+
+    public LocalDate getStartDate() {
+        return dateRange.lower();
+    }
+
+    public LocalDate getEndDate() {
+        return dateRange.upper();
+    }
 }

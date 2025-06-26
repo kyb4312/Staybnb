@@ -43,7 +43,6 @@ public class PricingService {
 
     /**
      * 숙박 총 가격 조회
-     *
      * @return double
      */
     public double getTotalPrice(Room room, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive, Currency currency) {
@@ -61,10 +60,10 @@ public class PricingService {
         int totalDays = (int) ChronoUnit.DAYS.between(checkInDateInclusive, checkOutDateExclusive);
         int totalPrice = 0;
 
-        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), checkInDateInclusive, checkOutDateExclusive.minusDays(1));
+        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), checkInDateInclusive, checkOutDateExclusive);
 
         for (Pricing pricing : pricingList) {
-            int days = countDaysWithinRange(pricing, checkInDateInclusive, checkOutDateExclusive.minusDays(1));
+            int days = countDaysWithinRange(pricing, checkInDateInclusive, checkOutDateExclusive);
             totalPrice += days * pricing.getPricePerNight();
             totalDays -= days;
         }
@@ -77,11 +76,11 @@ public class PricingService {
     /**
      * pricing 날짜 범위 중 [startDate, endDate] 구간에 포함되는 일수 카운트
      */
-    private int countDaysWithinRange(Pricing pricing, LocalDate startDateInclusive, LocalDate endDateInclusive) {
+    private int countDaysWithinRange(Pricing pricing, LocalDate startDateInclusive, LocalDate endDateExclusive) {
         return (int) ChronoUnit.DAYS.between(
                 pricing.getStartDate().isBefore(startDateInclusive) ? startDateInclusive : pricing.getStartDate(),
-                pricing.getEndDate().isAfter(endDateInclusive) ? endDateInclusive : pricing.getEndDate()
-        ) + 1;
+                pricing.getEndDate().isAfter(endDateExclusive) ? endDateExclusive : pricing.getEndDate()
+        );
     }
 
     /**
@@ -93,7 +92,7 @@ public class PricingService {
         validateDateSelected(request.getDateSelected());
 
         request.getDateSelected().forEach(range ->
-                updatePricing(room, range.getStartDate(), range.getEndDate(), request.getPricePerNight()));
+                updatePricing(room, range.getStartDate(), range.getEndDate().plusDays(1), request.getPricePerNight()));
     }
 
     /**
@@ -108,22 +107,23 @@ public class PricingService {
      * 날짜가 겹치는 기존 pricing 데이터가 있을 경우,
      * 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updateExistingPricing(Room room, LocalDate startDateInclusive, LocalDate endDateInclusive) {
-        List<Pricing> conflictedPricingList = pricingRepository.findPricingsByDate(room.getId(), startDateInclusive, endDateInclusive);
+    private void updateExistingPricing(Room room, LocalDate startDateInclusive, LocalDate endDateExclusive) {
+        List<Pricing> conflictedPricingList = pricingRepository.findPricingsByDate(room.getId(), startDateInclusive, endDateExclusive);
         pricingRepository.deleteAll(conflictedPricingList);
+        pricingRepository.flush();
 
         for (Pricing conflicted : conflictedPricingList) {
             if (conflicted.getStartDate().isBefore(startDateInclusive)) {
-                pricingRepository.save(new Pricing(room, conflicted.getStartDate(), startDateInclusive.minusDays(1), conflicted.getPricePerNight()));
+                pricingRepository.save(new Pricing(room, conflicted.getStartDate(), startDateInclusive, conflicted.getPricePerNight()));
             }
-            if (conflicted.getEndDate().isAfter(endDateInclusive)) {
-                pricingRepository.save(new Pricing(room, endDateInclusive.plusDays(1), conflicted.getEndDate(), conflicted.getPricePerNight()));
+            if (conflicted.getEndDate().isAfter(endDateExclusive)) {
+                pricingRepository.save(new Pricing(room, endDateExclusive, conflicted.getEndDate(), conflicted.getPricePerNight()));
             }
         }
     }
 
     public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {
-        return pricingRepository.findPricingsByMonth(roomId, yearMonth);
+        return pricingRepository.findPricingsByDate(roomId, yearMonth.atDay(1), yearMonth.plusMonths(1).atDay(1));
     }
 
     private void validateDateRange(SearchPricingRequest request) {

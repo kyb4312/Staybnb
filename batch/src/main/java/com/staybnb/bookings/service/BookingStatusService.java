@@ -31,7 +31,7 @@ public class BookingStatusService {
         Page<Booking> bookingPage;
 
         do {
-            bookingPage = bookingRepository.findBookingsByStatus(PageRequest.of(page, size), null, BookingStatus.RESERVED);
+            bookingPage = bookingRepository.findBookingsByStatus(PageRequest.of(page, size), BookingStatus.RESERVED.toString());
             for (Booking booking : bookingPage.getContent()) {
                 if (booking.getCheckOut().isBefore(LocalDate.now())) {
                     booking.setStatus(BookingStatus.ENDED);

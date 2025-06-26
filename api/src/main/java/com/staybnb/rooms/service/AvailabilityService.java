@@ -31,47 +31,61 @@ public class AvailabilityService {
         validateDateSelected(request.getDateSelected());
 
         request.getDateSelected().forEach(range ->
-                updateAvailability(room, range.getStartDate(), range.getEndDate(), request.getIsAvailable()));
+                updateAvailability(room, range.getStartDate(), range.getEndDate().plusDays(1), request.getIsAvailable()));
     }
 
     /**
      * startDate ~ endDate 구간 숙박 가능 여부 변경
      */
-    public void updateAvailability(Room room, LocalDate startDateInclusive, LocalDate endDateInclusive, boolean isAvailable) {
-        updateConflictedAvailability(room, startDateInclusive, endDateInclusive);
-        availabilityRepository.save(new Availability(room, startDateInclusive, endDateInclusive, isAvailable));
+    public void updateAvailability(Room room, LocalDate startDateInclusive, LocalDate endDateExclusive, boolean isAvailable) {
+        updateConflictedAvailability(room, startDateInclusive, endDateExclusive);
+        availabilityRepository.save(new Availability(room, startDateInclusive, endDateExclusive, isAvailable));
     }
 
     /**
      * 날짜가 겹치는 기존 availability 데이터가 있을 경우,
      * 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updateConflictedAvailability(Room room, LocalDate startDateInclusive, LocalDate endDateInclusive) {
-        List<Availability> conflictedAvailabilities = availabilityRepository.findAvailabilitiesByDate(room.getId(), startDateInclusive, endDateInclusive);
+    private void updateConflictedAvailability(Room room, LocalDate startDateInclusive, LocalDate endDateExclusive) {
+        List<Availability> conflictedAvailabilities = availabilityRepository.findAvailabilitiesByDate(room.getId(), startDateInclusive, endDateExclusive);
+
         availabilityRepository.deleteAll(conflictedAvailabilities);
+        availabilityRepository.flush();
 
         for (Availability conflicted : conflictedAvailabilities) {
             if (conflicted.getStartDate().isBefore(startDateInclusive)) {
-                availabilityRepository.save(new Availability(room, conflicted.getStartDate(), startDateInclusive.minusDays(1), conflicted.isAvailable()));
+                availabilityRepository.save(new Availability(room, conflicted.getStartDate(), startDateInclusive, conflicted.isAvailable()));
             }
-            if (conflicted.getEndDate().isAfter(endDateInclusive)) {
-                availabilityRepository.save(new Availability(room, endDateInclusive.plusDays(1), conflicted.getEndDate(), conflicted.isAvailable()));
+            if (conflicted.getEndDate().isAfter(endDateExclusive)) {
+                availabilityRepository.save(new Availability(room, endDateExclusive, conflicted.getEndDate(), conflicted.isAvailable()));
             }
         }
     }
 
     public List<Availability> findAvailabilitiesByMonth(Long roomId, YearMonth yearMonth) {
-        return availabilityRepository.findAvailabilitiesByMonth(roomId, yearMonth);
+        return availabilityRepository.findAvailabilitiesByDate(roomId, yearMonth.atDay(1), yearMonth.plusMonths(1).atDay(1));
     }
 
     public boolean isAvailable(long roomId, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive) {
         LocalDate date = checkInDateInclusive;
-        List<Availability> availabilities = availabilityRepository.findTrueAvailabilitiesByDate(roomId, checkInDateInclusive, checkOutDateExclusive.minusDays(1));
+        List<Availability> availabilities = availabilityRepository.findTrueAvailabilitiesByDate(roomId, checkInDateInclusive, checkOutDateExclusive);
         for (Availability availability : availabilities) {
             if (availability.getStartDate().isAfter(date)) {
                 return false;
             }
-            date = availability.getEndDate().plusDays(1);
+            date = availability.getEndDate();
+        }
+        return !date.isBefore(checkOutDateExclusive);
+    }
+
+    public boolean isAvailableForUpdate(long roomId, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive) {
+        LocalDate date = checkInDateInclusive;
+        List<Availability> availabilities = availabilityRepository.findTrueAvailabilitiesByDateForUpdate(roomId, checkInDateInclusive, checkOutDateExclusive);
+        for (Availability availability : availabilities) {
+            if (availability.getStartDate().isAfter(date)) {
+                return false;
+            }
+            date = availability.getEndDate();
         }
         return !date.isBefore(checkOutDateExclusive);
     }

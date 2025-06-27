@@ -71,7 +71,7 @@ public interface AvailabilityRepository extends JpaRepository<Availability, Long
             WHERE is_available = true
                 AND room_id = :roomId
                 AND date_range && daterange(:startDate, :endDate, '[)')
-            ORDER BY lower(date_range)
+            ORDER BY date_range
             FOR UPDATE
             """)
     List<Availability> findTrueAvailabilitiesByDateForUpdate(

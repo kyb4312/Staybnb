@@ -1,6 +1,6 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 public class UpdatePricingRequest {
 
     @NotNull
-    private List<DateRange> dateSelected;
+    private List<DateRangeRequest> dateSelected;
 
     @Min(0)
     private Integer pricePerNight;

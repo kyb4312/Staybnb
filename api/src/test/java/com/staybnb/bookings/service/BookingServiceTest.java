@@ -152,7 +152,7 @@ class BookingServiceTest {
         // then
         verify(availabilityService, times(1)).isAvailableForUpdate(room.getId(), checkIn, checkOut);
         verify(pricingService, times(1)).getTotalPrice(room, checkIn, checkOut, Currency.KRW);
-        verify(availabilityService, times(1)).updateAvailability(room, checkIn, checkOut, false);
+        verify(availabilityService, times(1)).updateAvailabilityToFalse(room, checkIn, checkOut);
         verify(bookingRepository, times(1)).save(booking);
     }
 

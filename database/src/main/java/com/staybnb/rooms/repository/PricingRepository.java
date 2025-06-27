@@ -20,4 +20,16 @@ public interface PricingRepository extends JpaRepository<Pricing, Long> {
             @Param("startDate") LocalDate startDateInclusive,
             @Param("endDate") LocalDate endDateExclusive
     );
+
+    @NativeQuery(value = """
+            SELECT * FROM pricing
+            WHERE room_id = :roomId
+                AND date_range && daterange(:startDate, :endDate, '[)')
+            ORDER BY date_range
+            """)
+    List<Pricing> findOrderedPricingsByDate(
+            @Param("roomId") Long roomId,
+            @Param("startDate") LocalDate startDateInclusive,
+            @Param("endDate") LocalDate endDateExclusive
+    );
 }

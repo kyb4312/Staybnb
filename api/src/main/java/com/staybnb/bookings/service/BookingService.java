@@ -52,7 +52,7 @@ public class BookingService {
         double bookingPrice = pricingService.getTotalPrice(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut(), booking.getCurrency());
         checkIfPriceChanged(booking.getBookingPrice(), bookingPrice);
 
-        availabilityService.updateAvailability(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut(), false);
+        availabilityService.updateAvailabilityToFalse(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
         booking.setStatus(REQUESTED);
 
         return bookingRepository.save(booking);

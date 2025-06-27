@@ -26,6 +26,23 @@ public interface AvailabilityRepository extends JpaRepository<Availability, Long
     );
 
     /**
+     * room_id가 같고,
+     * date_range가 [startDateInclusive, endDateExclusive) 구간과 겹치는 availability 를
+     * date_range 오름차순으로 조회
+     */
+    @NativeQuery(value = """
+            SELECT * FROM availability
+            WHERE room_id = :roomId
+                AND date_range && daterange(:startDate, :endDate, '[)')
+            ORDER BY date_range
+            """)
+    List<Availability> findOrderedAvailabilitiesByDate(
+            @Param("roomId") Long roomId,
+            @Param("startDate") LocalDate startDateInclusive,
+            @Param("endDate") LocalDate endDateExclusive
+    );
+
+    /**
      * is_available이 true 이고,
      * room_id가 같고,
      * date_range가 [startDateInclusive, endDateExclusive) 구간과 겹치는 availability 조회
@@ -35,7 +52,7 @@ public interface AvailabilityRepository extends JpaRepository<Availability, Long
             WHERE is_available = true
                 AND room_id = :roomId
                 AND date_range && daterange(:startDate, :endDate, '[)')
-            ORDER BY lower(date_range)
+            ORDER BY date_range
             """)
     List<Availability> findTrueAvailabilitiesByDate(
             @Param("roomId") Long roomId,

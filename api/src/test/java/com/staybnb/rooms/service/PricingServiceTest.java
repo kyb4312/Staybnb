@@ -6,7 +6,7 @@ import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.request.SearchPricingRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
-import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.repository.PricingRepository;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class PricingServiceTest {
     ExchangeRateService exchangeRateService;
 
     @Captor
-    ArgumentCaptor<Pricing> pricingCaptor;
+    ArgumentCaptor<List<Pricing>> pricingCaptor;
 
     @Test
     void getTotalPrice() {
@@ -137,10 +137,10 @@ public class PricingServiceTest {
         LocalDate startDate = LocalDate.now().plusDays(3);
         LocalDate endDate = LocalDate.now().plusDays(5);
 
-        UpdatePricingRequest request = new UpdatePricingRequest(List.of(new DateRange(startDate, endDate)), 400_000);
+        UpdatePricingRequest request = new UpdatePricingRequest(List.of(new DateRangeRequest(startDate, endDate)), 400_000);
 
         when(roomService.findById(roomId)).thenReturn(room);
-        when(pricingRepository.findPricingsByDate(roomId, startDate, endDate.plusDays(1)))
+        when(pricingRepository.findOrderedPricingsByDate(roomId, startDate, endDate.plusDays(1)))
                 .thenReturn(List.of(new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), 500_000)));
 
         // when
@@ -148,15 +148,15 @@ public class PricingServiceTest {
 
         //then
         verify(roomService, times(1)).findById(roomId);
-        verify(pricingRepository, times(1)).findPricingsByDate(roomId, startDate, endDate.plusDays(1));
+        verify(pricingRepository, times(1)).findOrderedPricingsByDate(roomId, startDate, endDate.plusDays(1));
         verify(pricingRepository, times(1)).deleteAll(anyList());
 
-        verify(pricingRepository, times(3)).save(pricingCaptor.capture());
-        List<Pricing> allValues = pricingCaptor.getAllValues();
+        verify(pricingRepository, times(1)).saveAll(pricingCaptor.capture());
+        List<Pricing> allValues = pricingCaptor.getValue();
 
-        Pricing expected0 = new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), 500_000);
-        Pricing expected1 = new Pricing(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), 500_000);
-        Pricing expected2 = new Pricing(room, startDate, endDate.plusDays(1), 400_000);
+        Pricing expected0 = new Pricing(room, LocalDate.now().plusDays(3), LocalDate.now().plusDays(6), 400_000);
+        Pricing expected1 = new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), 500_000);
+        Pricing expected2 = new Pricing(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), 500_000);
 
         assertThat(allValues.get(0)).usingRecursiveComparison().isEqualTo(expected0);
         assertThat(allValues.get(1)).usingRecursiveComparison().isEqualTo(expected1);

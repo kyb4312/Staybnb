@@ -5,7 +5,7 @@ import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
-import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.repository.AvailabilityRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ public class AvailabilityServiceTest {
     RoomService roomService;
 
     @Captor
-    ArgumentCaptor<Availability> availabilityCaptor;
+    ArgumentCaptor<List<Availability>> availabilityCaptor;
 
     @Test
     void updateSelectedDatesAvailability() {
@@ -77,10 +77,10 @@ public class AvailabilityServiceTest {
         LocalDate startDate = LocalDate.now().plusDays(3);
         LocalDate endDate = LocalDate.now().plusDays(5);
 
-        UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(List.of(new DateRange(startDate, endDate)), true);
+        UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(List.of(new DateRangeRequest(startDate, endDate)), true);
 
         when(roomService.findById(roomId)).thenReturn(room);
-        when(availabilityRepository.findAvailabilitiesByDate(roomId, startDate, endDate.plusDays(1)))
+        when(availabilityRepository.findOrderedAvailabilitiesByDate(roomId, startDate, endDate.plusDays(1)))
                 .thenReturn(List.of(new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), true)));
 
         // when
@@ -88,15 +88,15 @@ public class AvailabilityServiceTest {
 
         //then
         verify(roomService, times(1)).findById(roomId);
-        verify(availabilityRepository, times(1)).findAvailabilitiesByDate(roomId, startDate, endDate.plusDays(1));
+        verify(availabilityRepository, times(1)).findOrderedAvailabilitiesByDate(roomId, startDate, endDate.plusDays(1));
         verify(availabilityRepository, times(1)).deleteAll(anyList());
 
-        verify(availabilityRepository, times(3)).save(availabilityCaptor.capture());
-        List<Availability> allValues = availabilityCaptor.getAllValues();
+        verify(availabilityRepository, times(1)).saveAll(availabilityCaptor.capture());
+        List<Availability> allValues = availabilityCaptor.getValue();
 
-        Availability expected0 = new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), true);
-        Availability expected1 = new Availability(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), true);
-        Availability expected2 = new Availability(room, startDate, endDate.plusDays(1), true);
+        Availability expected0 = new Availability(room, LocalDate.now().plusDays(3), LocalDate.now().plusDays(6), true);
+        Availability expected1 = new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), true);
+        Availability expected2 = new Availability(room, LocalDate.now().plusDays(6), LocalDate.now().plusDays(8), true);
 
         assertThat(allValues.get(0)).usingRecursiveComparison().isEqualTo(expected0);
         assertThat(allValues.get(1)).usingRecursiveComparison().isEqualTo(expected1);

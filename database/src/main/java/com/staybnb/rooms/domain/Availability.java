@@ -44,4 +44,8 @@ public class Availability {
     public LocalDate getEndDate() {
         return dateRange.upper();
     }
+
+    public void setStartDate(LocalDate startDate) {
+        this.dateRange = Range.closedOpen(startDate, this.dateRange.upper());
+    }
 }

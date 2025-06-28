@@ -1,7 +1,7 @@
-package com.staybnb.validation.validator;
+package com.staybnb.common.validation.validator;
 
 import com.staybnb.rooms.dto.request.SearchRoomRequest;
-import com.staybnb.validation.annotation.ValidDateRange;
+import com.staybnb.common.validation.annotation.ValidDateRange;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

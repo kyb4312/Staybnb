@@ -6,7 +6,7 @@ import com.staybnb.rooms.domain.Pricing;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.vo.DailyInfo;
-import com.staybnb.rooms.exception.InvalidYearMonthException;
+import com.staybnb.common.exception.custom.InvalidYearMonthException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

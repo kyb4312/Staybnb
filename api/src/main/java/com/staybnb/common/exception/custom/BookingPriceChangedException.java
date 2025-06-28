@@ -1,4 +1,4 @@
-package com.staybnb.bookings.exception;
+package com.staybnb.common.exception.custom;
 
 public class BookingPriceChangedException extends RuntimeException {
     public BookingPriceChangedException(double oldPrice, double newPrice) {

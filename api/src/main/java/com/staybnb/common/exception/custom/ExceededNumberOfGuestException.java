@@ -1,4 +1,4 @@
-package com.staybnb.bookings.exception;
+package com.staybnb.common.exception.custom;
 
 public class ExceededNumberOfGuestException extends RuntimeException {
     public ExceededNumberOfGuestException(int maxNumberOfGuests, int numberOfGuests) {

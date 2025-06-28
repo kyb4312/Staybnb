@@ -1,4 +1,4 @@
-package com.staybnb.rooms.dto.response;
+package com.staybnb.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -5,7 +5,7 @@ import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
-import com.staybnb.rooms.exception.InvalidDateRangeException;
+import com.staybnb.common.exception.custom.InvalidDateRangeException;
 import com.staybnb.rooms.repository.AvailabilityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

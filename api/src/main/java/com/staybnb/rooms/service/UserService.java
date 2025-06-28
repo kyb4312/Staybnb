@@ -1,7 +1,7 @@
 package com.staybnb.rooms.service;
 
 import com.staybnb.rooms.domain.User;
-import com.staybnb.rooms.exception.NoSuchUserException;
+import com.staybnb.common.exception.custom.NoSuchUserException;
 import com.staybnb.rooms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

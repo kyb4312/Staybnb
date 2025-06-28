@@ -1,6 +1,6 @@
-package com.staybnb.validation.annotation;
+package com.staybnb.common.validation.annotation;
 
-import com.staybnb.validation.validator.DateRangeValidator;
+import com.staybnb.common.validation.validator.DateRangeValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

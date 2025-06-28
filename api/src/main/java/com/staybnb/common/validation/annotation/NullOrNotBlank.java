@@ -1,6 +1,6 @@
-package com.staybnb.validation.annotation;
+package com.staybnb.common.validation.annotation;
 
-import com.staybnb.validation.validator.PriceRangeValidator;
+import com.staybnb.common.validation.validator.NullOrNotBlankValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -9,11 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = PriceRangeValidator.class)
-public @interface ValidPriceRange {
-    String message() default "가격 범위가 유효하지 않습니다.";
+@Constraint(validatedBy = NullOrNotBlankValidator.class)
+public @interface NullOrNotBlank {
+    String message() default "공백 문자열은 입력할 수 없습니다.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

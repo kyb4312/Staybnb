@@ -1,4 +1,4 @@
-package com.staybnb.rooms.exception;
+package com.staybnb.common.exception.custom;
 
 import java.util.NoSuchElementException;
 

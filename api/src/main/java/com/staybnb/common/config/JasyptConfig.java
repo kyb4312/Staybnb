@@ -1,4 +1,4 @@
-package com.staybnb.config;
+package com.staybnb.common.config;
 
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import lombok.Getter;

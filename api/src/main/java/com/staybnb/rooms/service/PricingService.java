@@ -8,7 +8,7 @@ import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.PricingResponse;
-import com.staybnb.rooms.exception.InvalidDateRangeException;
+import com.staybnb.common.exception.custom.InvalidDateRangeException;
 import com.staybnb.rooms.repository.PricingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

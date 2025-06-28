@@ -4,7 +4,7 @@ import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.SearchRoomCondition;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
-import com.staybnb.rooms.exception.NoSuchRoomException;
+import com.staybnb.common.exception.custom.NoSuchRoomException;
 import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

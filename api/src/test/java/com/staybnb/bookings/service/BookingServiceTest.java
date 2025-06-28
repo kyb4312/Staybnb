@@ -3,7 +3,7 @@ package com.staybnb.bookings.service;
 import com.staybnb.bookings.domain.Booking;
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
-import com.staybnb.bookings.exception.InvalidStatusChangeException;
+import com.staybnb.common.exception.custom.InvalidStatusChangeException;
 import com.staybnb.bookings.repository.BookingRepository;
 import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.domain.PlaceType;

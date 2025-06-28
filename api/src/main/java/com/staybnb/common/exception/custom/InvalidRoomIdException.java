@@ -1,4 +1,4 @@
-package com.staybnb.rooms.exception;
+package com.staybnb.common.exception.custom;
 
 public class InvalidRoomIdException extends IllegalArgumentException {
     public InvalidRoomIdException(Long roomId) {

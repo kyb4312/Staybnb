@@ -1,9 +1,8 @@
-package com.staybnb.handler;
+package com.staybnb.common.exception;
 
-import com.staybnb.bookings.exception.BookingPriceChangedException;
-import com.staybnb.bookings.exception.ExceededNumberOfGuestException;
-import com.staybnb.bookings.exception.UnavailableDateException;
-import com.staybnb.rooms.dto.response.ExceptionResponse;
+import com.staybnb.common.exception.custom.BookingPriceChangedException;
+import com.staybnb.common.exception.custom.ExceededNumberOfGuestException;
+import com.staybnb.common.exception.custom.UnavailableDateException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;

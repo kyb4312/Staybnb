@@ -25,6 +25,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    private boolean isDeleted;
+
+    private LocalDateTime deletedAt;
+
     private LocalDateTime createdAt;
 
     public User(String email, String name, String password) {

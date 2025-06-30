@@ -1,5 +1,6 @@
 package com.staybnb.rooms.service;
 
+import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Availability;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
@@ -27,8 +28,9 @@ public class AvailabilityService {
     private final RoomService roomService;
 
     @Transactional
-    public void updateSelectedDatesAvailability(long roomId, UpdateAvailabilityRequest request) {
+    public void updateSelectedDatesAvailability(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
+        validateUser(userId, room);
         validateDateSelected(request.getDateSelected()); // TODO: 겹치는 날짜 없는지 검증
 
         // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
@@ -144,6 +146,12 @@ public class AvailabilityService {
             date = availability.getEndDate();
         }
         return !date.isBefore(checkOutDateExclusive);
+    }
+
+    private void validateUser(long userId, Room room) {
+        if (!room.getHost().getId().equals(userId)) {
+            throw new UnauthorizedException(userId);
+        }
     }
 
     private void validateDateSelected(List<DateRangeRequest> dateSelected) {

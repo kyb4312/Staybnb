@@ -7,6 +7,7 @@ import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.repository.AvailabilityRepository;
+import com.staybnb.users.domain.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -45,7 +46,7 @@ public class AvailabilityServiceTest {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");
@@ -84,7 +85,7 @@ public class AvailabilityServiceTest {
                 .thenReturn(List.of(new Availability(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), true)));
 
         // when
-        availabilityService.updateSelectedDatesAvailability(roomId, request);
+        availabilityService.updateSelectedDatesAvailability(1L, roomId, request);
 
         //then
         verify(roomService, times(1)).findById(roomId);

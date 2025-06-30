@@ -21,7 +21,7 @@ import java.net.URI;
 
 @Slf4j
 @RestController
-@RequestMapping("/rooms")
+@RequestMapping("/host/rooms")
 @RequiredArgsConstructor
 public class HostRoomController {
 

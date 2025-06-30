@@ -100,7 +100,7 @@ public class RoomControllerTest {
                         .port(port)
                         .contentType(ContentType.JSON)
                         .body(createRoomRequest)
-                        .when().post("/rooms")
+                        .when().post("/host/rooms")
                         .then().log().all()
                         .statusCode(HttpStatus.SC_CREATED)
                         .extract().as(RoomResponse.class);
@@ -168,7 +168,7 @@ public class RoomControllerTest {
                         .port(port)
                         .contentType(ContentType.JSON)
                         .body(createRoomRequest)
-                        .when().post("/rooms")
+                        .when().post("/host/rooms")
                         .then().log().all()
                         .statusCode(HttpStatus.SC_CREATED)
                         .extract().as(RoomResponse.class)
@@ -185,7 +185,7 @@ public class RoomControllerTest {
                         .port(port)
                         .contentType(ContentType.JSON)
                         .body(updateRoomRequest)
-                        .when().patch("/rooms/{roomId}", roomId)
+                        .when().patch("/host/rooms/{roomId}", roomId)
                         .then().log().all()
                         .statusCode(HttpStatus.SC_OK)
                         .extract().as(RoomResponse.class);
@@ -247,7 +247,7 @@ public class RoomControllerTest {
                         .port(port)
                         .contentType(ContentType.JSON)
                         .body(createRoomRequest)
-                        .when().post("/rooms")
+                        .when().post("/host/rooms")
                         .then().log().all()
                         .statusCode(HttpStatus.SC_CREATED)
                         .extract().as(RoomResponse.class)
@@ -255,7 +255,7 @@ public class RoomControllerTest {
 
         given().log().all()
                 .port(port)
-                .when().delete("/rooms/{roomId}", roomId)
+                .when().delete("/host/rooms/{roomId}", roomId)
                 .then().log().all()
                 .statusCode(HttpStatus.SC_NO_CONTENT);
     }
@@ -295,7 +295,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(createRoomRequest)
-                .when().post("/rooms")
+                .when().post("/host/rooms")
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
@@ -335,7 +335,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(createRoomRequest)
-                .when().post("/rooms")
+                .when().post("/host/rooms")
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
@@ -376,7 +376,7 @@ public class RoomControllerTest {
                         .port(port)
                         .contentType(ContentType.JSON)
                         .body(createRoomRequest)
-                        .when().post("/rooms")
+                        .when().post("/host/rooms")
                         .then().log().all()
                         .statusCode(HttpStatus.SC_CREATED)
                         .extract().as(RoomResponse.class)
@@ -393,7 +393,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(updateRoomRequest)
-                .when().patch("/rooms/{roomId}", roomId)
+                .when().patch("/host/rooms/{roomId}", roomId)
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
@@ -444,7 +444,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(createRoomRequest)
-                .when().post("/rooms")
+                .when().post("/host/rooms")
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
@@ -484,7 +484,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(createRoomRequest)
-                .when().post("/rooms")
+                .when().post("/host/rooms")
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
@@ -524,7 +524,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(createRoomRequest)
-                .when().post("/rooms")
+                .when().post("/host/rooms")
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
@@ -564,7 +564,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(createRoomRequest)
-                .when().post("/rooms")
+                .when().post("/host/rooms")
                 .then().log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
@@ -594,7 +594,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(request)
-                .when().post("/rooms/{roomId}/pricing", 1L)
+                .when().post("/host/rooms/{roomId}/pricing", 1L)
                 .then().log().all()
                 .statusCode(HttpStatus.SC_OK);
     }
@@ -627,7 +627,7 @@ public class RoomControllerTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .body(request)
-                .when().post("/rooms/{roomId}/availability", 1L)
+                .when().post("/host/rooms/{roomId}/availability", 1L)
                 .then().log().all()
                 .statusCode(HttpStatus.SC_OK);
     }

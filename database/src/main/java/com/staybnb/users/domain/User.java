@@ -1,4 +1,4 @@
-package com.staybnb.rooms.domain;
+package com.staybnb.users.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
     @Id
@@ -25,4 +26,10 @@ public class User {
     private String password;
 
     private LocalDateTime createdAt;
+
+    public User(String email, String name, String password) {
+        this.email = email;
+        this.name = name;
+        this.password = password;
+    }
 }

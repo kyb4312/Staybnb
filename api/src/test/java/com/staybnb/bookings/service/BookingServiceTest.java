@@ -8,7 +8,7 @@ import com.staybnb.bookings.repository.BookingRepository;
 import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.domain.PlaceType;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.domain.User;
+import com.staybnb.users.domain.User;
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
@@ -50,7 +50,7 @@ class BookingServiceTest {
     @Test
     void getBookingPreview() {
         // given
-        User host = new User();
+        User host = new User("host@gmamil.com", "host", "password");
         PlaceType placeType = new PlaceType(1, "HOUSE");
         Set<Amenity> amenities = Set.of();
 
@@ -107,7 +107,7 @@ class BookingServiceTest {
     @Test
     void createBooking() {
         // given
-        User host = new User();
+        User host = new User("host@gmamil.com", "host", "password");
         PlaceType placeType = new PlaceType(1, "HOUSE");
         Set<Amenity> amenities = Set.of();
 

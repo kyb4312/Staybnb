@@ -9,6 +9,7 @@ import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.repository.PricingRepository;
+import com.staybnb.users.domain.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -49,7 +50,7 @@ public class PricingServiceTest {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");
@@ -105,7 +106,7 @@ public class PricingServiceTest {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");

@@ -2,7 +2,7 @@ package com.staybnb.bookings.domain;
 
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.domain.User;
+import com.staybnb.users.domain.User;
 import com.staybnb.rooms.domain.vo.Currency;
 import io.hypersistence.utils.hibernate.type.range.PostgreSQLRangeType;
 import io.hypersistence.utils.hibernate.type.range.Range;

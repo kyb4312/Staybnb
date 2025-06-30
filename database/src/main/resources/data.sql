@@ -1,9 +1,11 @@
 -- 초기 데이터 insert
 -- user
 insert into "user" (name, email, password)
-values ('admin', 'admin@gmail.com', '2345');
+values ('admin', 'admin@gmail.com', '$2a$10$bsMwgBfP2.84kOM8a1DSa.hnG.i6E/sX1QGxoJK.NzCj7XnXpTyFq');
 insert into "user" (name, email, password)
-values ('guest1', 'guest1@gmail.com', '2345');
+values ('guest1', 'guest1@gmail.com', '$2a$10$fK.E0FXB3BbsHZVHRZtUruPgHC86Bro/DXLzwDMvb7DgpVLamVfi.');
+insert into "user" (name, email, password)
+values ('guest2', 'guest2@gmail.com', '$2a$10$HdsExzfTfmfaPu77vkwkg.75c/Q/fdcQXDas4J7pXbxhc250OLqEK');
 
 -- exchange_rate
 insert into exchange_rate (currency, rate)

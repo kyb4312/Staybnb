@@ -1,9 +1,6 @@
 package com.staybnb.common.exception;
 
-import com.staybnb.common.exception.custom.BookingPriceChangedException;
-import com.staybnb.common.exception.custom.ExceededNumberOfGuestException;
-import com.staybnb.common.exception.custom.UnauthorizedException;
-import com.staybnb.common.exception.custom.UnavailableDateException;
+import com.staybnb.common.exception.custom.*;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -70,6 +67,12 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ExceptionResponse handleUnauthorizedException(UnauthorizedException e) {
+        return new ExceptionResponse("ERROR", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleSignupException(SignupException e) {
         return new ExceptionResponse("ERROR", e.getMessage());
     }
 }

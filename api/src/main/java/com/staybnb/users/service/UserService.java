@@ -45,7 +45,7 @@ public class UserService {
     }
 
     @Transactional
-    public void delete(long userId) {
+    public void deleteAccount(long userId) {
         User user = findById(userId);
         user.setDeleted(true);
         user.setDeletedAt(LocalDateTime.now());

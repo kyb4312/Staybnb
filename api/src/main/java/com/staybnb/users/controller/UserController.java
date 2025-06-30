@@ -38,8 +38,8 @@ public class UserController {
 
     @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(HttpServletRequest request) {
-        userService.delete((Long) request.getAttribute(RequestAttributes.USER_ID));
+    public void deleteAccount(HttpServletRequest request) {
+        userService.deleteAccount((Long) request.getAttribute(RequestAttributes.USER_ID));
     }
 
     private User toEntity(SignupRequest request) {

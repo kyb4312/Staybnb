@@ -2,6 +2,7 @@ package com.staybnb.common.exception;
 
 import com.staybnb.common.exception.custom.BookingPriceChangedException;
 import com.staybnb.common.exception.custom.ExceededNumberOfGuestException;
+import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.common.exception.custom.UnavailableDateException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,12 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionResponse handleDateTimeException(DateTimeException e) {
+        return new ExceptionResponse("ERROR", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ExceptionResponse handleUnauthorizedException(UnauthorizedException e) {
         return new ExceptionResponse("ERROR", e.getMessage());
     }
 }

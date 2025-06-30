@@ -255,7 +255,7 @@ class RoomServiceTest {
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 
         // when
-        Room updatedRoom = roomService.update(room.getId(), updateInfo);
+        Room updatedRoom = roomService.update(1L, room.getId(), updateInfo);
 
         // then
         verify(roomRepository, times(1)).findById(room.getId());
@@ -304,7 +304,7 @@ class RoomServiceTest {
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 
         // when
-        roomService.delete(roomId);
+        roomService.delete(1L, roomId);
 
         // then
         verify(roomRepository, times(1)).findById(room.getId());

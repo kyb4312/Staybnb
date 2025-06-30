@@ -82,13 +82,15 @@ public class BookingService {
         }
     }
 
-    public Booking getBooking(Long bookingId) {
-        return bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
+    public Booking getBooking(long userId, Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
+        validateUser(userId, booking);
+        return booking;
     }
 
     @Transactional
-    public Booking cancelBooking(Long bookingId) {
-        Booking booking = getBooking(bookingId);
+    public Booking cancelBooking(long userId, Long bookingId) {
+        Booking booking = getBooking(userId, bookingId);
         if (!(booking.getStatus() == REQUESTED || booking.getStatus() == RESERVED)) {
             throw new InvalidStatusChangeException(booking.getStatus().toString());
         }
@@ -96,8 +98,8 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking updateBooking(Long bookingId, BookingStatus status) {
-        Booking booking = getBooking(bookingId);
+    public Booking updateBooking(long userId, Long bookingId, BookingStatus status) {
+        Booking booking = getBooking(userId, bookingId);
         if (!(status == RESERVED || status == REJECTED)) {
             throw new InvalidStatusChangeException();
         }
@@ -124,8 +126,21 @@ public class BookingService {
         return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(CANCELLED.toString(), REJECTED.toString()));
     }
 
-    public Page<Booking> findBookingsByRoomId(Long roomId, Pageable pageable) {
+    public Page<Booking> findBookingsByRoomId(long userId, Long roomId, Pageable pageable) {
         Room room = roomService.findById(roomId);
+        validateHost(userId, room);
         return bookingRepository.findByRoom(room, pageable);
+    }
+
+    private void validateHost(long userId, Room room) {
+        if (!room.getHost().getId().equals(userId)) {
+            throw new UnauthorizedException(userId);
+        }
+    }
+
+    private void validateUser(long userId, Booking booking) {
+        if (!booking.getUser().getId().equals(userId) && !booking.getRoom().getHost().getId().equals(userId)) {
+            throw new UnauthorizedException(userId);
+        }
     }
 }

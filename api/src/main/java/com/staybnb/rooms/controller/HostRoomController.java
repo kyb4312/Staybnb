@@ -9,6 +9,8 @@ import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
 import com.staybnb.rooms.service.*;
+import com.staybnb.users.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+
+import static com.staybnb.common.constant.RequestAttributes.USER_ID;
 
 @Slf4j
 @RestController
@@ -46,26 +50,35 @@ public class HostRoomController {
     }
 
     @PatchMapping("/{roomId}")
-    public RoomResponse updateRoom(@PathVariable long roomId, @Valid @RequestBody UpdateRoomRequest updateRoomRequest) {
-        Room room = roomService.update(roomId, updateRoomRequest);
+    public RoomResponse updateRoom(@PathVariable long roomId,
+                                   @Valid @RequestBody UpdateRoomRequest updateRoomRequest,
+                                   HttpServletRequest request) {
 
+        Room room = roomService.update((Long) request.getAttribute(USER_ID), roomId, updateRoomRequest);
         return RoomResponse.fromDomain(room);
     }
 
     @DeleteMapping("/{roomId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRoom(@PathVariable long roomId) {
-        roomService.delete(roomId);
+    public void deleteRoom(@PathVariable long roomId, HttpServletRequest request) {
+        roomService.delete((Long) request.getAttribute(USER_ID), roomId);
     }
 
     @PostMapping("/{roomId}/pricing")
-    public void updatePricing(@PathVariable long roomId, @Valid @RequestBody UpdatePricingRequest updatePricingRequest) {
-        pricingService.updateSelectedDatesPricing(roomId, updatePricingRequest);
+    public void updatePricing(@PathVariable long roomId,
+                              @Valid @RequestBody UpdatePricingRequest updatePricingRequest,
+                              HttpServletRequest request) {
+
+        pricingService.updateSelectedDatesPricing((Long) request.getAttribute(USER_ID), roomId, updatePricingRequest);
     }
 
     @PostMapping("/{roomId}/availability")
-    public void updateAvailability(@PathVariable long roomId, @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest) {
-        availabilityService.updateSelectedDatesAvailability(roomId, updateAvailabilityRequest);
+    public void updateAvailability(@PathVariable long roomId,
+                                   @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
+                                   HttpServletRequest request) {
+
+        availabilityService.updateSelectedDatesAvailability(
+                (Long) request.getAttribute(USER_ID), roomId, updateAvailabilityRequest);
     }
 
 

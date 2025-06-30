@@ -145,7 +145,7 @@ public class PricingServiceTest {
                 .thenReturn(List.of(new Pricing(room, LocalDate.now().plusDays(1), LocalDate.now().plusDays(8), 500_000)));
 
         // when
-        pricingService.updateSelectedDatesPricing(roomId, request);
+        pricingService.updateSelectedDatesPricing(1L, roomId, request);
 
         //then
         verify(roomService, times(1)).findById(roomId);

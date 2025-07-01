@@ -3,19 +3,17 @@ package com.staybnb.rooms.repository.custom;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.dto.SearchRoomInfo;
+import com.staybnb.rooms.dto.SearchRoomCondition;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 
 import static com.staybnb.rooms.domain.QRoom.room;
 
-@Repository
 public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
     private final JPAQueryFactory query;
 
@@ -24,7 +22,7 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
     }
 
     @Override
-    public Page<Room> findAll(SearchRoomInfo cond, Pageable pageable) {
+    public Page<Room> findAll(SearchRoomCondition cond, Pageable pageable) {
         List<Room> content = query
                 .select(room)
                 .from(room)

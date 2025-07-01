@@ -15,3 +15,7 @@ out/
 
 ### mac ###
 .DS_Store
+
+### docker ###
+*.env
+/data/db/

@@ -62,8 +62,7 @@ public class Room {
     @Column(nullable = false)
     private Integer basePrice;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "currency_code", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Currency currency;
 
     @Column(nullable = false)

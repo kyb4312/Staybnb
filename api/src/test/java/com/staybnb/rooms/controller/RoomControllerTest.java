@@ -1,11 +1,12 @@
 package com.staybnb.rooms.controller;
 
 import com.staybnb.rooms.domain.embedded.Address;
+import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
-import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;
@@ -17,11 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -34,25 +31,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @Slf4j
-@Testcontainers
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RoomControllerTest {
-
-    @Container
-    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
-            .withDatabaseName("staybnb")
-            .withUsername("test")
-            .withPassword("test");
-
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysql::getJdbcUrl);
-        registry.add("spring.datasource.username", mysql::getUsername);
-        registry.add("spring.datasource.password", mysql::getPassword);
-        registry.add("spring.datasource.driver-class-name", mysql::getDriverClassName);
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none"); // jpa 에서 ddl 실행 방지
-        registry.add("spring.sql.init.mode", () -> "always"); // schema.sql, data.sql 스크립트 실행
-    }
 
     @LocalServerPort
     int port;
@@ -60,8 +41,6 @@ public class RoomControllerTest {
     @Test
     @DisplayName("GetOne: 정상")
     public void testGetRoom() {
-        testCreateRoom();
-
         long roomId = 1L;
         RoomResponse roomResponse =
                 given().log().all()
@@ -77,7 +56,6 @@ public class RoomControllerTest {
     @Test
     @DisplayName("GetAll: 정상")
     public void testGetRooms() {
-        testCreateRoom();
         given().log().all()
                 .port(port)
                 .when().get("/rooms")
@@ -141,7 +119,7 @@ public class RoomControllerTest {
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
                 .basePrice(createRoomRequest.getBasePrice()) // updated
-                .currency(createRoomRequest.getCurrency()) // updated
+                .currency(Currency.valueOf(createRoomRequest.getCurrency())) // updated
                 .build();
 
         log.info("createRoomRequest: {}", createRoomRequest);
@@ -225,7 +203,7 @@ public class RoomControllerTest {
                 .title(createRoomRequest.getTitle())
                 .description(createRoomRequest.getDescription())
                 .basePrice(updateRoomRequest.getBasePrice()) // updated
-                .currency(updateRoomRequest.getCurrency()) // updated
+                .currency(Currency.valueOf(updateRoomRequest.getCurrency())) // updated
                 .build();
 
         Assertions.assertThat(response)
@@ -594,8 +572,6 @@ public class RoomControllerTest {
     @Test
     @DisplayName("GetOne: 존재하지 않는 숙소 검색")
     public void testNonExistentRoomIdGetRoom() {
-        testCreateRoom();
-
         long roomId = -1L;
         given().log().all()
                 .port(port)
@@ -608,8 +584,8 @@ public class RoomControllerTest {
     public void updatePricing() {
         UpdatePricingRequest request = new UpdatePricingRequest(
                 List.of(
-                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
-                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
+                        new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRangeRequest(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
                 ),
                 400000
         );
@@ -643,8 +619,8 @@ public class RoomControllerTest {
     public void updateAvailability() {
         UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
                 List.of(
-                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
-                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
+                        new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRangeRequest(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
                 ), true);
 
         given().log().all()

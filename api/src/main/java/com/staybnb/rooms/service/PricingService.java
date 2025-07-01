@@ -6,6 +6,7 @@ import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.request.SearchPricingRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.exception.InvalidDateRangeException;
 import com.staybnb.rooms.repository.PricingRepository;
@@ -16,7 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,32 +33,41 @@ public class PricingService {
 
     /**
      * 숙박 총 가격 조회
+     * @return PricingResponse
      */
-    public PricingResponse getTotalPrice(Long roomId, SearchPricingRequest request) {
+    public PricingResponse getTotalPricing(Long roomId, SearchPricingRequest request) {
         Room room = roomService.findById(roomId);
         validateDateRange(request);
 
-        double totalPrice = exchangeRateService.convert(
-                room.getCurrency(),
-                Currency.valueOf(request.getCurrency()),
-                calcTotalPrice(room, request.getStartDate(), request.getEndDate())
-        );
+        double totalPrice = getTotalPrice(room, request.getStartDate(), request.getEndDate(), Currency.valueOf(request.getCurrency()));
 
         return new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency()
         );
     }
 
     /**
+     * 숙박 총 가격 조회
+     * @return double
+     */
+    public double getTotalPrice(Room room, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive, Currency currency) {
+        return exchangeRateService.convert(
+                room.getCurrency(),
+                currency,
+                calcTotalPrice(room, checkInDateInclusive, checkOutDateExclusive)
+        );
+    }
+
+    /**
      * [startDate, endDate] 기간 총 숙박 가격 계산
      */
-    private int calcTotalPrice(Room room, LocalDate startDate, LocalDate endDate) {
-        int totalDays = countDays(startDate, endDate);
+    private int calcTotalPrice(Room room, LocalDate checkInDateInclusive, LocalDate checkOutDateExclusive) {
+        int totalDays = (int) ChronoUnit.DAYS.between(checkInDateInclusive, checkOutDateExclusive);
         int totalPrice = 0;
 
-        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), startDate, endDate.minusDays(1));
+        List<Pricing> pricingList = pricingRepository.findPricingsByDate(room.getId(), checkInDateInclusive, checkOutDateExclusive);
 
         for (Pricing pricing : pricingList) {
-            int days = countDaysWithinRange(pricing, startDate, endDate);
+            int days = countDaysWithinRange(pricing, checkInDateInclusive, checkOutDateExclusive);
             totalPrice += days * pricing.getPricePerNight();
             totalDays -= days;
         }
@@ -65,62 +78,104 @@ public class PricingService {
     }
 
     /**
-     * [(startDate, endDate] 일수 카운트
-     */
-    private int countDays(LocalDate startDate, LocalDate endDate) {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate);
-    }
-
-    /**
      * pricing 날짜 범위 중 [startDate, endDate] 구간에 포함되는 일수 카운트
      */
-    private int countDaysWithinRange(Pricing pricing, LocalDate startDate, LocalDate endDate) {
+    private int countDaysWithinRange(Pricing pricing, LocalDate startDateInclusive, LocalDate endDateExclusive) {
         return (int) ChronoUnit.DAYS.between(
-                pricing.getStartDate().isBefore(startDate) ? startDate : pricing.getStartDate(),
-                pricing.getEndDate().isAfter(endDate) ? endDate : pricing.getEndDate()
-        ) + 1;
+                pricing.getStartDate().isBefore(startDateInclusive) ? startDateInclusive : pricing.getStartDate(),
+                pricing.getEndDate().isAfter(endDateExclusive) ? endDateExclusive : pricing.getEndDate()
+        );
     }
 
-    /**
-     * 선택 구간들 숙박 가격 변경
-     */
     @Transactional
-    public void updateSelectedDatesPricing(Long roomId, UpdatePricingRequest request) {
+    public void updateSelectedDatesPricing(long roomId, UpdatePricingRequest request) {
         Room room = roomService.findById(roomId);
-        validateDateSelected(request.getDateSelected());
+        validateDateSelected(request.getDateSelected()); // TODO: 겹치는 날짜 없는지 검증
 
-        request.getDateSelected().forEach(range ->
-                updatePricing(room, range.getStartDate(), range.getEndDate(), request.getPricePerNight()));
+        // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
+        updatePricing(room,
+                request.getDateSelected().stream().map(DateRangeRequest::toDateRange).toList(),
+                request.getPricePerNight());
     }
 
     /**
-     * startDate ~ endDate 구간 숙박 가격 변경
+     * dateRanges 날짜 범위에 대한 availability 데이터 추가.
+     * dateRanges 전체 날짜 범위와 겹치는 기존 availability 데이터가 있을 경우, 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updatePricing(Room room, LocalDate startDate, LocalDate endDate, int pricePerNight) {
-        updateExistingPricing(room, startDate, endDate);
-        pricingRepository.save(new Pricing(room, startDate, endDate, pricePerNight));
+    private void updatePricing(Room room, List<DateRange> dateRanges, int pricePerNight) {
+        List<DateRange> sortedSelectedDateRanges = dateRanges.stream()
+                .sorted(Comparator.comparing(DateRange::getStartDate))
+                .collect(Collectors.toList());
+
+        LocalDate minStartDate = sortedSelectedDateRanges.getFirst().getStartDate();
+        LocalDate maxEndDate = sortedSelectedDateRanges.getLast().getEndDate();
+
+        // 업데이트 할 dateRanges 구간과 겹치는 데이터 조회
+        List<Pricing> sortedConflictedPricings = pricingRepository
+                .findOrderedPricingsByDate(room.getId(), minStartDate, maxEndDate);
+
+        // 충돌 하는 범위 내 데이터 전체 삭제
+        if (!sortedConflictedPricings.isEmpty()) {
+            pricingRepository.deleteAll(sortedConflictedPricings);
+            pricingRepository.flush();
+        }
+
+        // 새로 요청 온 날짜 구간(dateRanges)과 기존 데이터 중 겹치지 않는 구간의 데이터 저장
+        List<Pricing> newPricings = new ArrayList<>();
+
+        for (DateRange range : sortedSelectedDateRanges) {
+            newPricings.add(new Pricing(room, range.getStartDate(), range.getEndDate(), pricePerNight));
+        }
+
+        addNonOverlappingRanges(newPricings, room, sortedConflictedPricings, sortedSelectedDateRanges);
+
+        pricingRepository.saveAll(newPricings);
     }
 
     /**
-     * 날짜가 겹치는 기존 pricing 데이터가 있을 경우,
-     * 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
+     * sortedConflicted 범위 중 sortedSelected 와 겹치지 않는 구간을 newPricings 리스트에 추가
      */
-    private void updateExistingPricing(Room room, LocalDate startDate, LocalDate endDate) {
-        List<Pricing> conflictedPricingList = pricingRepository.findPricingsByDate(room.getId(), startDate, endDate);
-        pricingRepository.deleteAll(conflictedPricingList);
+    private void addNonOverlappingRanges(List<Pricing> newPricings, Room room,
+                                         List<Pricing> sortedConflicted, List<DateRange> sortedSelected) {
+        int selectedIndex = 0;
+        LocalDate currentStart = null;
+        LocalDate currentEnd = null;
 
-        for (Pricing conflicted : conflictedPricingList) {
-            if (conflicted.getStartDate().isBefore(startDate)) {
-                pricingRepository.save(new Pricing(room, conflicted.getStartDate(), startDate.minusDays(1), conflicted.getPricePerNight()));
+        for (Pricing conflicted : sortedConflicted) {
+            currentStart = conflicted.getStartDate();
+            currentEnd = conflicted.getEndDate();
+
+            // 현재 conflicted와 겹치는 selected 들을 모두 처리
+            while (selectedIndex < sortedSelected.size()) {
+                DateRange selected = sortedSelected.get(selectedIndex);
+
+                // selected가 conflicted 보다 완전히 앞에 있으면 다음 selected 로
+                if (selected.getEndDate().isBefore(currentStart) || selected.getEndDate().isEqual(currentStart)) {
+                    selectedIndex++;
+                    continue;
+                }
+
+                // 안 겹치는 conflicted 앞 부분 복원
+                if (currentStart.isBefore(selected.getStartDate())) {
+                    newPricings.add(new Pricing(room, currentStart, selected.getStartDate(), conflicted.getPricePerNight()));
+                }
+                currentStart = selected.getEndDate();
+
+                // currentStart가 currentEnd와 같거나 더 이후라면, 현재 conflicted에 대한 처리를 완료한 것
+                if (!currentStart.isBefore(currentEnd)) {
+                    break;
+                }
             }
-            if (conflicted.getEndDate().isAfter(endDate)) {
-                pricingRepository.save(new Pricing(room, endDate.plusDays(1), conflicted.getEndDate(), conflicted.getPricePerNight()));
-            }
+        }
+
+        // 마지막 conflicted 뒷 부분 복원
+        if (currentStart != null && currentStart.isBefore(currentEnd)) {
+            newPricings.add(new Pricing(room, currentStart, currentEnd, sortedConflicted.getLast().getPricePerNight()));
         }
     }
 
     public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {
-        return pricingRepository.findPricingsByMonth(roomId, yearMonth);
+        return pricingRepository.findPricingsByDate(roomId, yearMonth.atDay(1), yearMonth.plusMonths(1).atDay(1));
     }
 
     private void validateDateRange(SearchPricingRequest request) {
@@ -135,7 +190,7 @@ public class PricingService {
         }
     }
 
-    private void validateDateSelected(List<DateRange> dateSelected) {
+    private void validateDateSelected(List<DateRangeRequest> dateSelected) {
         dateSelected.forEach(dateRange -> {
             if (dateRange.getStartDate().isBefore(LocalDate.now())) {
                 throw new InvalidDateRangeException("startDate가 과거 일자입니다.", dateRange.getStartDate(), LocalDate.now());

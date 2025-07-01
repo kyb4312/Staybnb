@@ -11,8 +11,8 @@ import com.staybnb.rooms.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
@@ -34,14 +34,14 @@ public class RoomController {
     }
 
     @GetMapping
-    public Page<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
-        return roomService.findAll(toCondition(searchRoomRequest), pageable)
-                .map(RoomResponse::fromDomain);
+    public PagedModel<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
+        return new PagedModel<>(roomService.findAll(toCondition(searchRoomRequest), pageable)
+                .map(RoomResponse::fromDomain));
     }
 
     @GetMapping("/{roomId}/pricing")
-    public PricingResponse getTotalPrice(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
-        return pricingService.getTotalPrice(roomId, searchPricingRequest);
+    public PricingResponse getTotalPricing(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
+        return pricingService.getTotalPricing(roomId, searchPricingRequest);
     }
 
     @GetMapping("/{roomId}/calendar")

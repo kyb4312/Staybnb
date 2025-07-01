@@ -36,8 +36,8 @@ public class CalendarService {
         List<Pricing> pricingList = pricingService.findPricingsByMonth(roomId, yearMonth);
         List<Availability> availabilities = availabilityService.findAvailabilitiesByMonth(roomId, yearMonth);
 
-        Map<LocalDate, Integer> pricingMap = flattenPricingList(pricingList, yearMonth.atDay(1), yearMonth.atEndOfMonth());
-        Map<LocalDate, Boolean> availabilityMap = flattenAvailabilities(availabilities, yearMonth.atDay(1), yearMonth.atEndOfMonth());
+        Map<LocalDate, Integer> pricingMap = flattenPricingList(pricingList, yearMonth);
+        Map<LocalDate, Boolean> availabilityMap = flattenAvailabilities(availabilities, yearMonth);
 
         List<DailyInfo> dailyInfos = new ArrayList<>();
 
@@ -51,11 +51,13 @@ public class CalendarService {
         return new CalendarResponse(roomId, currency, dailyInfos);
     }
 
-    private Map<LocalDate, Integer> flattenPricingList(List<Pricing> pricingList, LocalDate start, LocalDate end) {
+    private Map<LocalDate, Integer> flattenPricingList(List<Pricing> pricingList, YearMonth yearMonth) {
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.plusMonths(1).atDay(1);
         Map<LocalDate, Integer> pricingMap = new HashMap<>();
 
         for (Pricing pricing : pricingList) {
-            for (LocalDate date = max(start, pricing.getStartDate()); !date.isAfter(min(end, pricing.getEndDate())); date = date.plusDays(1)) {
+            for (LocalDate date = max(start, pricing.getStartDate()); date.isBefore(min(end, pricing.getEndDate())); date = date.plusDays(1)) {
                 pricingMap.put(date, pricing.getPricePerNight());
             }
         }
@@ -63,11 +65,13 @@ public class CalendarService {
         return pricingMap;
     }
 
-    private Map<LocalDate, Boolean> flattenAvailabilities(List<Availability> availabilities, LocalDate start, LocalDate end) {
+    private Map<LocalDate, Boolean> flattenAvailabilities(List<Availability> availabilities, YearMonth yearMonth) {
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.plusMonths(1).atDay(1);
         Map<LocalDate, Boolean> availabilityMap = new HashMap<>();
 
         for (Availability availability : availabilities) {
-            for (LocalDate date = max(start, availability.getStartDate()); !date.isAfter(min(end, availability.getEndDate())); date = date.plusDays(1)) {
+            for (LocalDate date = max(start, availability.getStartDate()); date.isBefore(min(end, availability.getEndDate())); date = date.plusDays(1)) {
                 availabilityMap.put(date, availability.isAvailable());
             }
         }

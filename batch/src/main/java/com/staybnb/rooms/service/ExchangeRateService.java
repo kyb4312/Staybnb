@@ -4,6 +4,7 @@ import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.ExchangeRateResponse;
 import com.staybnb.rooms.repository.ExchangeRateRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExchangeRateService {
@@ -21,13 +23,15 @@ public class ExchangeRateService {
     @Transactional
     @Scheduled(initialDelay = 0, fixedDelay = 15 * 60 * 1000)
     public void updateExchangeRates() {
-        ExchangeRateResponse response = getCurrencyRate();
+        log.info("Updating exchange rates");
 
+        ExchangeRateResponse response = getCurrencyRate();
         exchangeRateRepository.findAll().forEach(exchangeRate -> {
             exchangeRate.setRate(response.getRates().get(exchangeRate.getCurrency().toString()));
             exchangeRate.setUpdatedAt(LocalDateTime.now());
         });
 
+        log.info("Exchange rates updated");
     }
 
     private ExchangeRateResponse getCurrencyRate() {

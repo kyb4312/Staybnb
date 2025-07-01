@@ -4,15 +4,16 @@ import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.SearchRoomCondition;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
+import com.staybnb.rooms.exception.NoSuchRoomException;
 import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -29,16 +30,17 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
-    public Room findById(long id) {
-        return roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
+    public Room findById(long roomId) {
+        return roomRepository.findById(roomId).orElseThrow(() -> new NoSuchRoomException(roomId));
     }
 
     public Page<Room> findAll(SearchRoomCondition condition, Pageable pageable) {
         return roomRepository.findAll(condition, pageable);
     }
 
-    public Room update(long id, UpdateRoomRequest request) {
-        Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
+    @Transactional
+    public Room update(long roomId, UpdateRoomRequest request) {
+        Room room = findById(roomId);
         if(request.getMaxNumberOfGuests() != null) {
             room.setMaxNumberOfGuests(request.getMaxNumberOfGuests());
         }
@@ -68,8 +70,9 @@ public class RoomService {
         return room;
     }
 
-    public void delete(long id) {
-        Room room = roomRepository.findById(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 숙소입니다."));
+    @Transactional
+    public void delete(long roomId) {
+        Room room = findById(roomId);
         room.setDeleted(true);
         room.setDeletedAt(LocalDateTime.now());
     }

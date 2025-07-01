@@ -6,7 +6,7 @@ import com.staybnb.rooms.dto.request.CreateRoomRequest;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
-import com.staybnb.rooms.dto.request.vo.DateRange;
+import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;
@@ -584,8 +584,8 @@ public class RoomControllerTest {
     public void updatePricing() {
         UpdatePricingRequest request = new UpdatePricingRequest(
                 List.of(
-                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
-                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
+                        new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRangeRequest(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
                 ),
                 400000
         );
@@ -619,8 +619,8 @@ public class RoomControllerTest {
     public void updateAvailability() {
         UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
                 List.of(
-                        new DateRange(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
-                        new DateRange(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
+                        new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                        new DateRangeRequest(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
                 ), true);
 
         given().log().all()

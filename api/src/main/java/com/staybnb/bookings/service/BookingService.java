@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+
+import static com.staybnb.bookings.domain.vo.BookingStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -43,20 +46,26 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(Booking booking) {
-        checkAvailability(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
+        checkAvailabilityForUpdate(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
         checkNumberOfGuests(booking.getRoom(), booking.getNumberOfGuests());
 
         double bookingPrice = pricingService.getTotalPrice(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut(), booking.getCurrency());
         checkIfPriceChanged(booking.getBookingPrice(), bookingPrice);
 
-        availabilityService.updateAvailability(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut().minusDays(1), false);
-        booking.setStatus(BookingStatus.REQUESTED);
+        availabilityService.updateAvailabilityToFalse(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
+        booking.setStatus(REQUESTED);
 
         return bookingRepository.save(booking);
     }
 
     private void checkAvailability(Room room, LocalDate checkInInclusive, LocalDate checkOutExclusive) {
         if (!availabilityService.isAvailable(room.getId(), checkInInclusive, checkOutExclusive)) {
+            throw new UnavailableDateException(checkInInclusive, checkOutExclusive);
+        }
+    }
+
+    private void checkAvailabilityForUpdate(Room room, LocalDate checkInInclusive, LocalDate checkOutExclusive) {
+        if (!availabilityService.isAvailableForUpdate(room.getId(), checkInInclusive, checkOutExclusive)) {
             throw new UnavailableDateException(checkInInclusive, checkOutExclusive);
         }
     }
@@ -80,19 +89,19 @@ public class BookingService {
     @Transactional
     public Booking cancelBooking(Long bookingId) {
         Booking booking = getBooking(bookingId);
-        if (!(booking.getStatus() == BookingStatus.REQUESTED || booking.getStatus() == BookingStatus.RESERVED)) {
+        if (!(booking.getStatus() == REQUESTED || booking.getStatus() == RESERVED)) {
             throw new InvalidStatusChangeException(booking.getStatus().toString());
         }
-        return updateBookingStatus(booking, BookingStatus.CANCELLED);
+        return updateBookingStatus(booking, CANCELLED);
     }
 
     @Transactional
     public Booking updateBooking(Long bookingId, BookingStatus status) {
         Booking booking = getBooking(bookingId);
-        if (!(status == BookingStatus.RESERVED || status == BookingStatus.REJECTED)) {
+        if (!(status == RESERVED || status == REJECTED)) {
             throw new InvalidStatusChangeException();
         }
-        if (booking.getStatus() != BookingStatus.REQUESTED) {
+        if (booking.getStatus() != REQUESTED) {
             throw new InvalidStatusChangeException(booking.getStatus().toString());
         }
         return updateBookingStatus(booking, status);
@@ -104,15 +113,15 @@ public class BookingService {
     }
 
     public Page<Booking> findUpcomingBookings(Long userId, Pageable pageable) {
-        return bookingRepository.findBookingsByStatus(pageable, userId, BookingStatus.REQUESTED, BookingStatus.RESERVED);
+        return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(REQUESTED.toString(), RESERVED.toString()));
     }
 
     public Page<Booking> findPastBookings(Long userId, Pageable pageable) {
-        return bookingRepository.findBookingsByStatus(pageable, userId, BookingStatus.ENDED);
+        return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(ENDED.toString()));
     }
 
     public Page<Booking> findCancelledBookings(Long userId, Pageable pageable) {
-        return bookingRepository.findBookingsByStatus(pageable, userId, BookingStatus.CANCELLED, BookingStatus.REJECTED);
+        return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(CANCELLED.toString(), REJECTED.toString()));
     }
 
     public Page<Booking> findBookingsByRoomId(Long roomId, Pageable pageable) {

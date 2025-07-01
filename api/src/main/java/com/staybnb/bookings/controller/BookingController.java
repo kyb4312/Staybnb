@@ -12,8 +12,8 @@ import com.staybnb.rooms.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -58,18 +58,18 @@ public class BookingController {
     }
 
     @GetMapping("/upcoming/{userId}") // TODO: 인증 추가 이후 path 에서 userId 제거 필요
-    public Page<BookingResponse> findUpcomingBookings(@PathVariable Long userId, Pageable pageable) {
-        return bookingService.findUpcomingBookings(userId, pageable).map(BookingResponse::fromEntity);
+    public PagedModel<BookingResponse> findUpcomingBookings(@PathVariable Long userId, Pageable pageable) {
+        return new PagedModel<>(bookingService.findUpcomingBookings(userId, pageable).map(BookingResponse::fromEntity));
     }
 
     @GetMapping("/past/{userId}")
-    public Page<BookingResponse> findPastBookings(@PathVariable Long userId, Pageable pageable) {
-        return bookingService.findPastBookings(userId, pageable).map(BookingResponse::fromEntity);
+    public PagedModel<BookingResponse> findPastBookings(@PathVariable Long userId, Pageable pageable) {
+        return new PagedModel<>(bookingService.findPastBookings(userId, pageable).map(BookingResponse::fromEntity));
     }
 
     @GetMapping("/cancelled/{userId}")
-    public Page<BookingResponse> findCancelledBookings(@PathVariable Long userId, Pageable pageable) {
-        return bookingService.findCancelledBookings(userId, pageable).map(BookingResponse::fromEntity);
+    public PagedModel<BookingResponse> findCancelledBookings(@PathVariable Long userId, Pageable pageable) {
+        return new PagedModel<>(bookingService.findCancelledBookings(userId, pageable).map(BookingResponse::fromEntity));
     }
 
     private Booking toEntity(CreateBookingRequest request) {

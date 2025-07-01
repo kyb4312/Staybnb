@@ -1,8 +1,8 @@
 -- 초기 데이터 insert
 -- user
-insert into user (name, email, password)
+insert into "user" (name, email, password)
 values ('admin', 'admin@gmail.com', '2345');
-insert into user (name, email, password)
+insert into "user" (name, email, password)
 values ('guest1', 'guest1@gmail.com', '2345');
 
 -- exchange_rate
@@ -34,30 +34,29 @@ insert into room (host_id, place_type_id, room_type, country, city, street, max_
 values (1, 1, 'ENTIRE_PLACE', 'South Korea', 'city', 'street', 2, 2, 2, 'title', 'description', 'KRW', 300000, 0,
         false);
 
-
 -- booking
-insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
-values (2, 2, now(), now() + interval 2 day, 2, 550000, "KRW", 'REQUESTED');
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status)
+values (2, 2, daterange(CURRENT_DATE, current_DATE + 2), 2, 550000, 'KRW', 'REQUESTED');
 
-insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
-values (2, 2, now() + interval 2 day, now() + interval 4 day, 2, 550000, "KRW", 'RESERVED');
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status)
+values (2, 2, daterange(CURRENT_DATE + 2, current_DATE + 4), 2, 550000, 'KRW', 'RESERVED');
 
-insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
-values (2, 2, now() + interval 4 day, now() + interval 8 day, 2, 550000, "KRW", 'CANCELLED');
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status)
+values (2, 2, daterange(CURRENT_DATE + 4, current_DATE + 6), 2, 550000, 'KRW', 'CANCELLED');
 
-insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
-values (2, 2, now() + interval 8 day, now() + interval 10 day, 2, 550000, "KRW", 'REJECTED');
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status)
+values (2, 2, daterange(CURRENT_DATE + 6, current_DATE + 8), 2, 550000, 'KRW', 'REJECTED');
 
-insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
-values (2, 2, now() - interval 10 day, now() - interval 12 day, 2, 550000, "KRW", 'ENDED');
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status)
+values (2, 2, daterange(CURRENT_DATE + 8, current_DATE + 10), 2, 550000, 'KRW', 'ENDED');
 
 -- booking (to be updated)
-insert into booking (room_id, guest_id, check_in, check_out, number_of_guests, booking_price, currency, status)
-values (2, 2, now() - interval 2 day, now() - interval 1 day, 2, 550000, "KRW", 'RESERVED');
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status)
+values (2, 2, daterange(CURRENT_DATE - 2, current_DATE - 1), 2, 550000, 'KRW', 'RESERVED');
 
 -- availability
-insert into availability (room_id, start_date, end_date, is_available)
-values (2, now(), now() + interval 10 day, false);
+insert into availability (room_id, date_range, is_available)
+values (2, daterange(CURRENT_DATE, CURRENT_DATE + 10, '[]'), false);
 
-insert into availability (room_id, start_date, end_date, is_available)
-values (1, now(), now() + interval 30 day, true);
+insert into availability (room_id, date_range, is_available)
+values (1, daterange(CURRENT_DATE, CURRENT_DATE + 30), true);

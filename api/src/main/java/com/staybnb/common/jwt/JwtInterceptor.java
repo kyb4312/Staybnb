@@ -19,6 +19,7 @@ import static com.staybnb.common.constant.RequestAttributes.USER_NAME;
 public class JwtInterceptor implements HandlerInterceptor {
 
     private final JwtUtils jwtUtil;
+    private final LogoutTokenService logoutTokenService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -29,6 +30,11 @@ public class JwtInterceptor implements HandlerInterceptor {
             return false;
         }
         String token = authorization.substring(7);
+
+        if (logoutTokenService.isTokenBlacklisted(token)) {
+            sendErrorResponse(response, "ERROR", "Token is blacklisted (logged out)");
+            return false;
+        }
 
         if (jwtUtil.validateToken(token)) {
             request.setAttribute(USER_ID, Long.parseLong(jwtUtil.getUserId(token)));

@@ -3,6 +3,7 @@ package com.staybnb.users.service;
 import com.staybnb.common.exception.custom.NoSuchUserException;
 import com.staybnb.common.exception.custom.SignupException;
 import com.staybnb.common.jwt.JwtUtils;
+import com.staybnb.common.jwt.LogoutTokenService;
 import com.staybnb.users.domain.User;
 import com.staybnb.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,9 @@ class UserServiceTest {
 
     @Mock
     private JwtUtils jwtUtils;
+
+    @Mock
+    private LogoutTokenService logoutTokenService;
 
     private User testUser;
 
@@ -70,7 +74,7 @@ class UserServiceTest {
 
             // Act & Assert
             assertThrows(NoSuchUserException.class, () -> userService.findById(1L));
-            verify(userRepository).findById(1L);
+            verify(userRepository, times(1)).findById(1L);
         }
     }
 
@@ -78,11 +82,9 @@ class UserServiceTest {
     @DisplayName("login Method")
     class LoginTests {
 
-        private String hashedPassword;
-
         @BeforeEach
         void loginSetup() {
-            hashedPassword = BCrypt.hashpw("correctPassword", BCrypt.gensalt());
+            String hashedPassword = BCrypt.hashpw("correctPassword", BCrypt.gensalt());
             testUser.setPassword(hashedPassword);
         }
 
@@ -98,8 +100,8 @@ class UserServiceTest {
 
             // Assert
             assertEquals("dummy.jwt.token", token);
-            verify(userRepository).findByEmail("test@example.com");
-            verify(jwtUtils).generateToken("1", "Test User");
+            verify(userRepository, times(1)).findByEmail("test@example.com");
+            verify(jwtUtils, times(1)).generateToken("1", "Test User");
         }
 
         @Test
@@ -110,7 +112,7 @@ class UserServiceTest {
 
             // Act & Assert
             assertThrows(NoSuchUserException.class, () -> userService.login("wrong@example.com", "password"));
-            verify(userRepository).findByEmail("wrong@example.com");
+            verify(userRepository, times(1)).findByEmail("wrong@example.com");
         }
 
         @Test
@@ -121,7 +123,7 @@ class UserServiceTest {
 
             // Act & Assert
             assertThrows(NoSuchUserException.class, () -> userService.login("test@example.com", "wrongPassword"));
-            verify(userRepository).findByEmail("test@example.com");
+            verify(userRepository, times(1)).findByEmail("test@example.com");
         }
 
         @Test
@@ -133,7 +135,25 @@ class UserServiceTest {
 
             // Act & Assert
             assertThrows(NoSuchUserException.class, () -> userService.login("test@example.com", "correctPassword"));
-            verify(userRepository).findByEmail("test@example.com");
+            verify(userRepository, times(1)).findByEmail("test@example.com");
+        }
+    }
+
+    @Nested
+    @DisplayName("logout Method")
+    class LogoutTests {
+
+        @Test
+        @DisplayName("logout should call LogoutTokenService")
+        void logout_shouldCallLogoutTokenService() {
+            // Arrange
+            String token = "dummy.jwt.token";
+
+            // Act
+            userService.logout(token);
+
+            // Assert
+            verify(logoutTokenService, times(1)).logout(token);
         }
     }
 
@@ -158,8 +178,8 @@ class UserServiceTest {
             // Verify password was hashed and is not the plain text version
             assertNotEquals("plainPassword", signedUpUser.getPassword());
             assertTrue(BCrypt.checkpw("plainPassword", signedUpUser.getPassword()));
-            verify(userRepository).findByEmail(testUser.getEmail());
-            verify(userRepository).save(any(User.class));
+            verify(userRepository, times(1)).findByEmail(testUser.getEmail());
+            verify(userRepository, times(1)).save(any(User.class));
         }
 
         @Test
@@ -171,7 +191,7 @@ class UserServiceTest {
             // Act & Assert
             assertThrows(SignupException.class, () -> userService.signup(testUser));
 
-            verify(userRepository).findByEmail(testUser.getEmail());
+            verify(userRepository, times(1)).findByEmail(testUser.getEmail());
             verify(userRepository, never()).save(any(User.class));
         }
     }
@@ -192,7 +212,7 @@ class UserServiceTest {
             userService.deleteAccount(1L);
 
             // Assert
-            verify(userRepository).findById(1L);
+            verify(userRepository, times(1)).findById(1L);
             assertTrue(testUser.isDeleted());
             assertNotNull(testUser.getDeletedAt());
             // Verify the timestamp is recent
@@ -208,7 +228,7 @@ class UserServiceTest {
 
             // Act & Assert
             assertThrows(NoSuchUserException.class, () -> userService.deleteAccount(1L));
-            verify(userRepository).findById(1L);
+            verify(userRepository, times(1)).findById(1L);
         }
     }
 }

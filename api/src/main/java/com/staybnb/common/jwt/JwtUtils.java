@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtils {
@@ -25,6 +26,7 @@ public class JwtUtils {
                 .claim("name", name)
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .issuedAt(new Date())
+                .id(UUID.randomUUID().toString())
                 .signWith(secretKey)
                 .compact();
     }
@@ -57,5 +59,25 @@ public class JwtUtils {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("name", String.class);
+    }
+
+    public String getJti(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getId();
+    }
+
+    public long getExpirationTimeMillis(String token) {
+        Date expiration = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+
+        return (expiration.getTime() - System.currentTimeMillis());
     }
 }

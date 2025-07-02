@@ -1,10 +1,12 @@
 package com.staybnb.users.controller;
 
+import com.staybnb.AbstractIntegrationTest;
 import com.staybnb.common.jwt.JwtUtils;
 import com.staybnb.users.dto.request.LoginRequest;
 import com.staybnb.users.dto.request.SignupRequest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -18,7 +20,7 @@ import static io.restassured.RestAssured.given;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class UserControllerTest {
+public class UserControllerTest extends AbstractIntegrationTest {
 
     @LocalServerPort
     int port;
@@ -44,7 +46,26 @@ class UserControllerTest {
                 .contentType(ContentType.JSON)
                 .when().post("/users/login")
                 .then().log().all()
-                .statusCode(200);
+                .statusCode(HttpStatus.SC_OK);
+    }
+
+    @Test
+    void logout() {
+        String token = "Bearer " + jwtUtils.generateToken("3", "guest2");
+
+        given().log().all()
+                .port(port)
+                .header("Authorization", token)
+                .when().post("/users/logout")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_NO_CONTENT);
+
+        given().log().all()
+                .port(port)
+                .header("Authorization", token)
+                .when().post("/users/logout")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_UNAUTHORIZED);
     }
 
     @Test
@@ -61,7 +82,7 @@ class UserControllerTest {
                 .contentType(ContentType.JSON)
                 .when().post("/users/signup")
                 .then().log().all()
-                .statusCode(201);
+                .statusCode(HttpStatus.SC_CREATED);
     }
 
     @Test
@@ -78,7 +99,7 @@ class UserControllerTest {
                 .contentType(ContentType.JSON)
                 .when().post("/users/signup")
                 .then().log().all()
-                .statusCode(400);
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test
@@ -88,7 +109,7 @@ class UserControllerTest {
                 .header("Authorization", "Bearer " + jwtUtils.generateToken("3", "guest2"))
                 .when().delete("/users/delete")
                 .then().log().all()
-                .statusCode(204);
+                .statusCode(HttpStatus.SC_NO_CONTENT);
     }
 
     @Test
@@ -98,7 +119,7 @@ class UserControllerTest {
                 .auth().none()
                 .when().delete("/users/delete")
                 .then().log().all()
-                .statusCode(401);
+                .statusCode(HttpStatus.SC_UNAUTHORIZED);
     }
 
 }

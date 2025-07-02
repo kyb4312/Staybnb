@@ -1,5 +1,6 @@
 package com.staybnb.rooms.controller;
 
+import com.staybnb.AbstractIntegrationTest;
 import com.staybnb.common.jwt.JwtUtils;
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.Currency;
@@ -39,7 +40,7 @@ import static org.hamcrest.Matchers.*;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class RoomControllerTest {
+public class RoomControllerTest extends AbstractIntegrationTest {
 
     @LocalServerPort
     int port;

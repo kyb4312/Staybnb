@@ -1,6 +1,6 @@
 package com.staybnb.users.controller;
 
-import com.staybnb.common.constant.RequestAttributes;
+import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.users.domain.User;
 import com.staybnb.users.dto.request.SignupRequest;
 import com.staybnb.users.dto.response.UserResponse;
@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import static com.staybnb.common.constant.RequestAttributes.USER_ID;
 
 @RestController
 @RequestMapping("/users")
@@ -26,8 +28,14 @@ public class UserController {
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout() {
-        // TODO
+    public void logout(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new UnauthorizedException();
+        }
+        String token = authorization.substring(7);
+
+        userService.logout(token);
     }
 
     @PostMapping("/signup")
@@ -39,7 +47,7 @@ public class UserController {
     @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAccount(HttpServletRequest request) {
-        userService.deleteAccount((Long) request.getAttribute(RequestAttributes.USER_ID));
+        userService.deleteAccount((Long) request.getAttribute(USER_ID));
     }
 
     private User toEntity(SignupRequest request) {

@@ -2,6 +2,7 @@ package com.staybnb.users.service;
 
 import com.staybnb.common.exception.custom.SignupException;
 import com.staybnb.common.jwt.JwtUtils;
+import com.staybnb.common.jwt.LogoutTokenService;
 import com.staybnb.users.domain.User;
 import com.staybnb.common.exception.custom.NoSuchUserException;
 import com.staybnb.users.repository.UserRepository;
@@ -18,6 +19,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
+    private final LogoutTokenService logoutTokenService;
 
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new NoSuchUserException(id));
@@ -33,6 +35,10 @@ public class UserService {
         }
 
         return jwtUtils.generateToken(user.getId().toString(), user.getName());
+    }
+
+    public void logout(String token) {
+        logoutTokenService.logout(token);
     }
 
     public User signup(User user) {

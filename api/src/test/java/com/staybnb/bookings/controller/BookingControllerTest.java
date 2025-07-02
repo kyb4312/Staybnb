@@ -1,5 +1,6 @@
 package com.staybnb.bookings.controller;
 
+import com.staybnb.AbstractIntegrationTest;
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.bookings.dto.request.CreateBookingRequest;
 import com.staybnb.bookings.dto.response.BookingPreviewResponse;
@@ -26,7 +27,7 @@ import static org.hamcrest.Matchers.*;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class BookingControllerTest {
+class BookingControllerTest extends AbstractIntegrationTest {
 
     @LocalServerPort
     int port;

@@ -1,0 +1,44 @@
+name: Auto PR Draft Generator
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!main"  # main 브랜치는 제외
+
+jobs:
+  generate_pr_draft:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # diff 분석용
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyGithub google-generativeai
+
+      - name: Generate PR Draft
+        id: generate_pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BASE_BRANCH: main
+        run: |
+          python .github/scripts/generate_pr_gemini.py
+
+      - name: Output PR Info
+        run: |
+          echo "Pull Request URL: ${{ steps.generate_pr.outputs.pr_url }}"
+        if: success() && steps.generate_pr.outputs.pr_url != ''

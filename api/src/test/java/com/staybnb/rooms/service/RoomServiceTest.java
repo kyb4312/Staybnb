@@ -7,6 +7,7 @@ import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.SearchRoomCondition;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.repository.RoomRepository;
+import com.staybnb.users.domain.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +43,7 @@ class RoomServiceTest {
     @DisplayName("save(): 숙소 등록 시 id가 포함된 객체 반환")
     void save() {
         // given
-        User host = new User();
+        User host = new User("host@gmail.com", "host", "password");
         PlaceType placeType = new PlaceType(1, "HOUSE");
         Set<Amenity> amenities = Set.of();
 
@@ -105,7 +106,7 @@ class RoomServiceTest {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");
@@ -153,7 +154,7 @@ class RoomServiceTest {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");
@@ -200,7 +201,7 @@ class RoomServiceTest {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");
@@ -254,7 +255,7 @@ class RoomServiceTest {
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 
         // when
-        Room updatedRoom = roomService.update(room.getId(), updateInfo);
+        Room updatedRoom = roomService.update(1L, room.getId(), updateInfo);
 
         // then
         verify(roomRepository, times(1)).findById(room.getId());
@@ -271,7 +272,7 @@ class RoomServiceTest {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");
@@ -303,7 +304,7 @@ class RoomServiceTest {
         when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
 
         // when
-        roomService.delete(roomId);
+        roomService.delete(1L, roomId);
 
         // then
         verify(roomRepository, times(1)).findById(room.getId());

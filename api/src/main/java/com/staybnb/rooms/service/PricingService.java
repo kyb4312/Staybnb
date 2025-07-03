@@ -1,5 +1,6 @@
 package com.staybnb.rooms.service;
 
+import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Pricing;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
@@ -8,7 +9,7 @@ import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.PricingResponse;
-import com.staybnb.rooms.exception.InvalidDateRangeException;
+import com.staybnb.common.exception.custom.InvalidDateRangeException;
 import com.staybnb.rooms.repository.PricingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -88,8 +89,9 @@ public class PricingService {
     }
 
     @Transactional
-    public void updateSelectedDatesPricing(long roomId, UpdatePricingRequest request) {
+    public void updateSelectedDatesPricing(long userId, long roomId, UpdatePricingRequest request) {
         Room room = roomService.findById(roomId);
+        validateUser(userId, room);
         validateDateSelected(request.getDateSelected()); // TODO: 겹치는 날짜 없는지 검증
 
         // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
@@ -176,6 +178,12 @@ public class PricingService {
 
     public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {
         return pricingRepository.findPricingsByDate(roomId, yearMonth.atDay(1), yearMonth.plusMonths(1).atDay(1));
+    }
+
+    private void validateUser(long userId, Room room) {
+        if (!room.getHost().getId().equals(userId)) {
+            throw new UnauthorizedException(userId);
+        }
     }
 
     private void validateDateRange(SearchPricingRequest request) {

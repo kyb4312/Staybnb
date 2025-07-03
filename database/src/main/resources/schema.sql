@@ -9,8 +9,10 @@ CREATE TABLE "user"
 (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name       VARCHAR(50)  NOT NULL,
-    email      VARCHAR(255) NOT NULL,
+    email      VARCHAR(255)       NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,
+    is_deleted bool DEFAULT false NOT NULL,
+    deleted_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

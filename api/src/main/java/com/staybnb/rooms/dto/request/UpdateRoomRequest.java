@@ -1,6 +1,6 @@
 package com.staybnb.rooms.dto.request;
 
-import com.staybnb.validation.annotation.NullOrNotBlank;
+import com.staybnb.common.validation.annotation.NullOrNotBlank;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
 import lombok.Getter;

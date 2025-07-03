@@ -1,10 +1,11 @@
 package com.staybnb.rooms.service;
 
+import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.SearchRoomCondition;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
-import com.staybnb.rooms.exception.NoSuchRoomException;
+import com.staybnb.common.exception.custom.NoSuchRoomException;
 import com.staybnb.rooms.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +40,10 @@ public class RoomService {
     }
 
     @Transactional
-    public Room update(long roomId, UpdateRoomRequest request) {
+    public Room update(long userId, long roomId, UpdateRoomRequest request) {
         Room room = findById(roomId);
+        validateUser(userId, room);
+
         if(request.getMaxNumberOfGuests() != null) {
             room.setMaxNumberOfGuests(request.getMaxNumberOfGuests());
         }
@@ -71,10 +74,18 @@ public class RoomService {
     }
 
     @Transactional
-    public void delete(long roomId) {
+    public void delete(long userId, long roomId) {
         Room room = findById(roomId);
+        validateUser(userId, room);
+
         room.setDeleted(true);
         room.setDeletedAt(LocalDateTime.now());
+    }
+
+    private void validateUser(long userId, Room room) {
+        if (!room.getHost().getId().equals(userId)) {
+            throw new UnauthorizedException(userId);
+        }
     }
 
 }

@@ -6,7 +6,6 @@ import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
 import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
-import com.staybnb.common.exception.custom.InvalidDateRangeException;
 import com.staybnb.rooms.repository.AvailabilityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,9 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +28,7 @@ public class AvailabilityService {
     public void updateSelectedDatesAvailability(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
         validateUser(userId, room);
-        validateDateSelected(request.getDateSelected()); // TODO: 겹치는 날짜 없는지 검증
+        DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
 
         // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
         updateAvailabilities(room,
@@ -48,11 +45,7 @@ public class AvailabilityService {
      * dateRanges 날짜 범위에 대한 availability 데이터 추가.
      * dateRanges 전체 날짜 범위와 겹치는 기존 availability 데이터가 있을 경우, 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updateAvailabilities(Room room, List<DateRange> dateRanges, boolean isAvailable) {
-        List<DateRange> sortedSelectedDateRanges = dateRanges.stream()
-                .sorted(Comparator.comparing(DateRange::getStartDate))
-                .collect(Collectors.toList());
-
+    private void updateAvailabilities(Room room, List<DateRange> sortedSelectedDateRanges, boolean isAvailable) {
         LocalDate minStartDate = sortedSelectedDateRanges.getFirst().getStartDate();
         LocalDate maxEndDate = sortedSelectedDateRanges.getLast().getEndDate();
 
@@ -152,20 +145,6 @@ public class AvailabilityService {
         if (!room.getHost().getId().equals(userId)) {
             throw new UnauthorizedException(userId);
         }
-    }
-
-    private void validateDateSelected(List<DateRangeRequest> dateSelected) {
-        dateSelected.forEach(dateRange -> {
-            if (dateRange.getStartDate().isBefore(LocalDate.now())) {
-                throw new InvalidDateRangeException("startDate가 과거 일자입니다.", dateRange.getStartDate(), LocalDate.now());
-            }
-            if (dateRange.getStartDate().isAfter(dateRange.getEndDate())) {
-                throw new InvalidDateRangeException("startDate는 endDate 보다 같거나 이전 일자여야 합니다.", dateRange.getStartDate(), dateRange.getEndDate());
-            }
-            if (!dateRange.getEndDate().isBefore(LocalDate.now().plusYears(1))) {
-                throw new InvalidDateRangeException("1년 이내의 가격만 설정 가능합니다.", dateRange.getStartDate(), dateRange.getEndDate());
-            }
-        });
     }
 
 }

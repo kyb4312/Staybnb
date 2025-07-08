@@ -96,7 +96,7 @@ public class AvailabilityService {
 
                 // 안 겹치는 conflicted 앞 부분 복원
                 if (currentStart.isBefore(selected.getStartDate())) {
-                    newAvailabilities.add(new Availability(room, currentStart, selected.getStartDate(), conflicted.isAvailable()));
+                    newAvailabilities.add(new Availability(room, currentStart, getMinDate(currentEnd, selected.getStartDate()), conflicted.isAvailable()));
                 }
                 currentStart = selected.getEndDate();
 
@@ -111,6 +111,10 @@ public class AvailabilityService {
         if (currentStart != null && currentStart.isBefore(currentEnd)) {
             newAvailabilities.add(new Availability(room, currentStart, currentEnd, sortedConflicted.getLast().isAvailable()));
         }
+    }
+
+    private LocalDate getMinDate(LocalDate date1, LocalDate date2) {
+        return date1.isBefore(date2) ? date1 : date2;
     }
 
     public List<Availability> findAvailabilitiesByMonth(Long roomId, YearMonth yearMonth) {

@@ -77,7 +77,7 @@ public class PricingService {
     }
 
     /**
-     * pricing 날짜 범위 중 [startDate, endDate] 구간에 포함되는 일수 카운트
+     * pricing 날짜 범위 중 [startDate, endDate) 구간에 포함되는 일수 카운트
      */
     private int countDaysWithinRange(Pricing pricing, LocalDate startDateInclusive, LocalDate endDateExclusive) {
         return (int) ChronoUnit.DAYS.between(
@@ -153,7 +153,7 @@ public class PricingService {
 
                 // 안 겹치는 conflicted 앞 부분 복원
                 if (currentStart.isBefore(selected.getStartDate())) {
-                    newPricings.add(new Pricing(room, currentStart, selected.getStartDate(), conflicted.getPricePerNight()));
+                    newPricings.add(new Pricing(room, currentStart, getMinDate(currentEnd, selected.getStartDate()), conflicted.getPricePerNight()));
                 }
                 currentStart = selected.getEndDate();
 
@@ -168,6 +168,10 @@ public class PricingService {
         if (currentStart != null && currentStart.isBefore(currentEnd)) {
             newPricings.add(new Pricing(room, currentStart, currentEnd, sortedConflicted.getLast().getPricePerNight()));
         }
+    }
+
+    private LocalDate getMinDate(LocalDate date1, LocalDate date2) {
+        return date1.isBefore(date2) ? date1 : date2;
     }
 
     public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {

@@ -1,6 +1,7 @@
 package com.staybnb.common.exception;
 
 import com.staybnb.common.exception.custom.*;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -64,9 +65,9 @@ public class ExceptionControllerAdvice {
         return new ExceptionResponse("ERROR", e.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({UnauthorizedException.class, ExpiredJwtException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ExceptionResponse handleUnauthorizedException(UnauthorizedException e) {
+    public ExceptionResponse handleUnauthorizedException(RuntimeException e) {
         return new ExceptionResponse("ERROR", e.getMessage());
     }
 

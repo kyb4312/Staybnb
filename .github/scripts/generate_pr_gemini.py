@@ -27,7 +27,7 @@ if not REPOSITORY_SLUG:
 g = Github(GITHUB_TOKEN)
 repo = g.get_repo(REPOSITORY_SLUG)
 
-# 현재 푸시된 브랜치와 대상 브랜치 가져오기
+# 현재 푸시된 브랜치 가져오기
 github_ref = os.environ.get('GITHUB_REF', '')
 if github_ref.startswith('refs/heads/'):
     HEAD_BRANCH = github_ref.replace('refs/heads/', '')
@@ -38,7 +38,27 @@ else:
     except:
         HEAD_BRANCH = 'unknown'
 
-BASE_BRANCH = os.environ.get('BASE_BRANCH', 'main')
+# BASE_BRANCH 동적으로 설정 (가장 최근 열린 PR의 head 브랜치)
+BASE_BRANCH = 'main' # 기본값은 main
+try:
+    # 열려있는 PR을 최신순으로 정렬하여 하나 가져옵니다.
+    # state='open', sort='updated', direction='desc'
+    open_prs = repo.get_pulls(state='open', sort='updated', direction='desc')
+    latest_open_pr = next(iter(open_prs), None) # 첫 번째 PR을 가져오거나 없으면 None
+
+    if latest_open_pr and latest_open_pr.head.ref != HEAD_BRANCH:
+        # 가장 최근 PR의 head 브랜치를 BASE_BRANCH로 설정
+        BASE_BRANCH = latest_open_pr.head.ref
+        print(f"✅ 최근 열린 PR ({latest_open_pr.title})의 head 브랜치 '{BASE_BRANCH}'를 BASE_BRANCH로 설정합니다.")
+    elif latest_open_pr and latest_open_pr.head.ref == HEAD_BRANCH:
+        print(f"⚠️ 최근 열린 PR의 head 브랜치('{latest_open_pr.head.ref}')가 현재 브랜치('{HEAD_BRANCH}')와 동일합니다. 'main'을 BASE_BRANCH로 유지합니다.")
+    else:
+        print(f"ℹ️ 열려있는 PR이 없습니다. 'main'을 BASE_BRANCH로 유지합니다.")
+
+except Exception as e:
+    print(f"⚠️ 최근 PR 정보를 가져오는 중 오류 발생: {e}. 'main'을 BASE_BRANCH로 유지합니다.")
+    BASE_BRANCH = 'main' # 오류 발생 시 기본값으로 main 설정
+
 
 print(f"HEAD_BRANCH: {HEAD_BRANCH}")
 print(f"BASE_BRANCH: {BASE_BRANCH}")
@@ -48,7 +68,7 @@ if HEAD_BRANCH == BASE_BRANCH:
     print(f"HEAD_BRANCH와 BASE_BRANCH가 동일합니다. PR을 생성하지 않습니다.")
     exit(0)
 
-# 기존 PR 체크
+# 기존 PR 체크 (HEAD_BRANCH -> BASE_BRANCH)
 existing_prs = repo.get_pulls(state='open', head=f"{REPOSITORY_SLUG.split('/')[0]}:{HEAD_BRANCH}", base=BASE_BRANCH)
 if existing_prs.totalCount > 0:
     print(f"기존 PR이 존재합니다: {existing_prs[0].html_url}")
@@ -61,14 +81,16 @@ def get_commit_history_and_files():
     try:
         subprocess.run(['git', 'fetch', 'origin', BASE_BRANCH], check=True, capture_output=True)
 
-        # 모든 커밋 메시지 가져오기
+        # 모든 커밋 메시지 가져오기 (BASE_BRANCH 대비 HEAD_BRANCH의 추가된 커밋)
         commit_messages_raw = subprocess.check_output(
             ['git', 'log', f'origin/{BASE_BRANCH}..HEAD', '--pretty=format:%s'],
             text=True, encoding='utf-8'
         ).strip()
 
         if not commit_messages_raw:
-            # 커밋이 없다면 최근 1개 커밋이라도 가져오기
+            # 커밋이 없다면 최근 1개 커밋이라도 가져오기 (이 부분은 BASE_BRANCH에 대한 상대적인 커밋이 없는 경우를 대비한 것이므로,
+            # BASE_BRANCH가 잘 설정되었다면 이 블록은 거의 실행되지 않을 것입니다.)
+            print(f"⚠️ {BASE_BRANCH} 대비 HEAD에 새로운 커밋이 없습니다. 최근 1개 커밋을 가져옵니다.")
             commit_messages_raw = subprocess.check_output(
                 ['git', 'log', '--pretty=format:%s', '-1'],
                 text=True, encoding='utf-8'
@@ -76,7 +98,7 @@ def get_commit_history_and_files():
 
         commit_messages = [msg for msg in commit_messages_raw.split('\n') if msg.strip()]
 
-        # 변경된 파일
+        # 변경된 파일 (BASE_BRANCH...HEAD)
         try:
             changed_files_raw = subprocess.check_output(
                 ['git', 'diff', '--name-only', f'origin/{BASE_BRANCH}...HEAD'],
@@ -84,22 +106,24 @@ def get_commit_history_and_files():
             ).strip()
             changed_files = [f for f in changed_files_raw.split('\n') if f.strip()] if changed_files_raw else []
         except subprocess.CalledProcessError:
+            # diff 명령어가 실패하는 경우 (예: 브랜치 히스토리가 완전히 다를 때) show 명령어로 시도
+            print(f"⚠️ git diff 실패. git show로 변경된 파일 확인 시도.")
             try:
                 changed_files_raw = subprocess.check_output(
-                    ['git', 'show', '--name-only', '--format=', 'HEAD'],
+                    ['git', 'show', '--name-only', '--format=', 'HEAD'], # HEAD의 변경사항만
                     text=True, encoding='utf-8'
                 ).strip()
                 changed_files = [f for f in changed_files_raw.split('\n') if f.strip()][:20] if changed_files_raw else []
             except:
+                print("⚠️ git show도 실패했습니다. 변경된 파일 목록을 가져올 수 없습니다.")
                 changed_files = []
 
-        print(f"📝 커밋 메시지 {len(commit_messages)}개, 변경된 파일 {len(changed_files)}개 발견")
+        print(f"📝 커밋 메시지 {len(commit_messages)}개, 변경된 파일 {len(changed_files)}개 발견 ({BASE_BRANCH} 기준)")
         return commit_messages, changed_files
 
     except Exception as e:
         print(f"Git 명령어 실행 중 오류 발생: {e}")
         return [], []
-
 
 
 def generate_pr_content_with_gemini(commit_messages, changed_files):
@@ -126,8 +150,8 @@ def generate_pr_content_with_gemini(commit_messages, changed_files):
 
 본문 작성 가이드라인:
 - 변경사항을 카테고리별로 정리 (기능 추가, 버그 수정, 리팩토링 등)
-- gradle 의존성 관련 변경사항, 데이터베이스 스키마 변경, API 엔드포인트 변경, 보안 관련 변경 등이 있다면 명시
-- 호스트 또는 게스트 기능과 관련된 변경이라면 구체적으로 언급
+- Spring Boot 관련 변경사항, 데이터베이스 스키마 변경, API 엔드포인트 변경, 보안 관련 변경 등이 있다면 명시
+- **호스트 또는 게스트 기능과 관련된 변경이라면 구체적으로 언급**
 - 중요한 파일들만 언급 (너무 많은 파일 나열 금지)
 - 기술 부채 해소, 성능 개선 등 변경 동기를 명확히 설명"""
 
@@ -165,7 +189,7 @@ def generate_pr_content_with_gemini(commit_messages, changed_files):
             pr_body = generate_default_body(commit_messages, changed_files)
 
         # AI 생성 문구 추가
-        pr_body += f"\n\n---\n*이 PR은 Gemini AI에 의해 자동 생성되었습니다. (커밋 {len(commit_messages)}개, 파일 {len(changed_files)}개 분석)*"
+        pr_body += f"\n\n---\n*이 PR은 Gemini AI에 의해 자동 생성되었습니다. (커밋 {len(commit_messages)}개, 파일 {len(changed_files)}개 분석, 대상 브랜치: `{BASE_BRANCH}`)*"
 
         return pr_title, pr_body
 
@@ -177,7 +201,7 @@ def generate_default_body(commit_messages, changed_files):
     """기본 PR 본문 생성"""
     body = f"""## 변경 사항 요약
 
-이 PR은 `{HEAD_BRANCH}` 브랜치의 변경사항을 포함합니다.
+이 PR은 `{HEAD_BRANCH}` 브랜치의 변경사항을 `{BASE_BRANCH}` 브랜치에 병합합니다.
 
 ### 커밋 메시지 ({len(commit_messages)}개)
 {chr(10).join(f"- {msg}" for msg in commit_messages)}
@@ -189,8 +213,6 @@ def generate_default_body(commit_messages, changed_files):
         body += f"\n- ... 외 {len(changed_files) - 10}개 파일"
 
     return body
-
-
 
 # 메인 로직
 if __name__ == "__main__":

@@ -19,3 +19,6 @@ out/
 ### docker ###
 *.env
 /data/db/
+
+### k6 ###
+*/k6-tests/results

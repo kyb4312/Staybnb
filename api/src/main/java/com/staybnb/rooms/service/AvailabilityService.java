@@ -37,6 +37,17 @@ public class AvailabilityService {
     }
 
     @Transactional
+    public void updateSelectedDatesAvailabilitySql(long userId, long roomId, UpdateAvailabilityRequest request) {
+        Room room = roomService.findById(roomId);
+        validateUser(userId, room);
+        DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
+
+        List<String> dateRanges = request.getDateSelected().stream().map(DateRangeRequest::toDateRange).map(DateRange::toString).toList();
+
+        availabilityRepository.updateRoomAvailability(roomId, dateRanges, request.getIsAvailable());
+    }
+
+    @Transactional
     public void updateAvailabilityToFalse(Room room, LocalDate startDateInclusive, LocalDate endDateExclusive) {
         updateAvailabilities(room, List.of(new DateRange(startDateInclusive, endDateExclusive)), false);
     }

@@ -81,6 +81,14 @@ public class HostRoomController {
                 (Long) request.getAttribute(USER_ID), roomId, updateAvailabilityRequest);
     }
 
+    @PostMapping("/{roomId}/availability/sql")
+    public void updateAvailabilitySql(@PathVariable long roomId,
+                                      @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
+                                      HttpServletRequest request) {
+
+        availabilityService.updateSelectedDatesAvailabilitySql(
+                (Long) request.getAttribute(USER_ID), roomId, updateAvailabilityRequest);
+    }
 
     private Room toEntity(CreateRoomRequest request) {
         return Room.builder()

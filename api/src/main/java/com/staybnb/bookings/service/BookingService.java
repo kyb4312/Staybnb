@@ -10,7 +10,6 @@ import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.service.AvailabilityService;
 import com.staybnb.rooms.service.PricingService;
 import com.staybnb.rooms.service.RoomService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +31,7 @@ public class BookingService {
     private final AvailabilityService availabilityService;
     private final PricingService pricingService;
 
-    public Booking getBookingPreview(@Valid GetBookingPreviewRequest request) {
+    public Booking getBookingPreview(GetBookingPreviewRequest request) {
         Room room = roomService.findById(request.getRoomId());
         Currency guestCurrency = Currency.valueOf(request.getGuestCurrency());
 

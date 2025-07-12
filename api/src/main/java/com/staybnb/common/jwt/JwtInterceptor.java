@@ -26,13 +26,13 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String authorization = request.getHeader("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            sendErrorResponse(response, "ERROR", "Missing or invalid Authorization header");
+            sendErrorResponse(response, "A001", "Missing or invalid Authorization header");
             return false;
         }
         String token = authorization.substring(7);
 
         if (logoutTokenService.isTokenBlacklisted(token)) {
-            sendErrorResponse(response, "ERROR", "Token is blacklisted (logged out)");
+            sendErrorResponse(response, "A002", "Token is blacklisted (logged out)");
             return false;
         }
 
@@ -41,7 +41,7 @@ public class JwtInterceptor implements HandlerInterceptor {
             request.setAttribute(USER_NAME, jwtUtil.getUserName(token));
             return true;
         } else {
-            sendErrorResponse(response, "ERROR", "Invalid token");
+            sendErrorResponse(response, "A003", "Invalid token");
             return false;
         }
     }

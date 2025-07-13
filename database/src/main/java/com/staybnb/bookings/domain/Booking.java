@@ -63,6 +63,7 @@ public class Booking {
         this.dateRange = Range.closedOpen(checkIn, checkOut);
         this.bookingPrice = bookingPrice;
         this.currency = currency;
+        this.createdAt = LocalDateTime.now();
     }
 
     public LocalDate getCheckIn() {

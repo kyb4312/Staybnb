@@ -35,5 +35,6 @@ public class User {
         this.email = email;
         this.name = name;
         this.password = password;
+        this.createdAt = LocalDateTime.now();
     }
 }

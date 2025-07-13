@@ -73,5 +73,6 @@ public class Room {
 
     private LocalDateTime deletedAt;
 
-    private LocalDateTime createdAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

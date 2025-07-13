@@ -2,8 +2,8 @@ package com.staybnb.common.exception;
 
 import com.staybnb.common.exception.custom.*;
 import io.jsonwebtoken.ExpiredJwtException;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -60,7 +60,13 @@ public class ExceptionControllerAdvice {
                 .getAllErrors()
                 .stream()
                 .findFirst()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .map(error -> {
+                    if (error instanceof FieldError fieldError) {
+                        return fieldError.getField() + ": " + fieldError.getDefaultMessage();
+                    } else {
+                        return error.getDefaultMessage(); // 전역 오류
+                    }
+                })
                 .orElse("유효성 검사 실패");
 
         return new ExceptionResponse("C005", errorMessage); // Validation 실패

@@ -96,7 +96,7 @@ class RoomServiceTest {
 
         assertThat(savedRoom)
                 .usingRecursiveComparison()
-                .ignoringFields("id", "host", "placeType", "amenities", "currency")
+                .ignoringFields("id", "host", "placeType", "amenities", "currency", "createdAt")
                 .isEqualTo(expected);
     }
 
@@ -262,7 +262,7 @@ class RoomServiceTest {
 
         assertThat(updatedRoom)
                 .usingRecursiveComparison()
-                .ignoringFields("basePriceInUsd")
+                .ignoringFields("basePriceInUsd", "createdAt")
                 .isEqualTo(expected);
     }
 

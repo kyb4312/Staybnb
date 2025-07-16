@@ -67,6 +67,7 @@ class RoomServiceTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency(Currency.KRW)
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         when(exchangeRateService.convertToUSD(Currency.KRW, room.getBasePrice())).thenReturn(700_000 / 1350.0);
@@ -92,6 +93,7 @@ class RoomServiceTest {
                 .basePrice(700_000)
                 .currency(Currency.KRW)
                 .basePriceInUsd(700_000 / 1350.0)
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         assertThat(savedRoom)

@@ -75,4 +75,7 @@ public class Room {
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = false, length = 50)
+    private String timeZoneId;
 }

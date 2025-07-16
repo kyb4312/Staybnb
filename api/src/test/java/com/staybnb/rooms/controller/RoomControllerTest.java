@@ -103,6 +103,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .currency("KRW")
                 .basePrice(700_000)
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         RoomResponse response =
@@ -130,6 +131,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description(createRoomRequest.getDescription())
                 .basePrice(createRoomRequest.getBasePrice()) // updated
                 .currency(Currency.valueOf(createRoomRequest.getCurrency())) // updated
+                .timeZoneId(createRoomRequest.getTimeZoneId())
                 .build();
 
         log.info("createRoomRequest: {}", createRoomRequest);
@@ -171,6 +173,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         long roomId =
@@ -214,6 +217,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description(createRoomRequest.getDescription())
                 .basePrice(updateRoomRequest.getBasePrice()) // updated
                 .currency(Currency.valueOf(updateRoomRequest.getCurrency())) // updated
+                .timeZoneId(createRoomRequest.getTimeZoneId())
                 .build();
 
         Assertions.assertThat(response)
@@ -250,6 +254,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         long roomId =
@@ -299,6 +304,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         given().log().all()
@@ -339,6 +345,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         given().log().all()
@@ -379,6 +386,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         long roomId =
@@ -448,6 +456,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         given().log().all()
@@ -488,6 +497,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         given().log().all()
@@ -528,6 +538,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("unsupported") // unsupported Currency
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         given().log().all()
@@ -568,6 +579,7 @@ public class RoomControllerTest extends AbstractIntegrationTest {
                 .description("Modern building in Kentucky")
                 .basePrice(700_000)
                 .currency("KRW")
+                .timeZoneId("Asia/Seoul")
                 .build();
 
         given().log().all()

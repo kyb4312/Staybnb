@@ -61,6 +61,7 @@ CREATE TABLE room
     is_deleted           BOOLEAN          NOT NULL,
     deleted_at           TIMESTAMP    DEFAULT NULL,
     created_at           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    time_zone_id VARCHAR(50) NOT NULL,
 
     CONSTRAINT fk_room_host_id FOREIGN KEY (host_id) REFERENCES "user" (id),
     CONSTRAINT fk_room_place_type_id FOREIGN KEY (place_type_id) REFERENCES place_type (id)
@@ -118,6 +119,7 @@ CREATE TABLE booking
     status           VARCHAR(20)      NOT NULL,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP DEFAULT NULL,
+    time_zone_id VARCHAR(50) NOT NULL,
 
     CONSTRAINT fk_booking_room_id FOREIGN KEY (room_id) REFERENCES room (id),
     CONSTRAINT fk_booking_guest_id FOREIGN KEY (guest_id) REFERENCES "user" (id),

@@ -104,6 +104,7 @@ public class HostRoomController {
                 .description(request.getDescription())
                 .basePrice(request.getBasePrice())
                 .currency(Currency.valueOf(request.getCurrency()))
+                .timeZoneId(request.getTimeZoneId())
                 .build();
     }
 }

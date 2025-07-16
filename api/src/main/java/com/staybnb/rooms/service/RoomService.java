@@ -1,5 +1,6 @@
 package com.staybnb.rooms.service;
 
+import com.staybnb.common.exception.custom.InvalidTimeZoneIdException;
 import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Service
@@ -27,6 +29,7 @@ public class RoomService {
     private final ExchangeRateService exchangeRateService;
 
     public Room save(Room room) {
+        validateTimeZoneId(room.getTimeZoneId());
         room.setBasePriceInUsd(exchangeRateService.convertToUSD(room.getCurrency(), room.getBasePrice()));
         return roomRepository.save(room);
     }
@@ -85,6 +88,14 @@ public class RoomService {
     private void validateUser(long userId, Room room) {
         if (!room.getHost().getId().equals(userId)) {
             throw new UnauthorizedException(userId);
+        }
+    }
+
+    private void validateTimeZoneId(String timeZoneId) {
+        try {
+            ZoneId.of(timeZoneId);
+        } catch (Exception e) {
+            throw new InvalidTimeZoneIdException(timeZoneId);
         }
     }
 

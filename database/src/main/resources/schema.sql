@@ -124,8 +124,20 @@ CREATE TABLE booking
     CONSTRAINT fk_booking_room_id FOREIGN KEY (room_id) REFERENCES room (id),
     CONSTRAINT fk_booking_guest_id FOREIGN KEY (guest_id) REFERENCES "user" (id),
 
-    CONSTRAINT       no_overlapping_booking_date_range EXCLUDE USING gist (room_id WITH =, date_range WITH &&) WHERE (status IN ('REQUESTED', 'RESERVED', 'ENDED'))
+    CONSTRAINT no_overlapping_booking_date_range EXCLUDE USING gist (room_id WITH =, date_range WITH &&) WHERE (status IN ('REQUESTED', 'RESERVED', 'ENDED'))
 );
+
+CREATE TABLE timezone_midnight
+(
+    time_zone_id TEXT PRIMARY KEY,
+    utc_midnight TIME      NOT NULL,
+    updated_at   TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- 타임존 관련 인덱스
+CREATE INDEX idx_timezone_midnight_utc_time ON timezone_midnight (utc_midnight);
+CREATE INDEX idx_room_timezone ON room (time_zone_id);
+CREATE INDEX idx_booking_timezone_status ON booking (time_zone_id, status);
 
 -- FK 일부에 대한 인덱스
 CREATE INDEX idx_room_place_type_id ON room (place_type_id);

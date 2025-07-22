@@ -114,7 +114,7 @@ public class BookingStatusUpdateJobConfig {
                 .dataSource(dataSource)
                 .sql("""
                             UPDATE booking
-                            SET status = ?
+                            SET status = ?, updated_at = now()
                             WHERE id = ?
                         """)
                 .itemPreparedStatementSetter((booking, ps) -> {

@@ -99,7 +99,7 @@ public class BookingStatusUpdateJobConfig {
             LocalDate today = LocalDate.now(ZoneId.of(booking.getTimeZoneId()));
             if (booking.getStatus() == BookingStatus.RESERVED && today.isEqual(booking.getCheckIn())) {
                 booking.setStatus(BookingStatus.ONGOING);
-            } else if (today.isAfter(booking.getCheckOut())) {
+            } else if (booking.getStatus() == BookingStatus.ONGOING && today.isAfter(booking.getCheckOut())) {
                 booking.setStatus(BookingStatus.ENDED);
             } else {
                 return null;

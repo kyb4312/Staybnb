@@ -51,7 +51,8 @@ try:
         BASE_BRANCH = latest_open_pr.head.ref
         print(f"✅ 최근 열린 PR ({latest_open_pr.title})의 head 브랜치 '{BASE_BRANCH}'를 BASE_BRANCH로 설정합니다.")
     elif latest_open_pr and latest_open_pr.head.ref == HEAD_BRANCH:
-        print(f"⚠️ 최근 열린 PR의 head 브랜치('{latest_open_pr.head.ref}')가 현재 브랜치('{HEAD_BRANCH}')와 동일합니다. 'main'을 BASE_BRANCH로 유지합니다.")
+        BASE_BRANCH = latest_open_pr.head.ref
+        print(f"⚠️ 최근 열린 PR의 head 브랜치('{latest_open_pr.head.ref}')가 현재 브랜치('{HEAD_BRANCH}')와 동일합니다.")
     else:
         print(f"ℹ️ 열려있는 PR이 없습니다. 'main'을 BASE_BRANCH로 유지합니다.")
 
@@ -152,7 +153,7 @@ def generate_pr_content_with_gemini(commit_messages, changed_files):
 - 변경사항을 카테고리별로 정리 (기능 추가, 버그 수정, 리팩토링 등)
 - Spring Boot 관련 변경사항, 데이터베이스 스키마 변경, API 엔드포인트 변경, 보안 관련 변경 등이 있다면 명시
 - **호스트 또는 게스트 기능과 관련된 변경이라면 구체적으로 언급**
-- 중요한 파일들만 언급 (너무 많은 파일 나열 금지)
+- 중요한 파일만 언급 (파일명 나열 금지)
 - 기술 부채 해소, 성능 개선 등 변경 동기를 명확히 설명"""
 
     try:

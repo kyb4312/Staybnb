@@ -204,7 +204,7 @@ public class PricingServiceTest {
             pricingService.updateSelectedDatesPricing(HOST_ID, ROOM_ID, request);
 
             // Then
-            verify(pricingRepository).deleteAll(List.of(existingPricing));
+            verify(pricingRepository).deleteAllInBatch(List.of(existingPricing));
             verify(pricingRepository).flush();
             verify(pricingRepository).saveAll(pricingListCaptor.capture());
 
@@ -307,7 +307,7 @@ public class PricingServiceTest {
             pricingService.updateSelectedDatesPricing(HOST_ID, ROOM_ID, request);
 
             // Then
-            verify(pricingRepository).deleteAll(List.of(
+            verify(pricingRepository).deleteAllInBatch(List.of(
                     existingPricing1,
                     existingPricing2,
                     existingPricing3,

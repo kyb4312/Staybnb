@@ -15,7 +15,8 @@ import java.time.LocalDateTime;
 public class Availability {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "availability_id_seq_gen")
+    @SequenceGenerator(name = "availability_id_seq_gen", sequenceName = "availability_id_seq", allocationSize = 50)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

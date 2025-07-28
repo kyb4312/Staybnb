@@ -66,7 +66,7 @@ public class AvailabilityService {
 
         // 충돌 하는 범위 내 데이터 전체 삭제
         if (!sortedConflictedAvailabilities.isEmpty()) {
-            availabilityRepository.deleteAll(sortedConflictedAvailabilities);
+            availabilityRepository.deleteAllInBatch(sortedConflictedAvailabilities);
             availabilityRepository.flush();
         }
 

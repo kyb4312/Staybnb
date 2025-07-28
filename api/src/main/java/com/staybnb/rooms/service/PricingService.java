@@ -112,7 +112,7 @@ public class PricingService {
 
         // 충돌 하는 범위 내 데이터 전체 삭제
         if (!sortedConflictedPricings.isEmpty()) {
-            pricingRepository.deleteAll(sortedConflictedPricings);
+            pricingRepository.deleteAllInBatch(sortedConflictedPricings);
             pricingRepository.flush();
         }
 

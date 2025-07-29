@@ -18,7 +18,7 @@ staybnb/
   - `database` 모듈을 의존하여 데이터 접근
 
 - `batch`  
-  - 환율 정보, 타임존 및 예약 상태를 갱신하는 배치 작업 수행
+  - 환율 정보 및 숙박 예약 상태를 갱신하는 배치 작업 수행
   - Spring Batch + Scheduled 기반 스케줄링
   - `database` 모듈을 의존하여 데이터 접근
 

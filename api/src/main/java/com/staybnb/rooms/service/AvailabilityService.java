@@ -1,6 +1,5 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Availability;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
@@ -16,6 +15,8 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
+
 @Service
 @RequiredArgsConstructor
 public class AvailabilityService {
@@ -27,7 +28,7 @@ public class AvailabilityService {
     @Transactional
     public void updateSelectedDatesAvailability(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
-        validateUser(userId, room);
+        validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
 
         // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
@@ -39,7 +40,7 @@ public class AvailabilityService {
     @Transactional
     public void updateSelectedDatesAvailabilitySql(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
-        validateUser(userId, room);
+        validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
 
         List<String> dateRanges = request.getDateSelected().stream().map(DateRangeRequest::toDateRange).map(DateRange::toString).toList();
@@ -154,12 +155,6 @@ public class AvailabilityService {
             date = availability.getEndDate();
         }
         return !date.isBefore(checkOutDateExclusive);
-    }
-
-    private void validateUser(long userId, Room room) {
-        if (!room.getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
     }
 
 }

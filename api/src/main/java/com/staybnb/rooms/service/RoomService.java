@@ -1,7 +1,6 @@
 package com.staybnb.rooms.service;
 
 import com.staybnb.common.exception.custom.InvalidTimeZoneIdException;
-import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.SearchRoomCondition;
@@ -17,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 
 @Slf4j
 @Service
@@ -45,7 +46,7 @@ public class RoomService {
     @Transactional
     public Room update(long userId, long roomId, UpdateRoomRequest request) {
         Room room = findById(roomId);
-        validateUser(userId, room);
+        validateHost(userId, room);
 
         if(request.getMaxNumberOfGuests() != null) {
             room.setMaxNumberOfGuests(request.getMaxNumberOfGuests());
@@ -79,16 +80,10 @@ public class RoomService {
     @Transactional
     public void delete(long userId, long roomId) {
         Room room = findById(roomId);
-        validateUser(userId, room);
+        validateHost(userId, room);
 
         room.setDeleted(true);
         room.setDeletedAt(LocalDateTime.now());
-    }
-
-    private void validateUser(long userId, Room room) {
-        if (!room.getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
     }
 
     private void validateTimeZoneId(String timeZoneId) {

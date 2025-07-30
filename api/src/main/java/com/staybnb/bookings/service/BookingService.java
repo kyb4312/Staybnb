@@ -20,6 +20,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.staybnb.bookings.domain.vo.BookingStatus.*;
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
+import static com.staybnb.common.validation.business.AccessValidator.validateHostOrGuest;
 
 @Service
 @RequiredArgsConstructor
@@ -83,7 +85,7 @@ public class BookingService {
 
     public Booking getBooking(long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
-        validateUser(userId, booking);
+        validateHostOrGuest(userId, booking);
         return booking;
     }
 
@@ -131,15 +133,4 @@ public class BookingService {
         return bookingRepository.findByRoom(room, pageable);
     }
 
-    private void validateHost(long userId, Room room) {
-        if (!room.getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
-    }
-
-    private void validateUser(long userId, Booking booking) {
-        if (!booking.getUser().getId().equals(userId) && !booking.getRoom().getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
-    }
 }

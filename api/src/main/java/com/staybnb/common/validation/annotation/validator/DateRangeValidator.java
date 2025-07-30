@@ -1,4 +1,4 @@
-package com.staybnb.common.validation.validator;
+package com.staybnb.common.validation.annotation.validator;
 
 import com.staybnb.rooms.dto.request.SearchRoomRequest;
 import com.staybnb.common.validation.annotation.ValidDateRange;

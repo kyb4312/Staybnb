@@ -6,10 +6,10 @@ import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
 import com.staybnb.bookings.dto.response.BookingPreviewResponse;
 import com.staybnb.bookings.dto.response.BookingResponse;
 import com.staybnb.bookings.service.BookingService;
+import com.staybnb.common.auth.dto.LoginUser;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.service.RoomService;
 import com.staybnb.users.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-
-import static com.staybnb.common.constant.RequestAttributes.USER_ID;
 
 @Slf4j
 @RestController
@@ -51,28 +49,28 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public BookingResponse getBooking(@PathVariable Long bookingId, HttpServletRequest request) {
-        return BookingResponse.fromEntity(bookingService.getBooking((Long) request.getAttribute(USER_ID), bookingId));
+    public BookingResponse getBooking(@PathVariable Long bookingId, LoginUser loginUser) {
+        return BookingResponse.fromEntity(bookingService.getBooking(loginUser.getId(), bookingId));
     }
 
     @DeleteMapping("/{bookingId}")
-    public BookingResponse cancelBooking(@PathVariable Long bookingId, HttpServletRequest request) {
-        return BookingResponse.fromEntity(bookingService.cancelBooking((Long) request.getAttribute(USER_ID), bookingId));
+    public BookingResponse cancelBooking(@PathVariable Long bookingId, LoginUser loginUser) {
+        return BookingResponse.fromEntity(bookingService.cancelBooking(loginUser.getId(), bookingId));
     }
 
     @GetMapping("/upcoming")
-    public PagedModel<BookingResponse> findUpcomingBookings(Pageable pageable, HttpServletRequest request) {
-        return new PagedModel<>(bookingService.findUpcomingBookings((Long) request.getAttribute(USER_ID), pageable).map(BookingResponse::fromEntity));
+    public PagedModel<BookingResponse> findUpcomingBookings(Pageable pageable, LoginUser loginUser) {
+        return new PagedModel<>(bookingService.findUpcomingBookings(loginUser.getId(), pageable).map(BookingResponse::fromEntity));
     }
 
     @GetMapping("/past")
-    public PagedModel<BookingResponse> findPastBookings(Pageable pageable, HttpServletRequest request) {
-        return new PagedModel<>(bookingService.findPastBookings((Long) request.getAttribute(USER_ID), pageable).map(BookingResponse::fromEntity));
+    public PagedModel<BookingResponse> findPastBookings(Pageable pageable, LoginUser loginUser) {
+        return new PagedModel<>(bookingService.findPastBookings(loginUser.getId(), pageable).map(BookingResponse::fromEntity));
     }
 
     @GetMapping("/cancelled")
-    public PagedModel<BookingResponse> findCancelledBookings(Pageable pageable, HttpServletRequest request) {
-        return new PagedModel<>(bookingService.findCancelledBookings((Long) request.getAttribute(USER_ID), pageable).map(BookingResponse::fromEntity));
+    public PagedModel<BookingResponse> findCancelledBookings(Pageable pageable, LoginUser loginUser) {
+        return new PagedModel<>(bookingService.findCancelledBookings(loginUser.getId(), pageable).map(BookingResponse::fromEntity));
     }
 
     private Booking toEntity(CreateBookingRequest request) {

@@ -1,8 +1,8 @@
 package com.staybnb.users.service;
 
 import com.staybnb.common.exception.custom.SignupException;
-import com.staybnb.common.jwt.JwtUtils;
-import com.staybnb.common.jwt.LogoutTokenService;
+import com.staybnb.common.auth.jwt.JwtUtils;
+import com.staybnb.common.auth.jwt.LogoutTokenService;
 import com.staybnb.users.domain.User;
 import com.staybnb.common.exception.custom.NoSuchUserException;
 import com.staybnb.users.repository.UserRepository;

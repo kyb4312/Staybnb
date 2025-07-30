@@ -1,7 +1,7 @@
 package com.staybnb.users.controller;
 
 import com.staybnb.AbstractIntegrationTest;
-import com.staybnb.common.jwt.JwtUtils;
+import com.staybnb.common.auth.jwt.JwtUtils;
 import com.staybnb.users.dto.request.LoginRequest;
 import com.staybnb.users.dto.request.SignupRequest;
 import io.restassured.RestAssured;

@@ -5,7 +5,7 @@ import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.bookings.dto.request.CreateBookingRequest;
 import com.staybnb.bookings.dto.response.BookingPreviewResponse;
 import com.staybnb.bookings.dto.response.BookingResponse;
-import com.staybnb.common.jwt.JwtUtils;
+import com.staybnb.common.auth.jwt.JwtUtils;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;

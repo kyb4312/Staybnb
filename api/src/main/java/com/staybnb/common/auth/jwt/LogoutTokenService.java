@@ -1,4 +1,4 @@
-package com.staybnb.common.jwt;
+package com.staybnb.common.auth.jwt;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

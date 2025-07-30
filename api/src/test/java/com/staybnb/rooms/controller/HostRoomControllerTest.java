@@ -1,7 +1,7 @@
 package com.staybnb.rooms.controller;
 
 import com.staybnb.AbstractIntegrationTest;
-import com.staybnb.common.jwt.JwtUtils;
+import com.staybnb.common.auth.jwt.JwtUtils;
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.dto.request.CreateRoomRequest;

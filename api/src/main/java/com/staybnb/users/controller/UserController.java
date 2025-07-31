@@ -21,7 +21,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public String login(@Valid @RequestBody LoginRequest request) {
+    public UserResponse login(@Valid @RequestBody LoginRequest request) {
         return userService.login(request.getEmail(), request.getPassword());
     }
 

@@ -5,6 +5,7 @@ import com.staybnb.common.exception.custom.SignupException;
 import com.staybnb.common.auth.jwt.JwtUtils;
 import com.staybnb.common.auth.jwt.LogoutTokenService;
 import com.staybnb.users.domain.User;
+import com.staybnb.users.dto.response.UserResponse;
 import com.staybnb.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -96,10 +97,10 @@ class UserServiceTest {
             when(jwtUtils.generateToken(testUser.getId().toString(), testUser.getName())).thenReturn("dummy.jwt.token");
 
             // Act
-            String token = userService.login("test@example.com", "correctPassword");
+            UserResponse response = userService.login("test@example.com", "correctPassword");
 
             // Assert
-            assertEquals("dummy.jwt.token", token);
+            assertEquals("dummy.jwt.token", response.getToken());
             verify(userRepository, times(1)).findByEmail("test@example.com");
             verify(jwtUtils, times(1)).generateToken("1", "Test User");
         }

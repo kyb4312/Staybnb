@@ -5,6 +5,7 @@ import com.staybnb.common.auth.jwt.JwtUtils;
 import com.staybnb.common.auth.jwt.LogoutTokenService;
 import com.staybnb.users.domain.User;
 import com.staybnb.common.exception.custom.NoSuchUserException;
+import com.staybnb.users.dto.response.UserResponse;
 import com.staybnb.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
@@ -25,7 +26,7 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new NoSuchUserException(id));
     }
 
-    public String login(String email, String password) {
+    public UserResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(NoSuchUserException::new);
@@ -34,7 +35,10 @@ public class UserService {
             throw new NoSuchUserException();
         }
 
-        return jwtUtils.generateToken(user.getId().toString(), user.getName());
+        UserResponse userResponse = UserResponse.fromEntity(user);
+        userResponse.setToken(jwtUtils.generateToken(user.getId().toString(), user.getName()));
+
+        return userResponse;
     }
 
     public void logout(String token) {

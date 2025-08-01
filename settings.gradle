@@ -8,5 +8,6 @@ include 'api'
 include 'database'
 include 'batch'
 include 'common'
+include 'test-resources'
 
 includeBuild 'build-logic'

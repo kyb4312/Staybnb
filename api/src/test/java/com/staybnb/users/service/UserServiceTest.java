@@ -132,7 +132,7 @@ class UserServiceTest {
         void login_withDeletedUser_shouldThrowNoSuchUserException() {
             // Arrange
             testUser.setDeleted(true);
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
 
             // Act & Assert
             assertThrows(NoSuchUserException.class, () -> userService.login("test@example.com", "correctPassword"));

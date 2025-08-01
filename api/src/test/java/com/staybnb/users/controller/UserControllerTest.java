@@ -44,6 +44,22 @@ public class UserControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void loginFail() {
+        String email = "guest4@gmail.com";
+        String password = "password";
+
+        LoginRequest request = new LoginRequest(email, password);
+
+        given().log().all()
+                .port(port)
+                .body(request)
+                .contentType(ContentType.JSON)
+                .when().post("/users/login")
+                .then().log().all()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
     void logout() {
         String token = "Bearer " + jwtUtils.generateToken("3", "guest2");
 

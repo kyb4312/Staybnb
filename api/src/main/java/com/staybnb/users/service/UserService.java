@@ -28,7 +28,6 @@ public class UserService {
 
     public UserResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .filter(u -> !u.isDeleted())
                 .orElseThrow(NoSuchUserException::new);
 
         if (!BCrypt.checkpw(password, user.getPassword())) {

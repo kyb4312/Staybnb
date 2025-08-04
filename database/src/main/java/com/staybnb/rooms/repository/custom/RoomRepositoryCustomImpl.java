@@ -26,6 +26,8 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
         List<Room> content = query
                 .select(room)
                 .from(room)
+                .leftJoin(room.placeType).fetchJoin()
+                .leftJoin(room.amenities).fetchJoin()
                 .where(
                         // TODO: startDate, endDate, currency 조건 추가해야 함
                         numberOfGuests(cond.getNumberOfGuests()),

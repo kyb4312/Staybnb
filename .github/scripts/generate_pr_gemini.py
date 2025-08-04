@@ -42,8 +42,8 @@ else:
 BASE_BRANCH = 'main' # 기본값은 main
 try:
     # 열려있는 PR을 최신순으로 정렬하여 하나 가져옵니다.
-    # state='open', sort='updated', direction='desc'
-    open_prs = repo.get_pulls(state='open', sort='updated', direction='desc')
+    # state='open', sort='created', direction='desc'
+    open_prs = repo.get_pulls(state='open', sort='created', direction='desc')
     latest_open_pr = next(iter(open_prs), None) # 첫 번째 PR을 가져오거나 없으면 None
 
     if latest_open_pr and latest_open_pr.head.ref != HEAD_BRANCH:

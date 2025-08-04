@@ -16,6 +16,7 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
@@ -28,24 +29,25 @@ public class RoomController {
     private final CalendarService pricingAndAvailabilityService;
 
     @GetMapping("/{roomId}")
-    public RoomResponse getRoom(@PathVariable long roomId) {
-        Room room = roomService.findById(roomId);
-        return RoomResponse.fromDomain(room);
+    public CompletableFuture<RoomResponse> getRoom(@PathVariable long roomId) {
+//        log.info("step: controller entry → {}", Thread.currentThread().getName());
+        return roomService.getRoom(roomId).thenApply(RoomResponse::fromDomain);
     }
 
     @GetMapping
-    public PagedModel<RoomResponse> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
-        return new PagedModel<>(roomService.findAll(toCondition(searchRoomRequest), pageable)
-                .map(RoomResponse::fromDomain));
+    public CompletableFuture<PagedModel<RoomResponse>> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
+        log.info("step: controller entry → {}", Thread.currentThread().getName());
+        return roomService.findAll(toCondition(searchRoomRequest), pageable)
+                .thenApply(rooms -> new PagedModel<>(rooms.map(RoomResponse::fromDomain)));
     }
 
     @GetMapping("/{roomId}/pricing")
-    public PricingResponse getTotalPricing(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
+    public CompletableFuture<PricingResponse> getTotalPricing(@PathVariable Long roomId, @Valid @ModelAttribute SearchPricingRequest searchPricingRequest) {
         return pricingService.getTotalPricing(roomId, searchPricingRequest);
     }
 
     @GetMapping("/{roomId}/calendar")
-    public CalendarResponse getCalendar(@PathVariable long roomId, @RequestParam String currency, @RequestParam YearMonth yearMonth) {
+    public CompletableFuture<CalendarResponse> getCalendar(@PathVariable long roomId, @RequestParam String currency, @RequestParam YearMonth yearMonth) {
         return pricingAndAvailabilityService.getCalendar(roomId, currency, yearMonth);
     }
 

@@ -11,6 +11,7 @@ import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.common.exception.custom.InvalidDateRangeException;
 import com.staybnb.rooms.repository.PricingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 
@@ -35,13 +37,15 @@ public class PricingService {
      * 숙박 총 가격 조회
      * @return PricingResponse
      */
-    public PricingResponse getTotalPricing(Long roomId, SearchPricingRequest request) {
+    @Async
+    public CompletableFuture<PricingResponse> getTotalPricing(Long roomId, SearchPricingRequest request) {
         Room room = roomService.findById(roomId);
         validateDateRange(request);
 
         double totalPrice = getTotalPrice(room, request.getStartDate(), request.getEndDate(), Currency.valueOf(request.getCurrency()));
 
-        return new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency()
+        return CompletableFuture.completedFuture(
+                new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency())
         );
     }
 
@@ -87,8 +91,9 @@ public class PricingService {
         );
     }
 
+    @Async
     @Transactional
-    public void updateSelectedDatesPricing(long userId, long roomId, UpdatePricingRequest request) {
+    public CompletableFuture<Void> updateSelectedDatesPricing(long userId, long roomId, UpdatePricingRequest request) {
         Room room = roomService.findById(roomId);
         validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
@@ -97,6 +102,8 @@ public class PricingService {
         updatePricing(room,
                 request.getDateSelected().stream().map(DateRangeRequest::toDateRange).toList(),
                 request.getPricePerNight());
+
+        return CompletableFuture.completedFuture(null);
     }
 
     /**

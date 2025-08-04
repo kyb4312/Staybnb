@@ -11,11 +11,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.concurrent.CompletableFuture;
 
 import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 
@@ -29,23 +31,29 @@ public class RoomService {
     private final AmenityService amenityService;
     private final ExchangeRateService exchangeRateService;
 
-    public Room save(Room room) {
+    @Async
+    public CompletableFuture<Room> save(Room room) {
         validateTimeZoneId(room.getTimeZoneId());
         room.setBasePriceInUsd(exchangeRateService.convertToUSD(room.getCurrency(), room.getBasePrice()));
-        return roomRepository.save(room);
+        return CompletableFuture.completedFuture(roomRepository.save(room));
     }
 
-    public Room findById(long roomId) {
-        return roomRepository.findById(roomId).orElseThrow(() -> new NoSuchRoomException(roomId));
+    @Async
+    public CompletableFuture<Room> getRoom(long roomId) {
+//        log.info("step: service entry → {}", Thread.currentThread().getName());
+        return CompletableFuture.completedFuture(findByIdFetchJoin(roomId));
     }
 
-    public Page<Room> findAll(SearchRoomCondition condition, Pageable pageable) {
-        return roomRepository.findAll(condition, pageable);
+    @Async
+    public CompletableFuture<Page<Room>> findAll(SearchRoomCondition condition, Pageable pageable) {
+        log.info("step: service entry → {}", Thread.currentThread().getName());
+        return CompletableFuture.completedFuture(roomRepository.findAll(condition, pageable));
     }
 
+    @Async
     @Transactional
-    public Room update(long userId, long roomId, UpdateRoomRequest request) {
-        Room room = findById(roomId);
+    public CompletableFuture<Room> update(long userId, long roomId, UpdateRoomRequest request) {
+        Room room = findByIdFetchJoin(roomId);
         validateHost(userId, room);
 
         if(request.getMaxNumberOfGuests() != null) {
@@ -74,16 +82,27 @@ public class RoomService {
             room.setCurrency(Currency.valueOf(request.getCurrency()));
         }
 
-        return room;
+        return CompletableFuture.completedFuture(room);
     }
 
+    @Async
     @Transactional
-    public void delete(long userId, long roomId) {
+    public CompletableFuture<Void> delete(long userId, long roomId) {
         Room room = findById(roomId);
         validateHost(userId, room);
 
         room.setDeleted(true);
         room.setDeletedAt(LocalDateTime.now());
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    public Room findById(long roomId) {
+        return roomRepository.findById(roomId).orElseThrow(() -> new NoSuchRoomException(roomId));
+    }
+
+    public Room findByIdFetchJoin(long roomId) {
+        return roomRepository.findByIdFetchJoin(roomId).orElseThrow(() -> new NoSuchRoomException(roomId));
     }
 
     private void validateTimeZoneId(String timeZoneId) {

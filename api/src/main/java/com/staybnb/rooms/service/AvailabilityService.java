@@ -7,6 +7,7 @@ import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.repository.AvailabilityRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 
@@ -25,8 +27,9 @@ public class AvailabilityService {
 
     private final RoomService roomService;
 
+    @Async
     @Transactional
-    public void updateSelectedDatesAvailability(long userId, long roomId, UpdateAvailabilityRequest request) {
+    public CompletableFuture<Void> updateSelectedDatesAvailability(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
         validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
@@ -35,10 +38,13 @@ public class AvailabilityService {
         updateAvailabilities(room,
                 request.getDateSelected().stream().map(DateRangeRequest::toDateRange).toList(),
                 request.getIsAvailable());
+
+        return CompletableFuture.completedFuture(null);
     }
 
+    @Async
     @Transactional
-    public void updateSelectedDatesAvailabilitySql(long userId, long roomId, UpdateAvailabilityRequest request) {
+    public CompletableFuture<Void> updateSelectedDatesAvailabilitySql(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
         validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
@@ -46,6 +52,8 @@ public class AvailabilityService {
         List<String> dateRanges = request.getDateSelected().stream().map(DateRangeRequest::toDateRange).map(DateRange::toString).toList();
 
         availabilityRepository.updateRoomAvailability(roomId, dateRanges, request.getIsAvailable());
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Transactional

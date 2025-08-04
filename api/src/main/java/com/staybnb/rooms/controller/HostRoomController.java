@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
@@ -36,56 +37,61 @@ public class HostRoomController {
     private final AmenityService amenityService;
 
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) {
-        Room room = roomService.save(toEntity(createRoomRequest));
-
-        URI location = UriComponentsBuilder
-                .fromPath("/rooms/{roomId}")
-                .buildAndExpand(room.getId())
-                .toUri();
-
-        return ResponseEntity.created(location).body(RoomResponse.fromDomain(room));
+    public CompletableFuture<ResponseEntity<RoomResponse>> createRoom(
+            @Valid @RequestBody CreateRoomRequest createRoomRequest
+    ) {
+        return roomService.save(toEntity(createRoomRequest))
+                .thenApply(room -> {
+                    URI location = UriComponentsBuilder
+                            .fromPath("/rooms/{roomId}")
+                            .buildAndExpand(room.getId())
+                            .toUri();
+                    return ResponseEntity.created(location).body(RoomResponse.fromDomain(room));
+                });
     }
 
     @PatchMapping("/{roomId}")
-    public RoomResponse updateRoom(@PathVariable long roomId,
-                                   @Valid @RequestBody UpdateRoomRequest updateRoomRequest,
-                                   LoginUser loginUser) {
-
-        Room room = roomService.update(loginUser.getId(), roomId, updateRoomRequest);
-        return RoomResponse.fromDomain(room);
+    public CompletableFuture<RoomResponse> updateRoom(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdateRoomRequest updateRoomRequest,
+            LoginUser loginUser
+    ) {
+        return roomService.update(loginUser.getId(), roomId, updateRoomRequest)
+                .thenApply(RoomResponse::fromDomain);
     }
 
     @DeleteMapping("/{roomId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRoom(@PathVariable long roomId, LoginUser loginUser) {
-        roomService.delete(loginUser.getId(), roomId);
+    public CompletableFuture<Void> deleteRoom(@PathVariable long roomId, LoginUser loginUser) {
+        return roomService.delete(loginUser.getId(), roomId);
     }
 
     @PostMapping("/{roomId}/pricing")
-    public void updatePricing(@PathVariable long roomId,
-                              @Valid @RequestBody UpdatePricingRequest updatePricingRequest,
-                              LoginUser loginUser) {
-
-        pricingService.updateSelectedDatesPricing(loginUser.getId(), roomId, updatePricingRequest);
+    public CompletableFuture<Void> updatePricing(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdatePricingRequest updatePricingRequest,
+            LoginUser loginUser
+    ) {
+        return pricingService.updateSelectedDatesPricing(loginUser.getId(), roomId, updatePricingRequest);
     }
 
     @PostMapping("/{roomId}/availability")
-    public void updateAvailability(@PathVariable long roomId,
-                                   @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
-                                   LoginUser loginUser) {
-
-        availabilityService.updateSelectedDatesAvailability(
-                loginUser.getId(), roomId, updateAvailabilityRequest);
+    public CompletableFuture<Void> updateAvailability(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
+            LoginUser loginUser
+    ) {
+        return availabilityService.updateSelectedDatesAvailability(loginUser.getId(), roomId, updateAvailabilityRequest);
     }
 
     @PostMapping("/{roomId}/availability/sql")
-    public void updateAvailabilitySql(@PathVariable long roomId,
-                                      @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
-                                      LoginUser loginUser) {
+    public CompletableFuture<Void> updateAvailabilitySql(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
+            LoginUser loginUser
+    ) {
 
-        availabilityService.updateSelectedDatesAvailabilitySql(
-                loginUser.getId(), roomId, updateAvailabilityRequest);
+        return availabilityService.updateSelectedDatesAvailabilitySql(loginUser.getId(), roomId, updateAvailabilityRequest);
     }
 
     private Room toEntity(CreateRoomRequest request) {

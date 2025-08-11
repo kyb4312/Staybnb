@@ -46,7 +46,6 @@ public class RoomService {
 
     @Async
     public CompletableFuture<Page<Room>> findAll(SearchRoomCondition condition, Pageable pageable) {
-        log.info("step: service entry → {}", Thread.currentThread().getName());
         return CompletableFuture.completedFuture(roomRepository.findAll(condition, pageable));
     }
 

@@ -36,7 +36,6 @@ public class RoomController {
 
     @GetMapping
     public CompletableFuture<PagedModel<RoomResponse>> getRooms(@Valid @ModelAttribute SearchRoomRequest searchRoomRequest, Pageable pageable) {
-        log.info("step: controller entry → {}", Thread.currentThread().getName());
         return roomService.findAll(toCondition(searchRoomRequest), pageable)
                 .thenApply(rooms -> new PagedModel<>(rooms.map(RoomResponse::fromDomain)));
     }

@@ -27,3 +27,9 @@ staybnb/
   - 다른 모듈(api, batch)의 데이터 접근을 담당하는 모듈
 
 > 각 모듈은 Spring Boot 기반이며, `api`, `batch` 모듈은 실행 가능한 어플리케이션 모듈입니다.
+
+---
+DB ERD
+---
+<img width="1094" height="744" alt="스크린샷 2025-08-19 오후 9 12 55" src="https://github.com/user-attachments/assets/f9509630-3411-40aa-9920-aacd23033712" />
+

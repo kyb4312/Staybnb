@@ -5,6 +5,7 @@ import com.staybnb.bookings.dto.request.CreateBookingRequest;
 import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
 import com.staybnb.bookings.dto.response.BookingPreviewResponse;
 import com.staybnb.bookings.dto.response.BookingResponse;
+import com.staybnb.bookings.service.BookingEventProducer;
 import com.staybnb.bookings.service.BookingService;
 import com.staybnb.common.auth.dto.LoginUser;
 import com.staybnb.rooms.domain.vo.Currency;
@@ -32,6 +33,9 @@ public class BookingController {
     private final BookingService bookingService;
     private final RoomService roomService;
     private final UserService userService;
+
+    private final BookingEventProducer bookingEventProducer;
+
     private final Executor asyncExecutor;
 
     @GetMapping("/preview")
@@ -47,6 +51,9 @@ public class BookingController {
         return CompletableFuture
                 .supplyAsync(() -> bookingService.createBooking(toEntity(request)), asyncExecutor)
                 .thenApply(booking -> {
+                    CompletableFuture.runAsync(() ->
+                            bookingEventProducer.produceBookingEvent(booking), asyncExecutor);
+
                             URI location = UriComponentsBuilder
                                     .fromPath("/bookings/{bookingId}")
                                     .buildAndExpand(booking.getId())

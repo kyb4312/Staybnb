@@ -2,6 +2,7 @@ package com.staybnb.users.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("is_deleted <> true")
 public class User {
 
     @Id
@@ -35,5 +37,6 @@ public class User {
         this.email = email;
         this.name = name;
         this.password = password;
+        this.createdAt = LocalDateTime.now();
     }
 }

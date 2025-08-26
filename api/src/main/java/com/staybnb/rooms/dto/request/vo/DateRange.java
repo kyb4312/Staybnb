@@ -10,4 +10,9 @@ import java.time.LocalDate;
 public class DateRange {
     private LocalDate startDate; // inclusive
     private LocalDate endDate; // exclusive
+
+    @Override
+    public String toString() {
+        return String.format("[%s,%s)", startDate, endDate);
+    }
 }

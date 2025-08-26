@@ -8,6 +8,7 @@ import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.vo.DailyInfo;
 import com.staybnb.common.exception.custom.InvalidYearMonthException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +31,8 @@ public class CalendarService {
     /**
      * yearMonth에 해당하는 달의 price, availability 리스트 반환
      */
-    public CalendarResponse getCalendar(long roomId, String currency, YearMonth yearMonth) {
+    @Async
+    public CompletableFuture<CalendarResponse> getCalendar(long roomId, String currency, YearMonth yearMonth) {
         Room room = roomService.findById(roomId);
         validateYearMonth(yearMonth);
 
@@ -48,7 +51,7 @@ public class CalendarService {
             dailyInfos.add(new DailyInfo(date, price, isAvailable));
         }
 
-        return new CalendarResponse(roomId, currency, dailyInfos);
+        return CompletableFuture.completedFuture(new CalendarResponse(roomId, currency, dailyInfos));
     }
 
     private Map<LocalDate, Integer> flattenPricingList(List<Pricing> pricingList, YearMonth yearMonth) {

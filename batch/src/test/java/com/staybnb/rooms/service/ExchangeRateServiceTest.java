@@ -1,18 +1,15 @@
 package com.staybnb.rooms.service;
 
+import com.staybnb.AbstractBatchTest;
 import com.staybnb.rooms.repository.ExchangeRateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-@ActiveProfiles("test")
-@SpringBootTest
-class ExchangeRateServiceTest {
+class ExchangeRateServiceTest extends AbstractBatchTest {
 
     @Autowired
     private ExchangeRateService exchangeRateService;

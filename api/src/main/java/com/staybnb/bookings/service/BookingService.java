@@ -11,6 +11,7 @@ import com.staybnb.rooms.service.AvailabilityService;
 import com.staybnb.rooms.service.PricingService;
 import com.staybnb.rooms.service.RoomService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import static com.staybnb.bookings.domain.vo.BookingStatus.*;
 import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 import static com.staybnb.common.validation.business.AccessValidator.validateHostOrGuest;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingService {
@@ -34,6 +36,7 @@ public class BookingService {
     private final PricingService pricingService;
 
     public Booking getBookingPreview(GetBookingPreviewRequest request) {
+//        log.info("step: service entry → {}", Thread.currentThread().getName());
         Room room = roomService.findById(request.getRoomId());
         Currency guestCurrency = Currency.valueOf(request.getGuestCurrency());
 

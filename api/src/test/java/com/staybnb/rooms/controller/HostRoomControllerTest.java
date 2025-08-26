@@ -521,7 +521,7 @@ public class HostRoomControllerTest extends AbstractIntegrationTest {
     class DeleteRoom {
 
         @Test
-        @DisplayName("Delete: 정상")
+        @DisplayName("[성공] 숙소 정상 삭제")
         public void testDeleteRoom() {
             Address address = Address.builder()
                     .country("United States")
@@ -569,6 +569,18 @@ public class HostRoomControllerTest extends AbstractIntegrationTest {
                     .then().log().all()
                     .statusCode(HttpStatus.SC_NO_CONTENT);
         }
+
+        @Test
+        @DisplayName("[실패] 호스트 이외의 유저가 삭제를 시도할 경우 401 예외 발생")
+        public void testDeleteRoomUnAuthorizedException() {
+            long roomId = 2L; // 테스트 유저가 호스트가 아닌 roomId
+
+            given().log().all()
+                    .port(port)
+                    .when().delete("/host/rooms/{roomId}", roomId)
+                    .then().log().all()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED);
+        }
     }
 
     @Nested
@@ -576,6 +588,7 @@ public class HostRoomControllerTest extends AbstractIntegrationTest {
     class UpdatePricing {
 
         @Test
+        @DisplayName("[성공] Pricing 정상 업데이트")
         public void updatePricing() {
             UpdatePricingRequest request = new UpdatePricingRequest(
                     List.of(
@@ -593,6 +606,49 @@ public class HostRoomControllerTest extends AbstractIntegrationTest {
                     .then().log().all()
                     .statusCode(HttpStatus.SC_OK);
         }
+
+        @Test
+        @DisplayName("[실패] 호스트 이외의 유저가 가격 변경을 시도할 경우 401 예외 발생")
+        public void updatePricingUnAuthorizedExcpetion() {
+            long roomId = 2L; // 테스트 유저가 호스트가 아닌 roomId
+
+            UpdatePricingRequest request = new UpdatePricingRequest(
+                    List.of(
+                            new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                            new DateRangeRequest(LocalDate.now().plusDays(5), LocalDate.now().plusDays(7))
+                    ),
+                    400000
+            );
+
+            given().log().all()
+                    .port(port)
+                    .contentType(ContentType.JSON)
+                    .body(request)
+                    .when().post("/host/rooms/{roomId}/pricing", roomId)
+                    .then().log().all()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("[실패] 겹치는 날짜 범위가 주어질 경우 400 예외")
+        public void updatePricingInvalidDateRangeException() {
+            // 날짜 범위 비정상 (요청 중 겹치는 날짜 범위가 있음)
+            UpdatePricingRequest request = new UpdatePricingRequest(
+                    List.of(
+                            new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)),
+                            new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(7))
+                    ),
+                    400000
+            );
+
+            given().log().all()
+                    .port(port)
+                    .contentType(ContentType.JSON)
+                    .body(request)
+                    .when().post("/host/rooms/{roomId}/pricing", 1L)
+                    .then().log().all()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST);
+        }
     }
 
     @Nested
@@ -600,6 +656,7 @@ public class HostRoomControllerTest extends AbstractIntegrationTest {
     class UpdateAvailability {
 
         @Test
+        @DisplayName("[성공] Availability 정상 업데이트")
         public void updateAvailability() {
             UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
                     List.of(
@@ -613,6 +670,43 @@ public class HostRoomControllerTest extends AbstractIntegrationTest {
                     .when().post("/host/rooms/{roomId}/availability", 1L)
                     .then().log().all()
                     .statusCode(HttpStatus.SC_OK);
+        }
+
+        @Test
+        @DisplayName("[실패] 호스트 이외의 유저가 availability 변경을 시도할 경우 401 예외 발생")
+        public void updateAvailabilityUnAuthorizedException() {
+            long roomId = 2L; // 테스트 유저가 호스트가 아닌 roomId
+
+            UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
+                    List.of(
+                            new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(7))
+                    ), true);
+
+            given().log().all()
+                    .port(port)
+                    .contentType(ContentType.JSON)
+                    .body(request)
+                    .when().post("/host/rooms/{roomId}/availability", roomId)
+                    .then().log().all()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("[실패] 겹치는 날짜 범위가 주어질 경우 400 예외")
+        public void updateAvailabilityInvalidDateRangeException() {
+            UpdateAvailabilityRequest request = new UpdateAvailabilityRequest(
+                    List.of(
+                            new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(5)),
+                            new DateRangeRequest(LocalDate.now().plusDays(1), LocalDate.now().plusDays(7))
+                    ), true);
+
+            given().log().all()
+                    .port(port)
+                    .contentType(ContentType.JSON)
+                    .body(request)
+                    .when().post("/host/rooms/{roomId}/availability", 1L)
+                    .then().log().all()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST);
         }
     }
 }

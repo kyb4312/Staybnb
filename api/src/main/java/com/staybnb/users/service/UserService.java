@@ -8,12 +8,14 @@ import com.staybnb.common.exception.custom.NoSuchUserException;
 import com.staybnb.users.dto.response.UserResponse;
 import com.staybnb.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -27,6 +29,7 @@ public class UserService {
     }
 
     public UserResponse login(String email, String password) {
+//        log.info("step: service entry → {}", Thread.currentThread().getName());
         User user = userRepository.findByEmail(email)
                 .orElseThrow(NoSuchUserException::new);
 

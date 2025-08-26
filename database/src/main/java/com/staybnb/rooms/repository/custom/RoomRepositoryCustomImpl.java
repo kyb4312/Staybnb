@@ -23,8 +23,8 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
 
     @Override
     public Page<Room> findAll(SearchRoomCondition cond, Pageable pageable) {
-        List<Room> content = query
-                .select(room)
+        List<Long> roomIds = query
+                .select(room.id)
                 .from(room)
                 .where(
                         // TODO: startDate, endDate, currency 조건 추가해야 함
@@ -36,6 +36,17 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
                 .orderBy(room.id.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .fetch();
+
+        List<Room> content = query
+                .select(room)
+                .from(room)
+                .leftJoin(room.placeType).fetchJoin()
+                .leftJoin(room.amenities).fetchJoin()
+                .where(
+                        room.id.in(roomIds)
+                )
+                .orderBy(room.id.asc())
                 .fetch();
 
         Long total = query

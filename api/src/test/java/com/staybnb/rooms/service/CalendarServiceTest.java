@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.YearMonth;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -38,7 +39,7 @@ class CalendarServiceTest {
 
 
     @Test
-    void getCalendar() {
+    void getCalendar() throws ExecutionException, InterruptedException {
         // given
         long roomId = 1L;
 
@@ -76,7 +77,7 @@ class CalendarServiceTest {
         when(roomService.findById(roomId)).thenReturn(room);
 
         // when
-        CalendarResponse calendarResponse = calendarService.getCalendar(roomId, "KRW", yearMonth);
+        CalendarResponse calendarResponse = calendarService.getCalendar(roomId, "KRW", yearMonth).get();
 
         //then
         verify(roomService, times(1)).findById(roomId);

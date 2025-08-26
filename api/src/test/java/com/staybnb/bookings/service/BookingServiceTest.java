@@ -101,6 +101,7 @@ class BookingServiceTest {
         Booking expected = new Booking(room, null, numberOfGuests, checkIn, checkOut, 1_400_000.0, Currency.KRW);
         assertThat(bookingPreview)
                 .usingRecursiveComparison()
+                .ignoringFields("createdAt")
                 .isEqualTo(expected);
     }
 

@@ -7,6 +7,8 @@ rootProject.name = 'staybnb'
 include 'api'
 include 'database'
 include 'batch'
+include 'notification'
 include 'common'
+include 'test-resources'
 
 includeBuild 'build-logic'

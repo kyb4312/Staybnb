@@ -53,16 +53,22 @@ public class Booking {
 
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false, length = 50)
+    private String timeZoneId;
+
     public Booking() {
     }
 
-    public Booking(Room room, User user, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut, Double bookingPrice, Currency currency) {
+    public Booking(Room room, User user, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut,
+                   Double bookingPrice, Currency currency) {
         this.room = room;
         this.user = user;
         this.numberOfGuests = numberOfGuests;
         this.dateRange = Range.closedOpen(checkIn, checkOut);
         this.bookingPrice = bookingPrice;
         this.currency = currency;
+        this.createdAt = LocalDateTime.now();
+        this.timeZoneId = room.getTimeZoneId();
     }
 
     public LocalDate getCheckIn() {

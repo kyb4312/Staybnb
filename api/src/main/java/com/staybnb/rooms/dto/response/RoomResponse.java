@@ -28,6 +28,7 @@ public class RoomResponse {
     private String description;
     private Integer basePrice;
     private Currency currency;
+    private String timeZoneId;
 
     public static RoomResponse fromDomain(Room room) {
         Set<String> amenitySet = new HashSet<>();
@@ -49,6 +50,7 @@ public class RoomResponse {
                 .description(room.getDescription())
                 .basePrice(room.getBasePrice())
                 .currency(room.getCurrency())
+                .timeZoneId(room.getTimeZoneId())
                 .build();
     }
 }

@@ -35,6 +35,7 @@ public class Pricing {
         this.room = room;
         this.dateRange = Range.closedOpen(startDate, endDate);
         this.pricePerNight = pricePerNight;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public LocalDate getStartDate() {

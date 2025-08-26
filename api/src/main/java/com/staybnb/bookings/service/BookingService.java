@@ -10,8 +10,8 @@ import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.service.AvailabilityService;
 import com.staybnb.rooms.service.PricingService;
 import com.staybnb.rooms.service.RoomService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.staybnb.bookings.domain.vo.BookingStatus.*;
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
+import static com.staybnb.common.validation.business.AccessValidator.validateHostOrGuest;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingService {
@@ -32,7 +35,8 @@ public class BookingService {
     private final AvailabilityService availabilityService;
     private final PricingService pricingService;
 
-    public Booking getBookingPreview(@Valid GetBookingPreviewRequest request) {
+    public Booking getBookingPreview(GetBookingPreviewRequest request) {
+//        log.info("step: service entry → {}", Thread.currentThread().getName());
         Room room = roomService.findById(request.getRoomId());
         Currency guestCurrency = Currency.valueOf(request.getGuestCurrency());
 
@@ -84,7 +88,7 @@ public class BookingService {
 
     public Booking getBooking(long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
-        validateUser(userId, booking);
+        validateHostOrGuest(userId, booking);
         return booking;
     }
 
@@ -132,15 +136,4 @@ public class BookingService {
         return bookingRepository.findByRoom(room, pageable);
     }
 
-    private void validateHost(long userId, Room room) {
-        if (!room.getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
-    }
-
-    private void validateUser(long userId, Booking booking) {
-        if (!booking.getUser().getId().equals(userId) && !booking.getRoom().getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
-    }
 }

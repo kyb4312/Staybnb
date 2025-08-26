@@ -1,47 +1,37 @@
 package com.staybnb.bookings.service;
 
-import com.staybnb.bookings.domain.Booking;
-import com.staybnb.bookings.domain.vo.BookingStatus;
-import com.staybnb.bookings.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingStatusService {
 
-    private final BookingRepository bookingRepository;
+    private final JobLauncher jobLauncher;
+    private final Job bookingStatusUpdateJob;
 
-    @Transactional
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 */15 * * * ?")
     public void updateBookingStatus() {
-        log.info("Updating Booking Status");
+        try {
+            JobParameters params = new JobParametersBuilder()
+                    .addLocalDate("date", LocalDate.now())
+                    .addLocalTime("utcNow", LocalTime.now(ZoneOffset.UTC))
+                    .toJobParameters();
 
-        int page = 0;
-        int size = 100;
-        int updatedCount = 0;
-        Page<Booking> bookingPage;
-
-        do {
-            bookingPage = bookingRepository.findBookingsByStatus(PageRequest.of(page, size), BookingStatus.RESERVED.toString());
-            for (Booking booking : bookingPage.getContent()) {
-                if (booking.getCheckOut().isBefore(LocalDate.now())) {
-                    booking.setStatus(BookingStatus.ENDED);
-                    updatedCount++;
-                    log.debug("updated booking: {}", booking.getCheckOut());
-                }
-            }
-            page++;
-        } while (!bookingPage.isLast());
-
-        log.info("Booking Status Updated. updatedRows: {}", updatedCount);
+            jobLauncher.run(bookingStatusUpdateJob, params);
+        } catch (Exception e) {
+            log.error("Exception 발생: {}", e.getMessage());
+        }
     }
 }

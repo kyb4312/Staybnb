@@ -19,6 +19,6 @@ out/
 ### docker ###
 *.env
 /data/db/
-
+/data/kafka/
 ### k6 ###
 */k6-tests/results

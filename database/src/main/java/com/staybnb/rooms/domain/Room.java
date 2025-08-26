@@ -2,8 +2,10 @@ package com.staybnb.rooms.domain;
 
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.*;
+import com.staybnb.users.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -15,6 +17,7 @@ import java.util.Set;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("is_deleted <> true")
 public class Room {
 
     @Id
@@ -72,5 +75,9 @@ public class Room {
 
     private LocalDateTime deletedAt;
 
-    private LocalDateTime createdAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = false, length = 50)
+    private String timeZoneId;
 }

@@ -3,12 +3,12 @@ package com.staybnb.bookings.service;
 import com.staybnb.bookings.domain.Booking;
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
-import com.staybnb.bookings.exception.InvalidStatusChangeException;
+import com.staybnb.common.exception.custom.InvalidStatusChangeException;
 import com.staybnb.bookings.repository.BookingRepository;
 import com.staybnb.rooms.domain.Amenity;
 import com.staybnb.rooms.domain.PlaceType;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.domain.User;
+import com.staybnb.users.domain.User;
 import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
@@ -50,7 +50,7 @@ class BookingServiceTest {
     @Test
     void getBookingPreview() {
         // given
-        User host = new User();
+        User host = new User("host@gmamil.com", "host", "password");
         PlaceType placeType = new PlaceType(1, "HOUSE");
         Set<Amenity> amenities = Set.of();
 
@@ -101,13 +101,14 @@ class BookingServiceTest {
         Booking expected = new Booking(room, null, numberOfGuests, checkIn, checkOut, 1_400_000.0, Currency.KRW);
         assertThat(bookingPreview)
                 .usingRecursiveComparison()
+                .ignoringFields("createdAt")
                 .isEqualTo(expected);
     }
 
     @Test
     void createBooking() {
         // given
-        User host = new User();
+        User host = new User("host@gmamil.com", "host", "password");
         PlaceType placeType = new PlaceType(1, "HOUSE");
         Set<Amenity> amenities = Set.of();
 
@@ -134,7 +135,7 @@ class BookingServiceTest {
                 .currency(Currency.KRW)
                 .build();
 
-        User guest = new User();
+        User guest = new User("guest@gmail.com", "guest", "password");
         int numberOfGuests = 2;
         LocalDate checkIn = LocalDate.now();
         LocalDate checkOut = LocalDate.now().plusDays(2);
@@ -159,11 +160,48 @@ class BookingServiceTest {
     @Test
     void getBooking() {
         // given
+        User host = new User("host@gmamil.com", "host", "password");
+        host.setId(1L);
+
+        PlaceType placeType = new PlaceType(1, "HOUSE");
+        Set<Amenity> amenities = Set.of();
+
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Room room = Room.builder()
+                .id(1L)
+                .host(host)
+                .placeType(placeType)
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .basePrice(700_000)
+                .currency(Currency.KRW)
+                .build();
+
+        User guest = new User("guest@gmail.com", "guest", "password");
+        guest.setId(2L);
+
+        Booking booking = new Booking();
+        booking.setRoom(room);
+        booking.setUser(guest);
+
         long bookingId = 1L;
-        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(new Booking()));
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when
-        bookingService.getBooking(bookingId);
+        bookingService.getBooking(1L, bookingId);
 
         // then
         verify(bookingRepository, times(1)).findById(bookingId);
@@ -172,14 +210,49 @@ class BookingServiceTest {
     @Test
     void cancelBooking() {
         // given
-        long bookingId = 1L;
+        User host = new User("host@gmamil.com", "host", "password");
+        host.setId(1L);
+
+        PlaceType placeType = new PlaceType(1, "HOUSE");
+        Set<Amenity> amenities = Set.of();
+
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Room room = Room.builder()
+                .id(1L)
+                .host(host)
+                .placeType(placeType)
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .basePrice(700_000)
+                .currency(Currency.KRW)
+                .build();
+
+        User guest = new User("guest@gmail.com", "guest", "password");
+        guest.setId(2L);
+
         Booking booking = new Booking();
+        booking.setRoom(room);
+        booking.setUser(guest);
         booking.setStatus(BookingStatus.REQUESTED);
+
+        long bookingId = 1L;
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when
-        Booking cancelledBooking = bookingService.cancelBooking(bookingId);
+        Booking cancelledBooking = bookingService.cancelBooking(1L, bookingId);
 
         // then
         verify(bookingRepository, times(1)).findById(bookingId);
@@ -189,28 +262,98 @@ class BookingServiceTest {
     @Test
     void cancelBookingFailed() {
         // given
-        long bookingId = 1L;
+        User host = new User("host@gmamil.com", "host", "password");
+        host.setId(1L);
+
+        PlaceType placeType = new PlaceType(1, "HOUSE");
+        Set<Amenity> amenities = Set.of();
+
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Room room = Room.builder()
+                .id(1L)
+                .host(host)
+                .placeType(placeType)
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .basePrice(700_000)
+                .currency(Currency.KRW)
+                .build();
+
+        User guest = new User("guest@gmail.com", "guest", "password");
+        guest.setId(2L);
+
         Booking booking = new Booking();
+        booking.setRoom(room);
+        booking.setUser(guest);
         booking.setStatus(BookingStatus.CANCELLED);
+
+        long bookingId = 1L;
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when // then
-        assertThrows(InvalidStatusChangeException.class, () -> bookingService.cancelBooking(bookingId));
+        assertThrows(InvalidStatusChangeException.class, () -> bookingService.cancelBooking(1L, bookingId));
         verify(bookingRepository, times(1)).findById(bookingId);
     }
 
     @Test
     void updateBooking() {
         // given
-        long bookingId = 1L;
+        User host = new User("host@gmamil.com", "host", "password");
+        host.setId(1L);
+
+        PlaceType placeType = new PlaceType(1, "HOUSE");
+        Set<Amenity> amenities = Set.of();
+
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Room room = Room.builder()
+                .id(1L)
+                .host(host)
+                .placeType(placeType)
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .basePrice(700_000)
+                .currency(Currency.KRW)
+                .build();
+
+        User guest = new User("guest@gmail.com", "guest", "password");
+        guest.setId(2L);
+
         Booking booking = new Booking();
+        booking.setRoom(room);
+        booking.setUser(guest);
         booking.setStatus(BookingStatus.REQUESTED);
+
+        long bookingId = 1L;
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when
-        Booking updatedBooking = bookingService.updateBooking(bookingId, BookingStatus.REJECTED);
+        Booking updatedBooking = bookingService.updateBooking(1L, bookingId, BookingStatus.REJECTED);
 
         // then
         assertThat(updatedBooking.getStatus()).isEqualTo(BookingStatus.REJECTED);
@@ -220,14 +363,49 @@ class BookingServiceTest {
     @Test
     void updateBookingFailed() {
         // given
-        long bookingId = 1L;
+        User host = new User("host@gmamil.com", "host", "password");
+        host.setId(1L);
+
+        PlaceType placeType = new PlaceType(1, "HOUSE");
+        Set<Amenity> amenities = Set.of();
+
+        Address address = Address.builder()
+                .country("United States")
+                .province("Kentucky")
+                .city("Louisville")
+                .street("610 W Magnolia Ave")
+                .build();
+
+        Room room = Room.builder()
+                .id(1L)
+                .host(host)
+                .placeType(placeType)
+                .roomType(RoomType.ENTIRE_PLACE)
+                .address(address)
+                .maxNumberOfGuests(2)
+                .bedrooms(1)
+                .beds(1)
+                .amenities(amenities)
+                .title("Modern building in Kentucky")
+                .description("Modern building in Kentucky")
+                .basePrice(700_000)
+                .currency(Currency.KRW)
+                .build();
+
+        User guest = new User("guest@gmail.com", "guest", "password");
+        guest.setId(2L);
+
         Booking booking = new Booking();
+        booking.setRoom(room);
+        booking.setUser(guest);
         booking.setStatus(BookingStatus.RESERVED);
+
+        long bookingId = 1L;
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when // then
-        assertThrows(InvalidStatusChangeException.class, () -> bookingService.updateBooking(bookingId, BookingStatus.REJECTED));
+        assertThrows(InvalidStatusChangeException.class, () -> bookingService.updateBooking(1L, bookingId, BookingStatus.REJECTED));
         verify(bookingRepository, times(1)).findById(bookingId);
     }
 

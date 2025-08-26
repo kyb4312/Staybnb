@@ -1,5 +1,6 @@
 package com.staybnb.rooms.controller;
 
+import com.staybnb.common.auth.dto.LoginUser;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
@@ -9,6 +10,7 @@ import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.UpdateRoomRequest;
 import com.staybnb.rooms.dto.response.RoomResponse;
 import com.staybnb.rooms.service.*;
+import com.staybnb.users.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +20,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
-@RequestMapping("/rooms")
+@RequestMapping("/host/rooms")
 @RequiredArgsConstructor
 public class HostRoomController {
 
@@ -34,40 +37,62 @@ public class HostRoomController {
     private final AmenityService amenityService;
 
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) {
-        Room room = roomService.save(toEntity(createRoomRequest));
-
-        URI location = UriComponentsBuilder
-                .fromPath("/rooms/{roomId}")
-                .buildAndExpand(room.getId())
-                .toUri();
-
-        return ResponseEntity.created(location).body(RoomResponse.fromDomain(room));
+    public CompletableFuture<ResponseEntity<RoomResponse>> createRoom(
+            @Valid @RequestBody CreateRoomRequest createRoomRequest
+    ) {
+        return roomService.save(toEntity(createRoomRequest))
+                .thenApply(room -> {
+                    URI location = UriComponentsBuilder
+                            .fromPath("/rooms/{roomId}")
+                            .buildAndExpand(room.getId())
+                            .toUri();
+                    return ResponseEntity.created(location).body(RoomResponse.fromDomain(room));
+                });
     }
 
     @PatchMapping("/{roomId}")
-    public RoomResponse updateRoom(@PathVariable long roomId, @Valid @RequestBody UpdateRoomRequest updateRoomRequest) {
-        Room room = roomService.update(roomId, updateRoomRequest);
-
-        return RoomResponse.fromDomain(room);
+    public CompletableFuture<RoomResponse> updateRoom(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdateRoomRequest updateRoomRequest,
+            LoginUser loginUser
+    ) {
+        return roomService.update(loginUser.getId(), roomId, updateRoomRequest)
+                .thenApply(RoomResponse::fromDomain);
     }
 
     @DeleteMapping("/{roomId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRoom(@PathVariable long roomId) {
-        roomService.delete(roomId);
+    public CompletableFuture<Void> deleteRoom(@PathVariable long roomId, LoginUser loginUser) {
+        return roomService.delete(loginUser.getId(), roomId);
     }
 
     @PostMapping("/{roomId}/pricing")
-    public void updatePricing(@PathVariable long roomId, @Valid @RequestBody UpdatePricingRequest updatePricingRequest) {
-        pricingService.updateSelectedDatesPricing(roomId, updatePricingRequest);
+    public CompletableFuture<Void> updatePricing(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdatePricingRequest updatePricingRequest,
+            LoginUser loginUser
+    ) {
+        return pricingService.updateSelectedDatesPricing(loginUser.getId(), roomId, updatePricingRequest);
     }
 
     @PostMapping("/{roomId}/availability")
-    public void updateAvailability(@PathVariable long roomId, @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest) {
-        availabilityService.updateSelectedDatesAvailability(roomId, updateAvailabilityRequest);
+    public CompletableFuture<Void> updateAvailability(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
+            LoginUser loginUser
+    ) {
+        return availabilityService.updateSelectedDatesAvailability(loginUser.getId(), roomId, updateAvailabilityRequest);
     }
 
+    @PostMapping("/{roomId}/availability/sql")
+    public CompletableFuture<Void> updateAvailabilitySql(
+            @PathVariable long roomId,
+            @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
+            LoginUser loginUser
+    ) {
+
+        return availabilityService.updateSelectedDatesAvailabilitySql(loginUser.getId(), roomId, updateAvailabilityRequest);
+    }
 
     private Room toEntity(CreateRoomRequest request) {
         return Room.builder()
@@ -83,6 +108,7 @@ public class HostRoomController {
                 .description(request.getDescription())
                 .basePrice(request.getBasePrice())
                 .currency(Currency.valueOf(request.getCurrency()))
+                .timeZoneId(request.getTimeZoneId())
                 .build();
     }
 }

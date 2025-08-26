@@ -8,9 +8,10 @@ import com.staybnb.rooms.dto.request.UpdatePricingRequest;
 import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.dto.response.PricingResponse;
-import com.staybnb.rooms.exception.InvalidDateRangeException;
+import com.staybnb.common.exception.custom.InvalidDateRangeException;
 import com.staybnb.rooms.repository.PricingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +19,10 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 
 @Service
 @RequiredArgsConstructor
@@ -35,13 +37,15 @@ public class PricingService {
      * 숙박 총 가격 조회
      * @return PricingResponse
      */
-    public PricingResponse getTotalPricing(Long roomId, SearchPricingRequest request) {
+    @Async
+    public CompletableFuture<PricingResponse> getTotalPricing(Long roomId, SearchPricingRequest request) {
         Room room = roomService.findById(roomId);
         validateDateRange(request);
 
         double totalPrice = getTotalPrice(room, request.getStartDate(), request.getEndDate(), Currency.valueOf(request.getCurrency()));
 
-        return new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency()
+        return CompletableFuture.completedFuture(
+                new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency())
         );
     }
 
@@ -78,7 +82,7 @@ public class PricingService {
     }
 
     /**
-     * pricing 날짜 범위 중 [startDate, endDate] 구간에 포함되는 일수 카운트
+     * pricing 날짜 범위 중 [startDate, endDate) 구간에 포함되는 일수 카운트
      */
     private int countDaysWithinRange(Pricing pricing, LocalDate startDateInclusive, LocalDate endDateExclusive) {
         return (int) ChronoUnit.DAYS.between(
@@ -87,26 +91,26 @@ public class PricingService {
         );
     }
 
+    @Async
     @Transactional
-    public void updateSelectedDatesPricing(long roomId, UpdatePricingRequest request) {
+    public CompletableFuture<Void> updateSelectedDatesPricing(long userId, long roomId, UpdatePricingRequest request) {
         Room room = roomService.findById(roomId);
-        validateDateSelected(request.getDateSelected()); // TODO: 겹치는 날짜 없는지 검증
+        validateHost(userId, room);
+        DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
 
         // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
         updatePricing(room,
                 request.getDateSelected().stream().map(DateRangeRequest::toDateRange).toList(),
                 request.getPricePerNight());
+
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
      * dateRanges 날짜 범위에 대한 availability 데이터 추가.
      * dateRanges 전체 날짜 범위와 겹치는 기존 availability 데이터가 있을 경우, 기존 데이터는 삭제하고 겹치지 않는 구간 데이터만 다시 저장
      */
-    private void updatePricing(Room room, List<DateRange> dateRanges, int pricePerNight) {
-        List<DateRange> sortedSelectedDateRanges = dateRanges.stream()
-                .sorted(Comparator.comparing(DateRange::getStartDate))
-                .collect(Collectors.toList());
-
+    private void updatePricing(Room room, List<DateRange> sortedSelectedDateRanges, int pricePerNight) {
         LocalDate minStartDate = sortedSelectedDateRanges.getFirst().getStartDate();
         LocalDate maxEndDate = sortedSelectedDateRanges.getLast().getEndDate();
 
@@ -116,7 +120,7 @@ public class PricingService {
 
         // 충돌 하는 범위 내 데이터 전체 삭제
         if (!sortedConflictedPricings.isEmpty()) {
-            pricingRepository.deleteAll(sortedConflictedPricings);
+            pricingRepository.deleteAllInBatch(sortedConflictedPricings);
             pricingRepository.flush();
         }
 
@@ -157,7 +161,7 @@ public class PricingService {
 
                 // 안 겹치는 conflicted 앞 부분 복원
                 if (currentStart.isBefore(selected.getStartDate())) {
-                    newPricings.add(new Pricing(room, currentStart, selected.getStartDate(), conflicted.getPricePerNight()));
+                    newPricings.add(new Pricing(room, currentStart, getMinDate(currentEnd, selected.getStartDate()), conflicted.getPricePerNight()));
                 }
                 currentStart = selected.getEndDate();
 
@@ -172,6 +176,10 @@ public class PricingService {
         if (currentStart != null && currentStart.isBefore(currentEnd)) {
             newPricings.add(new Pricing(room, currentStart, currentEnd, sortedConflicted.getLast().getPricePerNight()));
         }
+    }
+
+    private LocalDate getMinDate(LocalDate date1, LocalDate date2) {
+        return date1.isBefore(date2) ? date1 : date2;
     }
 
     public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {
@@ -190,17 +198,4 @@ public class PricingService {
         }
     }
 
-    private void validateDateSelected(List<DateRangeRequest> dateSelected) {
-        dateSelected.forEach(dateRange -> {
-            if (dateRange.getStartDate().isBefore(LocalDate.now())) {
-                throw new InvalidDateRangeException("startDate가 과거 일자입니다.", dateRange.getStartDate(), LocalDate.now());
-            }
-            if (dateRange.getStartDate().isAfter(dateRange.getEndDate())) {
-                throw new InvalidDateRangeException("startDate는 endDate 보다 같거나 이전 일자여야 합니다.", dateRange.getStartDate(), dateRange.getEndDate());
-            }
-            if (!dateRange.getEndDate().isBefore(LocalDate.now().plusYears(1))) {
-                throw new InvalidDateRangeException("1년 이내의 가격만 설정 가능합니다.", dateRange.getStartDate(), dateRange.getEndDate());
-            }
-        });
-    }
 }

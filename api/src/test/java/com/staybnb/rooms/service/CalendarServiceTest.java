@@ -5,6 +5,7 @@ import com.staybnb.rooms.domain.embedded.Address;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.dto.response.CalendarResponse;
+import com.staybnb.users.domain.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.YearMonth;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -37,11 +39,11 @@ class CalendarServiceTest {
 
 
     @Test
-    void getCalendar() {
+    void getCalendar() throws ExecutionException, InterruptedException {
         // given
         long roomId = 1L;
 
-        User user = new User();
+        User user = new User("user@gmail.com", "user", "password");
         user.setId(1L);
 
         PlaceType placeType = new PlaceType(1, "house");
@@ -75,7 +77,7 @@ class CalendarServiceTest {
         when(roomService.findById(roomId)).thenReturn(room);
 
         // when
-        CalendarResponse calendarResponse = calendarService.getCalendar(roomId, "KRW", yearMonth);
+        CalendarResponse calendarResponse = calendarService.getCalendar(roomId, "KRW", yearMonth).get();
 
         //then
         verify(roomService, times(1)).findById(roomId);

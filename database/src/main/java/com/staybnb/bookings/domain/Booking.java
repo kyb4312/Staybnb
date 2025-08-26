@@ -2,7 +2,7 @@ package com.staybnb.bookings.domain;
 
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.rooms.domain.Room;
-import com.staybnb.rooms.domain.User;
+import com.staybnb.users.domain.User;
 import com.staybnb.rooms.domain.vo.Currency;
 import io.hypersistence.utils.hibernate.type.range.PostgreSQLRangeType;
 import io.hypersistence.utils.hibernate.type.range.Range;
@@ -53,16 +53,22 @@ public class Booking {
 
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false, length = 50)
+    private String timeZoneId;
+
     public Booking() {
     }
 
-    public Booking(Room room, User user, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut, Double bookingPrice, Currency currency) {
+    public Booking(Room room, User user, Integer numberOfGuests, LocalDate checkIn, LocalDate checkOut,
+                   Double bookingPrice, Currency currency) {
         this.room = room;
         this.user = user;
         this.numberOfGuests = numberOfGuests;
         this.dateRange = Range.closedOpen(checkIn, checkOut);
         this.bookingPrice = bookingPrice;
         this.currency = currency;
+        this.createdAt = LocalDateTime.now();
+        this.timeZoneId = room.getTimeZoneId();
     }
 
     public LocalDate getCheckIn() {

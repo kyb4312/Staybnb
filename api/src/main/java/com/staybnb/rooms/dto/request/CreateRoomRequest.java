@@ -54,4 +54,6 @@ public class CreateRoomRequest {
     @NotBlank
     private String currency;
 
+    @NotBlank
+    private String timeZoneId;
 }

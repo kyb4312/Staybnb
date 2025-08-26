@@ -1,6 +1,7 @@
 package com.staybnb.rooms.repository;
 
 import com.staybnb.rooms.domain.Availability;
+import com.staybnb.rooms.repository.custom.AvailabilityRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.query.Param;
@@ -8,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface AvailabilityRepository extends JpaRepository<Availability, Long> {
+public interface AvailabilityRepository extends JpaRepository<Availability, Long>, AvailabilityRepositoryCustom {
 
     /**
      * room_id가 같고,

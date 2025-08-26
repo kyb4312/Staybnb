@@ -3,15 +3,15 @@ package com.staybnb.bookings.service;
 import com.staybnb.bookings.domain.Booking;
 import com.staybnb.bookings.domain.vo.BookingStatus;
 import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
-import com.staybnb.bookings.exception.*;
 import com.staybnb.bookings.repository.BookingRepository;
+import com.staybnb.common.exception.custom.*;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.service.AvailabilityService;
 import com.staybnb.rooms.service.PricingService;
 import com.staybnb.rooms.service.RoomService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.staybnb.bookings.domain.vo.BookingStatus.*;
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
+import static com.staybnb.common.validation.business.AccessValidator.validateHostOrGuest;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingService {
@@ -32,7 +35,8 @@ public class BookingService {
     private final AvailabilityService availabilityService;
     private final PricingService pricingService;
 
-    public Booking getBookingPreview(@Valid GetBookingPreviewRequest request) {
+    public Booking getBookingPreview(GetBookingPreviewRequest request) {
+//        log.info("step: service entry → {}", Thread.currentThread().getName());
         Room room = roomService.findById(request.getRoomId());
         Currency guestCurrency = Currency.valueOf(request.getGuestCurrency());
 
@@ -82,13 +86,15 @@ public class BookingService {
         }
     }
 
-    public Booking getBooking(Long bookingId) {
-        return bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
+    public Booking getBooking(long userId, Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
+        validateHostOrGuest(userId, booking);
+        return booking;
     }
 
     @Transactional
-    public Booking cancelBooking(Long bookingId) {
-        Booking booking = getBooking(bookingId);
+    public Booking cancelBooking(long userId, Long bookingId) {
+        Booking booking = getBooking(userId, bookingId);
         if (!(booking.getStatus() == REQUESTED || booking.getStatus() == RESERVED)) {
             throw new InvalidStatusChangeException(booking.getStatus().toString());
         }
@@ -96,8 +102,8 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking updateBooking(Long bookingId, BookingStatus status) {
-        Booking booking = getBooking(bookingId);
+    public Booking updateBooking(long userId, Long bookingId, BookingStatus status) {
+        Booking booking = getBooking(userId, bookingId);
         if (!(status == RESERVED || status == REJECTED)) {
             throw new InvalidStatusChangeException();
         }
@@ -124,8 +130,10 @@ public class BookingService {
         return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(CANCELLED.toString(), REJECTED.toString()));
     }
 
-    public Page<Booking> findBookingsByRoomId(Long roomId, Pageable pageable) {
+    public Page<Booking> findBookingsByRoomId(long userId, Long roomId, Pageable pageable) {
         Room room = roomService.findById(roomId);
+        validateHost(userId, room);
         return bookingRepository.findByRoom(room, pageable);
     }
+
 }

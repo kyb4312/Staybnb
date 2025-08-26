@@ -1,0 +1,10 @@
+plugins {
+    id 'java-conventions'
+    id 'service-conventions'
+}
+
+dependencies {
+    implementation project(':database')
+    implementation project(':common')
+    testImplementation project(':test-resources')
+}

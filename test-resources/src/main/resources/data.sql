@@ -1,0 +1,87 @@
+-- 초기 데이터 insert
+-- user
+insert into "user" (name, email, password)
+values ('admin', 'admin@gmail.com', '$2a$10$bsMwgBfP2.84kOM8a1DSa.hnG.i6E/sX1QGxoJK.NzCj7XnXpTyFq');
+insert into "user" (name, email, password)
+values ('guest1', 'guest1@gmail.com', '$2a$10$fK.E0FXB3BbsHZVHRZtUruPgHC86Bro/DXLzwDMvb7DgpVLamVfi.');
+insert into "user" (name, email, password)
+values ('guest2', 'guest2@gmail.com', '$2a$10$HdsExzfTfmfaPu77vkwkg.75c/Q/fdcQXDas4J7pXbxhc250OLqEK');
+insert into "user" (name, email, password, is_deleted)
+values ('guest4', 'guest4@gmail.com', '$2a$10$HdsExzfTfmfaPu77vkwkg.75c/Q/fdcQXDas4J7pXbxhc250OLqEK', true);
+
+-- exchange_rate
+insert into exchange_rate (currency, rate)
+values ('KRW', 1350);
+insert into exchange_rate (currency, rate)
+values ('USD', 1);
+
+-- place_type
+insert into place_type (name) values ('house');
+insert into place_type (name) values ('apartment');
+insert into place_type (name) values ('hotel');
+insert into place_type (name) values ('guest house');
+
+-- amenity
+insert into amenity (name) values ('wifi');
+insert into amenity (name) values ('tv');
+insert into amenity (name) values ('kitchen');
+insert into amenity (name) values ('air conditioner');
+
+-- room
+insert into room (host_id, place_type_id, room_type, country, city, street, max_number_of_guests, bedrooms, beds, title,
+                  description, currency, base_price, base_price_in_usd, is_deleted, time_zone_id)
+values (2, 1, 'ENTIRE_PLACE', 'South Korea', 'city', 'street', 2, 2, 2, 'title', 'description', 'KRW', 300000, 0,
+        false, 'Asia/Seoul');
+
+insert into room (host_id, place_type_id, room_type, country, city, street, max_number_of_guests, bedrooms, beds, title,
+                  description, currency, base_price, base_price_in_usd, is_deleted, time_zone_id)
+values (1, 1, 'ENTIRE_PLACE', 'South Korea', 'city', 'street', 2, 2, 2, 'title', 'description', 'KRW', 300000, 0,
+        false, 'Asia/Seoul');
+
+insert into room (host_id, place_type_id, room_type, country, city, street, max_number_of_guests, bedrooms, beds, title,
+                  description, currency, base_price, base_price_in_usd, is_deleted, time_zone_id)
+values (2, 1, 'ENTIRE_PLACE', 'United States', 'city', 'street', 2, 2, 2, 'title', 'description', 'USD', 300, 0,
+        false, 'America/New_York');
+
+-- booking
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (2, 2, daterange(CURRENT_DATE, current_DATE + 2), 2, 550000, 'KRW', 'REQUESTED', 'Asia/Seoul');
+
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (2, 2, daterange(CURRENT_DATE + 2, current_DATE + 4), 2, 550000, 'KRW', 'RESERVED', 'Asia/Seoul');
+
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (2, 2, daterange(CURRENT_DATE + 4, current_DATE + 6), 2, 550000, 'KRW', 'CANCELLED', 'Asia/Seoul');
+
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (2, 2, daterange(CURRENT_DATE + 6, current_DATE + 8), 2, 550000, 'KRW', 'REJECTED', 'Asia/Seoul');
+
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (2, 2, daterange(CURRENT_DATE + 8, current_DATE + 10), 2, 550000, 'KRW', 'ENDED', 'Asia/Seoul');
+
+-- booking (batch test)
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (1, 1, daterange(CURRENT_DATE - 2, current_DATE - 1), 2, 550000, 'KRW', 'ONGOING', 'Asia/Seoul');
+
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (1, 1, daterange(CURRENT_DATE, current_DATE + 2), 2, 550000, 'KRW', 'RESERVED', 'Asia/Seoul');
+
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (3, 1, daterange(CURRENT_DATE - 2, current_DATE - 1), 2, 550000, 'KRW', 'ONGOING', 'America/New_York');
+
+insert into booking (room_id, guest_id, date_range, number_of_guests, booking_price, currency, status, time_zone_id)
+values (3, 1, daterange(CURRENT_DATE, current_DATE + 2), 2, 550000, 'KRW', 'RESERVED', 'America/New_York');
+
+
+-- availability
+insert into availability (room_id, date_range, is_available)
+values (2, daterange(CURRENT_DATE, CURRENT_DATE + 10, '[]'), false);
+
+insert into availability (room_id, date_range, is_available)
+values (1, daterange(CURRENT_DATE, CURRENT_DATE + 30), true);
+
+-- timezoneMidnight
+insert into timezone_midnight (time_zone_id, utc_midnight)
+values ('Asia/Seoul', '15:00:00');
+insert into timezone_midnight (time_zone_id, utc_midnight)
+values ('America/New_York', '04:00:00');

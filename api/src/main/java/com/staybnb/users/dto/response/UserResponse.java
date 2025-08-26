@@ -2,6 +2,7 @@ package com.staybnb.users.dto.response;
 
 import com.staybnb.users.domain.User;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class UserResponse {
@@ -9,6 +10,9 @@ public class UserResponse {
     private Long id;
     private String email;
     private String name;
+
+    @Setter
+    private String token;
 
     public UserResponse(Long id, String email, String name) {
         this.id = id;

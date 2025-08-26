@@ -1,6 +1,6 @@
 package com.staybnb.common.validation.annotation;
 
-import com.staybnb.common.validation.validator.PriceRangeValidator;
+import com.staybnb.common.validation.annotation.validator.PriceRangeValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

@@ -1,6 +1,5 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Availability;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.dto.request.UpdateAvailabilityRequest;
@@ -8,6 +7,7 @@ import com.staybnb.rooms.dto.request.vo.DateRange;
 import com.staybnb.rooms.dto.request.vo.DateRangeRequest;
 import com.staybnb.rooms.repository.AvailabilityRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +15,9 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 
 @Service
 @RequiredArgsConstructor
@@ -24,27 +27,33 @@ public class AvailabilityService {
 
     private final RoomService roomService;
 
+    @Async
     @Transactional
-    public void updateSelectedDatesAvailability(long userId, long roomId, UpdateAvailabilityRequest request) {
+    public CompletableFuture<Void> updateSelectedDatesAvailability(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
-        validateUser(userId, room);
+        validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
 
         // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
         updateAvailabilities(room,
                 request.getDateSelected().stream().map(DateRangeRequest::toDateRange).toList(),
                 request.getIsAvailable());
+
+        return CompletableFuture.completedFuture(null);
     }
 
+    @Async
     @Transactional
-    public void updateSelectedDatesAvailabilitySql(long userId, long roomId, UpdateAvailabilityRequest request) {
+    public CompletableFuture<Void> updateSelectedDatesAvailabilitySql(long userId, long roomId, UpdateAvailabilityRequest request) {
         Room room = roomService.findById(roomId);
-        validateUser(userId, room);
+        validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
 
         List<String> dateRanges = request.getDateSelected().stream().map(DateRangeRequest::toDateRange).map(DateRange::toString).toList();
 
         availabilityRepository.updateRoomAvailability(roomId, dateRanges, request.getIsAvailable());
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Transactional
@@ -66,7 +75,7 @@ public class AvailabilityService {
 
         // 충돌 하는 범위 내 데이터 전체 삭제
         if (!sortedConflictedAvailabilities.isEmpty()) {
-            availabilityRepository.deleteAll(sortedConflictedAvailabilities);
+            availabilityRepository.deleteAllInBatch(sortedConflictedAvailabilities);
             availabilityRepository.flush();
         }
 
@@ -154,12 +163,6 @@ public class AvailabilityService {
             date = availability.getEndDate();
         }
         return !date.isBefore(checkOutDateExclusive);
-    }
-
-    private void validateUser(long userId, Room room) {
-        if (!room.getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
     }
 
 }

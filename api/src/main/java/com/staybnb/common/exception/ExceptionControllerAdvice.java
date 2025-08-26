@@ -2,6 +2,7 @@ package com.staybnb.common.exception;
 
 import com.staybnb.common.exception.custom.*;
 import io.jsonwebtoken.ExpiredJwtException;
+import org.hibernate.HibernateException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.net.ConnectException;
+import java.sql.SQLException;
 import java.time.DateTimeException;
 import java.util.NoSuchElementException;
 
@@ -94,5 +96,17 @@ public class ExceptionControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionResponse handleSignupException(SignupException e) {
         return new ExceptionResponse("J001", e.getMessage()); // 회원가입 예외 (이메일 중복)
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionResponse handleSQLException(SQLException e) {
+        return new ExceptionResponse("Q001", e.getMessage()); // SQL 문법 예외
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionResponse handleHibernateException(HibernateException e) {
+        return new ExceptionResponse("Q002", e.getMessage()); // JPA 예외 (ex. insert 시도 중 id 충돌 시)
     }
 }

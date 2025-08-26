@@ -111,7 +111,7 @@ class AvailabilityServiceTest {
             availabilityService.updateSelectedDatesAvailability(HOST_ID, ROOM_ID, request);
 
             // Then
-            verify(availabilityRepository).deleteAll(List.of(existingAvailability));
+            verify(availabilityRepository).deleteAllInBatch(List.of(existingAvailability));
             verify(availabilityRepository).saveAll(availabilityListCaptor.capture());
             List<Availability> savedAvailabilities = availabilityListCaptor.getValue();
             savedAvailabilities.sort(Comparator.comparing(Availability::getStartDate));
@@ -178,7 +178,7 @@ class AvailabilityServiceTest {
             availabilityService.updateSelectedDatesAvailability(HOST_ID, ROOM_ID, request);
 
             // Then
-            verify(availabilityRepository).deleteAll(List.of(
+            verify(availabilityRepository).deleteAllInBatch(List.of(
                     existingAvailability1,
                     existingAvailability2,
                     existingAvailability3,
@@ -265,7 +265,7 @@ class AvailabilityServiceTest {
             availabilityService.updateAvailabilityToFalse(room, bookingStart, bookingEnd);
 
             // Then
-            verify(availabilityRepository).deleteAll(List.of(existingAvailability));
+            verify(availabilityRepository).deleteAllInBatch(List.of(existingAvailability));
             verify(availabilityRepository).saveAll(availabilityListCaptor.capture());
             List<Availability> savedAvailabilities = availabilityListCaptor.getValue();
             savedAvailabilities.sort(Comparator.comparing(Availability::getStartDate));

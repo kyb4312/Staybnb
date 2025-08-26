@@ -6,6 +6,8 @@ insert into "user" (name, email, password)
 values ('guest1', 'guest1@gmail.com', '$2a$10$fK.E0FXB3BbsHZVHRZtUruPgHC86Bro/DXLzwDMvb7DgpVLamVfi.');
 insert into "user" (name, email, password)
 values ('guest2', 'guest2@gmail.com', '$2a$10$HdsExzfTfmfaPu77vkwkg.75c/Q/fdcQXDas4J7pXbxhc250OLqEK');
+insert into "user" (name, email, password, is_deleted)
+values ('guest4', 'guest4@gmail.com', '$2a$10$HdsExzfTfmfaPu77vkwkg.75c/Q/fdcQXDas4J7pXbxhc250OLqEK', true);
 
 -- exchange_rate
 insert into exchange_rate (currency, rate)

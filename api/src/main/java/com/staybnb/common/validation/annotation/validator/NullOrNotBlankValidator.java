@@ -1,4 +1,4 @@
-package com.staybnb.common.validation.validator;
+package com.staybnb.common.validation.annotation.validator;
 
 import com.staybnb.common.validation.annotation.NullOrNotBlank;
 import jakarta.validation.ConstraintValidator;

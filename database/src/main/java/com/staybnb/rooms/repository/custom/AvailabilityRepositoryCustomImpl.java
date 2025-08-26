@@ -15,13 +15,13 @@ public class AvailabilityRepositoryCustomImpl implements AvailabilityRepositoryC
     @PersistenceContext
     private EntityManager entityManager;
 
+    private static final String CALL_UPDATE_ROOM_AVAILABILITY = "CALL update_room_availability(?, ?, ?)";
+
     @Override
     public void updateRoomAvailability(long roomId, List<String> dateRanges, boolean isAvailable) {
-        String sql = "CALL update_room_availability(?, ?, ?)";
-
         Session session = entityManager.unwrap(Session.class);
         session.doWork(connection -> {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (PreparedStatement stmt = connection.prepareStatement(CALL_UPDATE_ROOM_AVAILABILITY)) {
                 stmt.setLong(1, roomId);
 
                 // PostgreSQL의 Array 타입으로 직접 변환

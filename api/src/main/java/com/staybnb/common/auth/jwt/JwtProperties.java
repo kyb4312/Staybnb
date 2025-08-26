@@ -1,4 +1,4 @@
-package com.staybnb.common.jwt;
+package com.staybnb.common.auth.jwt;
 
 import lombok.Getter;
 import lombok.Setter;

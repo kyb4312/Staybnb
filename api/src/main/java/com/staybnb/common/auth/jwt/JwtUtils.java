@@ -1,4 +1,4 @@
-package com.staybnb.common.jwt;
+package com.staybnb.common.auth.jwt;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

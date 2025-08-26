@@ -2,7 +2,7 @@ package com.staybnb.bookings.controller;
 
 import com.staybnb.AbstractIntegrationTest;
 import com.staybnb.bookings.domain.vo.BookingStatus;
-import com.staybnb.common.jwt.JwtUtils;
+import com.staybnb.common.auth.jwt.JwtUtils;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

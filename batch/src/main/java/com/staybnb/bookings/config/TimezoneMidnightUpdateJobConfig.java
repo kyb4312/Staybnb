@@ -65,7 +65,7 @@ public class TimezoneMidnightUpdateJobConfig {
     ItemProcessor<String, TimezoneMidnight> timezoneItemProcessor() {
         return timeZoneId -> {
             ZoneId zoneId = ZoneId.of(timeZoneId);
-            ZonedDateTime midnightInZone = ZonedDateTime.of(LocalDate.now(zoneId), LocalTime.MIDNIGHT, zoneId);
+            ZonedDateTime midnightInZone = ZonedDateTime.of(LocalDate.now(zoneId), LocalTime.MIDNIGHT, zoneId).plusDays(1);
             ZonedDateTime utcTime = midnightInZone.withZoneSameInstant(ZoneOffset.UTC);
             return new TimezoneMidnight(timeZoneId, utcTime.toLocalTime());
         };

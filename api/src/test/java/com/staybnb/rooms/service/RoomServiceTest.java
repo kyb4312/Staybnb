@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -152,7 +153,7 @@ class RoomServiceTest {
 
     @Test
     @DisplayName("finaAll(): 최대 숙박 인원으로 숙소 검색")
-    void findAll() {
+    void findAll() throws ExecutionException, InterruptedException {
         // given
         long roomId = 1L;
 
@@ -190,7 +191,7 @@ class RoomServiceTest {
         when(roomRepository.findAll(any(SearchRoomCondition.class), eq(null))).thenReturn(pageResponse);
 
         // when
-        Page<Room> rooms = roomService.findAll(searchRoomCondition, null);
+        Page<Room> rooms = roomService.findAll(searchRoomCondition, null).get();
 
         // then
         verify(roomRepository, times(1)).findAll(any(SearchRoomCondition.class), eq(null));
@@ -199,7 +200,7 @@ class RoomServiceTest {
 
     @Test
     @DisplayName("update(): 기본 숙박 가격 정보 수정")
-    void update() {
+    void update() throws ExecutionException, InterruptedException {
         // given
         long roomId = 1L;
 
@@ -254,13 +255,13 @@ class RoomServiceTest {
                 .basePriceInUsd(updateInfo.getBasePrice() / 1350.0)
                 .build();
 
-        when(roomRepository.findById(room.getId())).thenReturn(Optional.of(room));
+        when(roomRepository.findByIdFetchJoin(room.getId())).thenReturn(Optional.of(room));
 
         // when
-        Room updatedRoom = roomService.update(1L, room.getId(), updateInfo);
+        Room updatedRoom = roomService.update(1L, room.getId(), updateInfo).get();
 
         // then
-        verify(roomRepository, times(1)).findById(room.getId());
+        verify(roomRepository, times(1)).findByIdFetchJoin(room.getId());
 
         assertThat(updatedRoom)
                 .usingRecursiveComparison()

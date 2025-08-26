@@ -1,7 +1,8 @@
-package com.staybnb.common.jwt;
+package com.staybnb.common.auth.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.staybnb.common.exception.ExceptionResponse;
+import com.staybnb.common.auth.dto.LoginUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.IOException;
-
-import static com.staybnb.common.constant.RequestAttributes.USER_ID;
-import static com.staybnb.common.constant.RequestAttributes.USER_NAME;
 
 @Component
 @RequiredArgsConstructor
@@ -37,8 +35,8 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
 
         if (jwtUtil.validateToken(token)) {
-            request.setAttribute(USER_ID, Long.parseLong(jwtUtil.getUserId(token)));
-            request.setAttribute(USER_NAME, jwtUtil.getUserName(token));
+            LoginUser loginUser = new LoginUser(Long.parseLong(jwtUtil.getUserId(token)), jwtUtil.getUserName(token));
+            request.setAttribute("LOGIN_USER", loginUser);
             return true;
         } else {
             sendErrorResponse(response, "A003", "Invalid token");

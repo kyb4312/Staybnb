@@ -1,7 +1,7 @@
 package com.staybnb.rooms.controller;
 
 import com.staybnb.AbstractIntegrationTest;
-import com.staybnb.common.jwt.JwtUtils;
+import com.staybnb.common.auth.jwt.JwtUtils;
 import com.staybnb.rooms.dto.response.CalendarResponse;
 import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.rooms.dto.response.RoomResponse;

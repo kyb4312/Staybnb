@@ -1,6 +1,5 @@
 package com.staybnb.rooms.service;
 
-import com.staybnb.common.exception.custom.UnauthorizedException;
 import com.staybnb.rooms.domain.Pricing;
 import com.staybnb.rooms.domain.Room;
 import com.staybnb.rooms.domain.vo.Currency;
@@ -12,6 +11,7 @@ import com.staybnb.rooms.dto.response.PricingResponse;
 import com.staybnb.common.exception.custom.InvalidDateRangeException;
 import com.staybnb.rooms.repository.PricingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +20,9 @@ import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static com.staybnb.common.validation.business.AccessValidator.validateHost;
 
 @Service
 @RequiredArgsConstructor
@@ -34,13 +37,15 @@ public class PricingService {
      * 숙박 총 가격 조회
      * @return PricingResponse
      */
-    public PricingResponse getTotalPricing(Long roomId, SearchPricingRequest request) {
+    @Async
+    public CompletableFuture<PricingResponse> getTotalPricing(Long roomId, SearchPricingRequest request) {
         Room room = roomService.findById(roomId);
         validateDateRange(request);
 
         double totalPrice = getTotalPrice(room, request.getStartDate(), request.getEndDate(), Currency.valueOf(request.getCurrency()));
 
-        return new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency()
+        return CompletableFuture.completedFuture(
+                new PricingResponse(roomId, request.getStartDate(), request.getEndDate(), totalPrice, request.getCurrency())
         );
     }
 
@@ -86,16 +91,19 @@ public class PricingService {
         );
     }
 
+    @Async
     @Transactional
-    public void updateSelectedDatesPricing(long userId, long roomId, UpdatePricingRequest request) {
+    public CompletableFuture<Void> updateSelectedDatesPricing(long userId, long roomId, UpdatePricingRequest request) {
         Room room = roomService.findById(roomId);
-        validateUser(userId, room);
+        validateHost(userId, room);
         DateRangeRequest.sortAndValidateDateSelected(request.getDateSelected());
 
         // DateRangeRequest는 endDate가 exclusive인 DateRange로 변경 후 전달
         updatePricing(room,
                 request.getDateSelected().stream().map(DateRangeRequest::toDateRange).toList(),
                 request.getPricePerNight());
+
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
@@ -176,12 +184,6 @@ public class PricingService {
 
     public List<Pricing> findPricingsByMonth(Long roomId, YearMonth yearMonth) {
         return pricingRepository.findPricingsByDate(roomId, yearMonth.atDay(1), yearMonth.plusMonths(1).atDay(1));
-    }
-
-    private void validateUser(long userId, Room room) {
-        if (!room.getHost().getId().equals(userId)) {
-            throw new UnauthorizedException(userId);
-        }
     }
 
     private void validateDateRange(SearchPricingRequest request) {

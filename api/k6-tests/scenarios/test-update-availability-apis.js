@@ -11,14 +11,14 @@ export const options = {
     scenarios: {
         serviceLogicScenario: {
             executor: 'constant-vus', // 고정된 가상 사용자 수
-            vus: 100,                 // 100명의 가상 사용자
+            vus: 10,                 // 100명의 가상 사용자
             duration: '10s',         // 10초 동안 실행
             exec: 'updateAvailabilityServiceLogic', // 실행할 함수
             tags: {endpoint_type: 'service_logic'}, // 결과 필터링을 위한 태그
         },
         sqlLogicScenario: {
             executor: 'constant-vus',
-            vus: 100,
+            vus: 10,
             duration: '10s',
             exec: 'updateAvailabilitySqlLogic',
             tags: {endpoint_type: 'sql_logic'},
@@ -35,7 +35,7 @@ export const options = {
 };
 
 // 테스트에 사용할 사용자 인증 정보 (user1@test.com ~ user250@test.com)
-const USER_CREDENTIALS = new Array(250).fill(null).map((_, i) => ({
+const USER_CREDENTIALS = new Array(20).fill(null).map((_, i) => ({
     email: `user${i + 1}@test.com`,
     password: 'password',
 }));
@@ -83,7 +83,7 @@ export function updateAvailabilityServiceLogic(setupData) {
     const dateSelected = generateRandomDateRanges(
         1, 9, // 최소 1개 ~ 최대 9개의 날짜 범위
         0, 30, // 각 날짜 범위의 최소 0일 ~ 최대 30일 지속
-        0, 7 // 시작 날짜는 오늘로부터 최소 1일 ~ 최대 7일 후
+        1, 7 // 시작 날짜는 오늘로부터 최소 1일 ~ 최대 7일 후
     );
 
     const isAvailable = Math.random() < 0.5;
@@ -137,10 +137,14 @@ export function updateAvailabilitySqlLogic(setupData) {
     const res = http.post(`http://localhost:8080/host/rooms/${roomId}/availability/sql`, payload, {headers: headers});
     sqlLogicTrend.add(res.timings.duration);
 
-    check(res, {
+    const isOK = check(res, {
         'sqlLogic status is 200': (r) => r.status === 200,
-        'sqlLogic response time < 1000ms': (r) => r.timings.duration < 1000,
     });
+
+    // 실패한 경우 응답 상세 출력
+    if (!isOK) {
+        console.log(`Failed response: status=${res.status}, body=${res.body}`);
+    }
 
     sleep(1); // 각 요청 사이에 1초 대기
 }

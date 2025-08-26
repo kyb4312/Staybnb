@@ -19,7 +19,7 @@ public class TimezoneMidnightService {
     private final JobLauncher jobLauncher;
     private final Job timezoneUpdateJob;
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 5 0 * * ?")
     public void updateTimezoneMidnight() {
         try {
             JobParameters params = new JobParametersBuilder()

@@ -13,13 +13,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mindrot.jbcrypt.BCrypt;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,22 +30,24 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    @InjectMocks
-    private UserService userService;
+    @Mock
+    UserRepository userRepository;
 
     @Mock
-    private UserRepository userRepository;
+    JwtUtils jwtUtils;
 
     @Mock
-    private JwtUtils jwtUtils;
+    LogoutTokenService logoutTokenService;
 
-    @Mock
-    private LogoutTokenService logoutTokenService;
+    UserService userService;
+    Executor executor = Runnable::run;
 
-    private User testUser;
+    User testUser;
 
     @BeforeEach
     void setUp() {
+        userService = new UserService(userRepository, jwtUtils, logoutTokenService, executor);
+
         testUser = new User("test@example.com", "Test User", "plainPassword");
         testUser.setId(1L);
     }
@@ -97,7 +101,7 @@ class UserServiceTest {
             when(jwtUtils.generateToken(testUser.getId().toString(), testUser.getName())).thenReturn("dummy.jwt.token");
 
             // Act
-            UserResponse response = userService.login("test@example.com", "correctPassword");
+            UserResponse response = userService.login("test@example.com", "correctPassword").join();
 
             // Assert
             assertEquals("dummy.jwt.token", response.getToken());
@@ -112,7 +116,9 @@ class UserServiceTest {
             when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThrows(NoSuchUserException.class, () -> userService.login("wrong@example.com", "password"));
+            assertThatThrownBy(() -> userService.login("wrong@example.com", "password").join())
+                    .isInstanceOf(CompletionException.class)
+                    .hasCauseInstanceOf(NoSuchUserException.class);
             verify(userRepository, times(1)).findByEmail("wrong@example.com");
         }
 
@@ -123,7 +129,9 @@ class UserServiceTest {
             when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
             // Act & Assert
-            assertThrows(NoSuchUserException.class, () -> userService.login("test@example.com", "wrongPassword"));
+            assertThatThrownBy(() -> userService.login("test@example.com", "wrongPassword").join())
+                    .isInstanceOf(CompletionException.class)
+                    .hasCauseInstanceOf(NoSuchUserException.class);
             verify(userRepository, times(1)).findByEmail("test@example.com");
         }
 
@@ -135,7 +143,9 @@ class UserServiceTest {
             when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThrows(NoSuchUserException.class, () -> userService.login("test@example.com", "correctPassword"));
+            assertThatThrownBy(() -> userService.login("test@example.com", "correctPassword").join())
+                    .isInstanceOf(CompletionException.class)
+                    .hasCauseInstanceOf(NoSuchUserException.class);
             verify(userRepository, times(1)).findByEmail("test@example.com");
         }
     }
@@ -171,7 +181,7 @@ class UserServiceTest {
             when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // Act
-            User signedUpUser = userService.signup(testUser);
+            User signedUpUser = userService.signup(testUser).join();
 
             // Assert
             assertNotNull(signedUpUser);
@@ -190,7 +200,9 @@ class UserServiceTest {
             when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(new User("test2@example.com", "existingUser", "password")));
 
             // Act & Assert
-            assertThrows(SignupException.class, () -> userService.signup(testUser));
+            assertThatThrownBy(() -> userService.signup(testUser).join())
+                    .isInstanceOf(CompletionException.class)
+                    .hasCauseInstanceOf(SignupException.class);
 
             verify(userRepository, times(1)).findByEmail(testUser.getEmail());
             verify(userRepository, never()).save(any(User.class));
@@ -228,7 +240,9 @@ class UserServiceTest {
             when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThrows(NoSuchUserException.class, () -> userService.deleteAccount(1L));
+            assertThatThrownBy(() -> userService.deleteAccount(1L).join())
+                    .isInstanceOf(CompletionException.class)
+                    .hasCauseInstanceOf(NoSuchUserException.class);
             verify(userRepository, times(1)).findById(1L);
         }
     }

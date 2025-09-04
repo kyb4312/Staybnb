@@ -15,25 +15,24 @@ import com.staybnb.rooms.domain.vo.RoomType;
 import com.staybnb.rooms.service.AvailabilityService;
 import com.staybnb.rooms.service.PricingService;
 import com.staybnb.rooms.service.RoomService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
-
-    @InjectMocks
-    BookingService bookingService;
 
     @Mock
     BookingRepository bookingRepository;
@@ -46,6 +45,14 @@ class BookingServiceTest {
 
     @Mock
     PricingService pricingService;
+
+    BookingService bookingService;
+    Executor executor = Runnable::run;
+
+    @BeforeEach
+    void setUp() {
+        bookingService = new BookingService(bookingRepository, roomService, availabilityService, pricingService, executor);
+    }
 
     @Test
     void getBookingPreview() {
@@ -91,7 +98,7 @@ class BookingServiceTest {
         when(pricingService.getTotalPrice(room, checkIn, checkOut, Currency.KRW)).thenReturn(1_400_000.0);
 
         // when
-        Booking bookingPreview = bookingService.getBookingPreview(request);
+        Booking bookingPreview = bookingService.getBookingPreview(request).join();
 
         // then
         verify(roomService, times(1)).findById(roomId);
@@ -252,7 +259,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when
-        Booking cancelledBooking = bookingService.cancelBooking(1L, bookingId);
+        Booking cancelledBooking = bookingService.cancelBooking(1L, bookingId).join();
 
         // then
         verify(bookingRepository, times(1)).findById(bookingId);
@@ -304,7 +311,9 @@ class BookingServiceTest {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when // then
-        assertThrows(InvalidStatusChangeException.class, () -> bookingService.cancelBooking(1L, bookingId));
+        assertThatThrownBy(() -> bookingService.cancelBooking(1L, bookingId).join())
+                .isInstanceOf(CompletionException.class)
+                .hasCauseInstanceOf(InvalidStatusChangeException.class);
         verify(bookingRepository, times(1)).findById(bookingId);
     }
 
@@ -353,7 +362,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when
-        Booking updatedBooking = bookingService.updateBooking(1L, bookingId, BookingStatus.REJECTED);
+        Booking updatedBooking = bookingService.updateBooking(1L, bookingId, BookingStatus.REJECTED).join();
 
         // then
         assertThat(updatedBooking.getStatus()).isEqualTo(BookingStatus.REJECTED);
@@ -405,7 +414,9 @@ class BookingServiceTest {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // when // then
-        assertThrows(InvalidStatusChangeException.class, () -> bookingService.updateBooking(1L, bookingId, BookingStatus.REJECTED));
+        assertThatThrownBy(() -> bookingService.updateBooking(1L, bookingId, BookingStatus.REJECTED).join())
+                .isInstanceOf(CompletionException.class)
+                .hasCauseInstanceOf(InvalidStatusChangeException.class);
         verify(bookingRepository, times(1)).findById(bookingId);
     }
 

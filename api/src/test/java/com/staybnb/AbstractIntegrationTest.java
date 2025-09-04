@@ -24,6 +24,8 @@ public abstract class AbstractIntegrationTest {
                             Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
                     .withExposedService("redis", 6379,
                             Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
+                    .withExposedService("kafka", 9092,
+                            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
                     .withLocalCompose(true);
 
     static {
@@ -44,5 +46,10 @@ public abstract class AbstractIntegrationTest {
         Integer redisPort = composeContainer.getServicePort("redis", 6379);
         registry.add("spring.data.redis.host", () -> redisHost);
         registry.add("spring.data.redis.port", () -> redisPort);
+
+        // Kafka
+        String kafkaHost = composeContainer.getServiceHost("kafka", 9092);
+        Integer kafkaPort = composeContainer.getServicePort("kafka", 9092);
+        registry.add("spring.kafka.bootstrap-servers", () -> String.format("%s:%d", kafkaHost, kafkaPort));
     }
 }

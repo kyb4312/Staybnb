@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import static com.staybnb.bookings.domain.vo.BookingStatus.*;
 import static com.staybnb.common.validation.business.AccessValidator.validateHost;
@@ -35,31 +37,36 @@ public class BookingService {
     private final AvailabilityService availabilityService;
     private final PricingService pricingService;
 
-    public Booking getBookingPreview(GetBookingPreviewRequest request) {
-//        log.info("step: service entry → {}", Thread.currentThread().getName());
-        Room room = roomService.findById(request.getRoomId());
-        Currency guestCurrency = Currency.valueOf(request.getGuestCurrency());
+    private final Executor asyncExecutor;
 
-        checkAvailability(room, request.getCheckIn(), request.getCheckOut());
-        checkNumberOfGuests(room, request.getNumberOfGuests());
+    public CompletableFuture<Booking> getBookingPreview(GetBookingPreviewRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            Room room = roomService.findById(request.getRoomId());
+            Currency guestCurrency = Currency.valueOf(request.getGuestCurrency());
 
-        double bookingPrice = pricingService.getTotalPrice(room, request.getCheckIn(), request.getCheckOut(), guestCurrency);
+            checkAvailability(room, request.getCheckIn(), request.getCheckOut());
+            checkNumberOfGuests(room, request.getNumberOfGuests());
 
-        return new Booking(room, null, request.getNumberOfGuests(), request.getCheckIn(), request.getCheckOut(), bookingPrice, guestCurrency);
+            double bookingPrice = pricingService.getTotalPrice(room, request.getCheckIn(), request.getCheckOut(), guestCurrency);
+
+            return new Booking(room, null, request.getNumberOfGuests(), request.getCheckIn(), request.getCheckOut(), bookingPrice, guestCurrency);
+        }, asyncExecutor);
     }
 
     @Transactional
-    public Booking createBooking(Booking booking) {
-        checkAvailabilityForUpdate(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
-        checkNumberOfGuests(booking.getRoom(), booking.getNumberOfGuests());
+    public CompletableFuture<Booking> createBooking(Booking booking) {
+        return CompletableFuture.supplyAsync(() -> {
+            checkAvailabilityForUpdate(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
+            checkNumberOfGuests(booking.getRoom(), booking.getNumberOfGuests());
 
-        double bookingPrice = pricingService.getTotalPrice(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut(), booking.getCurrency());
-        checkIfPriceChanged(booking.getBookingPrice(), bookingPrice);
+            double bookingPrice = pricingService.getTotalPrice(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut(), booking.getCurrency());
+            checkIfPriceChanged(booking.getBookingPrice(), bookingPrice);
 
-        availabilityService.updateAvailabilityToFalse(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
-        booking.setStatus(REQUESTED);
+            availabilityService.updateAvailabilityToFalse(booking.getRoom(), booking.getCheckIn(), booking.getCheckOut());
+            booking.setStatus(REQUESTED);
 
-        return bookingRepository.save(booking);
+            return bookingRepository.save(booking);
+        }, asyncExecutor);
     }
 
     private void checkAvailability(Room room, LocalDate checkInInclusive, LocalDate checkOutExclusive) {
@@ -86,31 +93,37 @@ public class BookingService {
         }
     }
 
-    public Booking getBooking(long userId, Long bookingId) {
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
-        validateHostOrGuest(userId, booking);
-        return booking;
+    public CompletableFuture<Booking> getBooking(long userId, Long bookingId) {
+        return CompletableFuture.supplyAsync(() -> {
+            Booking booking = bookingRepository.findById(bookingId).orElseThrow(NoSuchBookingException::new);
+            validateHostOrGuest(userId, booking);
+            return booking;
+        }, asyncExecutor);
     }
 
     @Transactional
-    public Booking cancelBooking(long userId, Long bookingId) {
-        Booking booking = getBooking(userId, bookingId);
-        if (!(booking.getStatus() == REQUESTED || booking.getStatus() == RESERVED)) {
-            throw new InvalidStatusChangeException(booking.getStatus().toString());
-        }
-        return updateBookingStatus(booking, CANCELLED);
+    public CompletableFuture<Booking> cancelBooking(long userId, Long bookingId) {
+        return CompletableFuture.supplyAsync(() -> {
+            Booking booking = getBooking(userId, bookingId).join();
+            if (!(booking.getStatus() == REQUESTED || booking.getStatus() == RESERVED)) {
+                throw new InvalidStatusChangeException(booking.getStatus().toString());
+            }
+            return updateBookingStatus(booking, CANCELLED);
+        }, asyncExecutor);
     }
 
     @Transactional
-    public Booking updateBooking(long userId, Long bookingId, BookingStatus status) {
-        Booking booking = getBooking(userId, bookingId);
-        if (!(status == RESERVED || status == REJECTED)) {
-            throw new InvalidStatusChangeException();
-        }
-        if (booking.getStatus() != REQUESTED) {
-            throw new InvalidStatusChangeException(booking.getStatus().toString());
-        }
-        return updateBookingStatus(booking, status);
+    public CompletableFuture<Booking> updateBooking(long userId, Long bookingId, BookingStatus status) {
+        return CompletableFuture.supplyAsync(() -> {
+            Booking booking = getBooking(userId, bookingId).join();
+            if (!(status == RESERVED || status == REJECTED)) {
+                throw new InvalidStatusChangeException();
+            }
+            if (booking.getStatus() != REQUESTED) {
+                throw new InvalidStatusChangeException(booking.getStatus().toString());
+            }
+            return updateBookingStatus(booking, status);
+        }, asyncExecutor);
     }
 
     private Booking updateBookingStatus(Booking booking, BookingStatus bookingStatus) {
@@ -118,22 +131,45 @@ public class BookingService {
         return booking;
     }
 
-    public Page<Booking> findUpcomingBookings(Long userId, Pageable pageable) {
-        return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(REQUESTED.toString(), RESERVED.toString()));
+    public CompletableFuture<Page<Booking>> findUpcomingBookings(Long userId, Pageable pageable) {
+        return CompletableFuture.supplyAsync(
+                () -> bookingRepository.findBookingsByGuestIdAndStatus(
+                        pageable,
+                        userId,
+                        List.of(REQUESTED.toString(), RESERVED.toString())
+                ),
+                asyncExecutor
+        );
     }
 
-    public Page<Booking> findPastBookings(Long userId, Pageable pageable) {
-        return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(ENDED.toString()));
+    public CompletableFuture<Page<Booking>> findPastBookings(Long userId, Pageable pageable) {
+        return CompletableFuture.supplyAsync(
+                () -> bookingRepository.findBookingsByGuestIdAndStatus(
+                        pageable,
+                        userId,
+                        List.of(ENDED.toString())
+                ),
+                asyncExecutor
+        );
     }
 
-    public Page<Booking> findCancelledBookings(Long userId, Pageable pageable) {
-        return bookingRepository.findBookingsByGuestIdAndStatus(pageable, userId, List.of(CANCELLED.toString(), REJECTED.toString()));
+    public CompletableFuture<Page<Booking>> findCancelledBookings(Long userId, Pageable pageable) {
+        return CompletableFuture.supplyAsync(
+                () -> bookingRepository.findBookingsByGuestIdAndStatus(
+                        pageable,
+                        userId,
+                        List.of(CANCELLED.toString(), REJECTED.toString())
+                ),
+                asyncExecutor
+        );
     }
 
-    public Page<Booking> findBookingsByRoomId(long userId, Long roomId, Pageable pageable) {
-        Room room = roomService.findById(roomId);
-        validateHost(userId, room);
-        return bookingRepository.findByRoom(room, pageable);
+    public CompletableFuture<Page<Booking>> findBookingsByRoomId(long userId, Long roomId, Pageable pageable) {
+        return CompletableFuture.supplyAsync(() -> {
+            Room room = roomService.findById(roomId);
+            validateHost(userId, room);
+            return bookingRepository.findByRoom(room, pageable);
+        }, asyncExecutor);
     }
 
 }

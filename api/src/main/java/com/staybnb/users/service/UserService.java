@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Slf4j
 @Service
@@ -24,42 +26,49 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private final LogoutTokenService logoutTokenService;
 
+    private final Executor asyncExecutor;
+
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new NoSuchUserException(id));
     }
 
-    public UserResponse login(String email, String password) {
-//        log.info("step: service entry → {}", Thread.currentThread().getName());
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(NoSuchUserException::new);
+    public CompletableFuture<UserResponse> login(String email, String password) {
+        return CompletableFuture.supplyAsync(() -> {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(NoSuchUserException::new);
 
-        if (!BCrypt.checkpw(password, user.getPassword())) {
-            throw new NoSuchUserException();
-        }
+            if (!BCrypt.checkpw(password, user.getPassword())) {
+                throw new NoSuchUserException();
+            }
 
-        UserResponse userResponse = UserResponse.fromEntity(user);
-        userResponse.setToken(jwtUtils.generateToken(user.getId().toString(), user.getName()));
+            UserResponse userResponse = UserResponse.fromEntity(user);
+            userResponse.setToken(jwtUtils.generateToken(user.getId().toString(), user.getName()));
 
-        return userResponse;
+            return userResponse;
+        }, asyncExecutor);
     }
 
     public void logout(String token) {
-        logoutTokenService.logout(token);
+        CompletableFuture.runAsync(() -> logoutTokenService.logout(token), asyncExecutor);
     }
 
-    public User signup(User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new SignupException(user.getEmail());
-        }
+    public CompletableFuture<User> signup(User user) {
+        return CompletableFuture.supplyAsync(() -> {
+            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+                throw new SignupException(user.getEmail());
+            }
 
-        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-        return userRepository.save(user);
+            user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+            return userRepository.save(user);
+        }, asyncExecutor);
     }
 
     @Transactional
-    public void deleteAccount(long userId) {
-        User user = findById(userId);
-        user.setDeleted(true);
-        user.setDeletedAt(LocalDateTime.now());
+    public CompletableFuture<Void> deleteAccount(long userId) {
+        return CompletableFuture.runAsync(() -> {
+            User user = findById(userId);
+            user.setDeleted(true);
+            user.setDeletedAt(LocalDateTime.now());
+        }, asyncExecutor);
     }
 }

@@ -11,7 +11,6 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 @Slf4j
 @RestController
@@ -20,27 +19,22 @@ import java.util.concurrent.Executor;
 public class HostBookingController {
 
     private final BookingService bookingService;
-    private final Executor asyncExecutor;
 
     @GetMapping("/{bookingId}")
     public CompletableFuture<BookingResponse> getBooking(@PathVariable Long bookingId, LoginUser loginUser) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.getBooking(loginUser.getId(), bookingId), asyncExecutor)
+        return bookingService.getBooking(loginUser.getId(), bookingId)
                 .thenApply(BookingResponse::fromEntity);
     }
 
     @GetMapping("/listings/{roomId}")
     public CompletableFuture<PagedModel<BookingResponse>> getBookings(@PathVariable Long roomId, Pageable pageable, LoginUser loginUser) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.findBookingsByRoomId(loginUser.getId(), roomId, pageable), asyncExecutor)
+        return bookingService.findBookingsByRoomId(loginUser.getId(), roomId, pageable)
                 .thenApply(pagedBooking -> new PagedModel<>(pagedBooking.map(BookingResponse::fromEntity)));
     }
 
     @PatchMapping("/{bookingId}")
     public CompletableFuture<BookingResponse> updateBooking(@PathVariable Long bookingId, @RequestBody String status, LoginUser loginUser) {
-        log.info("step: controller entry → {}", Thread.currentThread().getName());
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.updateBooking(loginUser.getId(), bookingId, BookingStatus.valueOf(status)), asyncExecutor)
+        return bookingService.updateBooking(loginUser.getId(), bookingId, BookingStatus.valueOf(status))
                 .thenApply(BookingResponse::fromEntity);
     }
 }

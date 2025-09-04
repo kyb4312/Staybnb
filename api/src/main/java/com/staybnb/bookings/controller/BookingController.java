@@ -22,7 +22,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 @Slf4j
 @RestController
@@ -36,29 +35,21 @@ public class BookingController {
 
     private final BookingEventProducer bookingEventProducer;
 
-    private final Executor asyncExecutor;
-
     @GetMapping("/preview")
     public CompletableFuture<BookingPreviewResponse> getBookingPreview(@Valid @ModelAttribute GetBookingPreviewRequest request) {
-//        log.info("step: controller entry → {}", Thread.currentThread().getName());
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.getBookingPreview(request), asyncExecutor)
+        return bookingService.getBookingPreview(request)
                 .thenApply(BookingPreviewResponse::fromEntity);
     }
 
     @PostMapping
     public CompletableFuture<ResponseEntity<BookingResponse>> createBooking(@Valid @RequestBody CreateBookingRequest request) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.createBooking(toEntity(request)), asyncExecutor)
+        return bookingService.createBooking(toEntity(request))
                 .thenApply(booking -> {
-                    CompletableFuture.runAsync(() ->
-                            bookingEventProducer.produceBookingEvent(booking), asyncExecutor);
-
+                    bookingEventProducer.produceBookingEvent(booking);
                             URI location = UriComponentsBuilder
                                     .fromPath("/bookings/{bookingId}")
                                     .buildAndExpand(booking.getId())
                                     .toUri();
-
                             return ResponseEntity.created(location).body(BookingResponse.fromEntity(booking));
                         }
                 );
@@ -66,36 +57,31 @@ public class BookingController {
 
     @GetMapping("/{bookingId}")
     public CompletableFuture<BookingResponse> getBooking(@PathVariable Long bookingId, LoginUser loginUser) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.getBooking(loginUser.getId(), bookingId), asyncExecutor)
+        return bookingService.getBooking(loginUser.getId(), bookingId)
                 .thenApply(BookingResponse::fromEntity);
     }
 
     @DeleteMapping("/{bookingId}")
     public CompletableFuture<BookingResponse> cancelBooking(@PathVariable Long bookingId, LoginUser loginUser) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.cancelBooking(loginUser.getId(), bookingId), asyncExecutor)
+        return bookingService.cancelBooking(loginUser.getId(), bookingId)
                 .thenApply(BookingResponse::fromEntity);
     }
 
     @GetMapping("/upcoming")
     public CompletableFuture<PagedModel<BookingResponse>> findUpcomingBookings(Pageable pageable, LoginUser loginUser) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.findUpcomingBookings(loginUser.getId(), pageable), asyncExecutor)
+        return bookingService.findUpcomingBookings(loginUser.getId(), pageable)
                 .thenApply(pagedBooking -> new PagedModel<>(pagedBooking.map(BookingResponse::fromEntity)));
     }
 
     @GetMapping("/past")
     public CompletableFuture<PagedModel<BookingResponse>> findPastBookings(Pageable pageable, LoginUser loginUser) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.findPastBookings(loginUser.getId(), pageable), asyncExecutor)
+        return bookingService.findPastBookings(loginUser.getId(), pageable)
                 .thenApply(pagedBooking -> new PagedModel<>(pagedBooking.map(BookingResponse::fromEntity)));
     }
 
     @GetMapping("/cancelled")
     public CompletableFuture<PagedModel<BookingResponse>> findCancelledBookings(Pageable pageable, LoginUser loginUser) {
-        return CompletableFuture
-                .supplyAsync(() -> bookingService.findCancelledBookings(loginUser.getId(), pageable), asyncExecutor)
+        return bookingService.findCancelledBookings(loginUser.getId(), pageable)
                 .thenApply(pagedBooking -> new PagedModel<>(pagedBooking.map(BookingResponse::fromEntity)));
     }
 

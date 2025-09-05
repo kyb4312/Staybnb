@@ -41,10 +41,9 @@ public class UserService {
                 throw new NoSuchUserException();
             }
 
-            UserResponse userResponse = UserResponse.fromEntity(user);
-            userResponse.setToken(jwtUtils.generateToken(user.getId().toString(), user.getName()));
+            String token = jwtUtils.generateToken(user.getId().toString(), user.getName());
 
-            return userResponse;
+            return new UserResponse(user.getId(), user.getEmail(), user.getName(), token);
         }, asyncExecutor);
     }
 

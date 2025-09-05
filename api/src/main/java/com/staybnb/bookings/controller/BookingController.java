@@ -46,13 +46,12 @@ public class BookingController {
         return bookingService.createBooking(toEntity(request))
                 .thenApply(booking -> {
                     bookingEventProducer.produceBookingEvent(booking);
-                            URI location = UriComponentsBuilder
-                                    .fromPath("/bookings/{bookingId}")
-                                    .buildAndExpand(booking.getId())
-                                    .toUri();
-                            return ResponseEntity.created(location).body(BookingResponse.fromEntity(booking));
-                        }
-                );
+                    URI location = UriComponentsBuilder
+                            .fromPath("/bookings/{bookingId}")
+                            .buildAndExpand(booking.getId())
+                            .toUri();
+                    return ResponseEntity.created(location).body(BookingResponse.fromEntity(booking));
+                });
     }
 
     @GetMapping("/{bookingId}")

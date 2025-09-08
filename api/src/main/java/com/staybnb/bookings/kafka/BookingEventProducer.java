@@ -1,4 +1,4 @@
-package com.staybnb.bookings.service;
+package com.staybnb.bookings.kafka;
 
 import com.staybnb.common.event.BookingEvent;
 import com.staybnb.bookings.domain.Booking;

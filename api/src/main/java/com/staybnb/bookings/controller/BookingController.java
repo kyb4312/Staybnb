@@ -5,7 +5,7 @@ import com.staybnb.bookings.dto.request.CreateBookingRequest;
 import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
 import com.staybnb.bookings.dto.response.BookingPreviewResponse;
 import com.staybnb.bookings.dto.response.BookingResponse;
-import com.staybnb.bookings.service.BookingEventProducer;
+import com.staybnb.bookings.kafka.BookingEventProducer;
 import com.staybnb.bookings.service.BookingService;
 import com.staybnb.common.auth.dto.LoginUser;
 import com.staybnb.rooms.domain.vo.Currency;

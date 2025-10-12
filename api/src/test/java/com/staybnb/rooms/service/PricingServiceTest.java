@@ -26,7 +26,6 @@ import java.time.YearMonth;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -51,14 +50,13 @@ public class PricingServiceTest {
     ArgumentCaptor<List<Pricing>> pricingListCaptor;
 
     private Room room;
-    private User host;
     private final long HOST_ID = 1L;
     private final long OTHER_USER_ID = 2L;
     private final long ROOM_ID = 101L;
 
     @BeforeEach
     void setUp() {
-        host = new User("host@gmail.com", "host", "password");
+        User host = new User("host@gmail.com", "host", "password");
         host.setId(HOST_ID);
 
         room = Room.builder()
@@ -75,7 +73,7 @@ public class PricingServiceTest {
 
         @Test
         @DisplayName("성공: 기본가와 특별가가 혼합된 기간의 총 가격을 정확히 계산한다")
-        void getTotalPricing_Success_WithMixedPricing() throws ExecutionException, InterruptedException {
+        void getTotalPricing_Success_WithMixedPricing() {
             // Given
             LocalDate startDate = LocalDate.now().plusDays(1);
             LocalDate endDate = LocalDate.now().plusDays(11); // 10 nights
@@ -92,7 +90,7 @@ public class PricingServiceTest {
             when(exchangeRateService.convert(Currency.USD, Currency.KRW, 1200)).thenReturn(1620000.0);
 
             // When
-            PricingResponse response = pricingService.getTotalPricing(ROOM_ID, request).get();
+            PricingResponse response = pricingService.getTotalPricing(ROOM_ID, request).join();
 
             // Then
             assertThat(response).isNotNull();
@@ -106,7 +104,7 @@ public class PricingServiceTest {
 
         @Test
         @DisplayName("성공: 특별가 없이 기본가로만 총 가격을 계산한다")
-        void getTotalPricing_Success_WithOnlyBasePrice() throws ExecutionException, InterruptedException {
+        void getTotalPricing_Success_WithOnlyBasePrice() {
             // Given
             LocalDate startDate = LocalDate.now().plusDays(1);
             LocalDate endDate = LocalDate.now().plusDays(6); // 5 nights
@@ -119,7 +117,7 @@ public class PricingServiceTest {
             when(exchangeRateService.convert(Currency.USD, Currency.USD, 500)).thenReturn(500.0);
 
             // When
-            PricingResponse response = pricingService.getTotalPricing(ROOM_ID, request).get();
+            PricingResponse response = pricingService.getTotalPricing(ROOM_ID, request).join();
 
             // Then
             assertThat(response.getTotalPrice()).isEqualTo(500.0);

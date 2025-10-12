@@ -1,6 +1,6 @@
-package com.staybnb.bookings.service;
+package com.staybnb.bookings.kafka;
 
-import com.staybnb.bookings.BookingEvent;
+import com.staybnb.common.event.BookingEvent;
 import com.staybnb.bookings.domain.Booking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,19 @@ public class BookingEventProducer {
     private final KafkaTemplate<Long, BookingEvent> kafkaTemplate;
 
     public void produceBookingEvent(Booking booking) {
-        BookingEvent bookingEvent = new BookingEvent(booking.getStatus().toString(), booking.getId());
+        BookingEvent bookingEvent = new BookingEvent(
+                booking.getId(),
+                booking.getStatus(),
+                booking.getRoom().getTitle(),
+                booking.getRoom().getHost().getEmail(),
+                booking.getRoom().getHost().getName(),
+                booking.getUser().getEmail(),
+                booking.getUser().getName(),
+                booking.getNumberOfGuests(),
+                booking.getCheckIn().toString(),
+                booking.getCheckOut().toString(),
+                booking.getBookingPrice()
+        );
 
         kafkaTemplate.send(BOOKING_EVENTS_TOPIC, booking.getId(), bookingEvent)
                 .thenAccept(result -> {

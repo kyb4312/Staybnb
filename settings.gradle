@@ -10,5 +10,6 @@ include 'batch'
 include 'notification'
 include 'common'
 include 'test-resources'
+include 'kafka-producer'
 
 includeBuild 'build-logic'

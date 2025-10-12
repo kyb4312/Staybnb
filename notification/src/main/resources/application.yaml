@@ -12,3 +12,15 @@ spring:
 
       properties:
         spring.json.trusted.packages: "com.staybnb.*"
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: staybnbspeaker@gmail.com
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls.enable: true

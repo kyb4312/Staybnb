@@ -17,7 +17,6 @@ services:
 
   kafka:
     image: apache/kafka:3.8.1
-    container_name: kafka
     ports:
       - "9092:9092"
     volumes:

@@ -127,11 +127,25 @@ CREATE TABLE booking
     CONSTRAINT no_overlapping_booking_date_range EXCLUDE USING gist (room_id WITH =, date_range WITH &&) WHERE (status IN ('REQUESTED', 'RESERVED', 'ENDED'))
 );
 
+-- timezone_midnight
 CREATE TABLE timezone_midnight
 (
     time_zone_id TEXT PRIMARY KEY,
     utc_midnight TIME      NOT NULL,
     updated_at   TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- notification
+CREATE TABLE public.notification
+(
+    id         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id    BIGINT       NOT NULL,
+    "content"  TEXT         NOT NULL,
+    url        VARCHAR(255) NULL,
+    is_read    BOOLEAN      NOT NULL DEFAULT false,
+    created_at TIMESTAMP    NOT NULL DEFAULT now(),
+
+    CONSTRAINT notification_user_fk FOREIGN KEY (id) REFERENCES "user" (id)
 );
 
 -- 타임존 관련 인덱스

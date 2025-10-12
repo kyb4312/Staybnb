@@ -5,9 +5,10 @@ import com.staybnb.bookings.dto.request.CreateBookingRequest;
 import com.staybnb.bookings.dto.request.GetBookingPreviewRequest;
 import com.staybnb.bookings.dto.response.BookingPreviewResponse;
 import com.staybnb.bookings.dto.response.BookingResponse;
-import com.staybnb.bookings.service.BookingEventProducer;
+import com.staybnb.bookings.kafka.BookingEventProducer;
 import com.staybnb.bookings.service.BookingService;
 import com.staybnb.common.auth.dto.LoginUser;
+import com.staybnb.notification.service.NotificationService;
 import com.staybnb.rooms.domain.vo.Currency;
 import com.staybnb.rooms.service.RoomService;
 import com.staybnb.users.service.UserService;
@@ -32,6 +33,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final RoomService roomService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     private final BookingEventProducer bookingEventProducer;
 
@@ -46,6 +48,8 @@ public class BookingController {
         return bookingService.createBooking(toEntity(request))
                 .thenApply(booking -> {
                     bookingEventProducer.produceBookingEvent(booking);
+                    notificationService.createNotification(booking);
+
                     URI location = UriComponentsBuilder
                             .fromPath("/bookings/{bookingId}")
                             .buildAndExpand(booking.getId())
